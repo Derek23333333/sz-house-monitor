@@ -1,0 +1,42 @@
+name: 美食数据更新
+
+on:
+  schedule:
+    # 每天1次，北京时间 22:00 (UTC 14:00)
+    - cron: '0 14 * * *'
+  workflow_dispatch:
+    # GitHub UI 手动触发
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-food.txt
+
+    - name: Install Playwright browsers
+      run: python -m playwright install --with-deps chromium
+
+    - name: Run scraper
+      run: python scraper/main.py
+
+    - name: Commit data
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git add food-data.js
+        git diff --staged --quiet || git commit -m "美食数据增量更新 $(date -u '+%Y-%m-%d %H:%M') [skip ci]"
+        git push
