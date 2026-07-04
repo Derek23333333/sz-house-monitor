@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 自动爬取最新AI资讯并更新 newsData.json
-v2: 扩大回溯范围、提高保留上限、智能排序去重
+v3: 基于搜索引擎聚合（替代失效的固定站点爬虫）
 """
 
 import json
@@ -11,362 +11,330 @@ from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 import time
 import re
+import urllib.parse
 
-def fetch_url(url, headers=None, timeout=10):
-    """安全地获取URL内容"""
+def fetch_url(url, headers=None, timeout=15):
     try:
         if headers is None:
             headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
             }
-        response = requests.get(url, headers=headers, timeout=timeout)
-        response.raise_for_status()
-        response.encoding = response.apparent_encoding
-        return response.text
+        resp = requests.get(url, headers=headers, timeout=timeout)
+        resp.raise_for_status()
+        resp.encoding = 'utf-8'
+        return resp.text
     except Exception as e:
-        print(f"✗ 获取 {url} 失败: {e}")
+        print(f"  ✗ {url[:60]}... 失败: {e}")
         return None
 
-def parse_date(date_str):
-    """解析各种日期格式"""
-    if not date_str:
-        return datetime.now().strftime('%Y-%m-%d')
-    
-    formats = [
-        '%Y-%m-%d',
-        '%Y年%m月%d日',
-        '%m月%d日',
-        '%Y/%m/%d',
-    ]
-    
-    for fmt in formats:
-        try:
-            parsed = datetime.strptime(date_str.strip(), fmt)
-            if parsed.year == 1900:
-                parsed = parsed.replace(year=datetime.now().year)
-            return parsed.strftime('%Y-%m-%d')
-        except:
-            continue
-    
-    return datetime.now().strftime('%Y-%m-%d')
-
-def scrape_aitop100(days_back=30):
-    """爬取 AITOP100 的AI日报，可配置回溯天数"""
+def search_bing_news(query, count=15, days_back=0):
+    """通过Bing搜索AI新闻（实际搜索页面）"""
     news_list = []
-    
-    try:
-        base_url = "https://www.aitop100.cn/ai-daily"
-        
-        for days_ago in range(days_back):
-            date = datetime.now() - timedelta(days=days_ago)
-            date_str = date.strftime('%Y-%m-%d')
-            url = f"{base_url}-{date_str}"
-            
-            print(f"  爬取 AITOP100 [{days_ago+1}/{days_back}]: {url}")
-            html = fetch_url(url)
-            
-            if not html:
-                continue
-            
-            soup = BeautifulSoup(html, 'lxml')
-            
-            articles = soup.select('.news-item, .article-item, .post-item')
-            
-            if not articles:
-                articles = soup.find_all(['article', 'div'], class_=re.compile('news|article|post'))
-            
-            for article in articles[:10]:
-                try:
-                    title_elem = article.find(['h2', 'h3', 'h4']) or article.find('a')
-                    title = title_elem.get_text(strip=True) if title_elem else ""
-                    
-                    if not title or len(title) < 5:
-                        continue
-                    
-                    link_elem = article.find('a', href=True)
-                    link = link_elem['href'] if link_elem else ""
-                    if link and not link.startswith('http'):
-                        link = "https://www.aitop100.cn" + link
-                    
-                    summary_elem = article.find(['p', 'div'], class_=re.compile('summary|excerpt|desc'))
-                    summary = summary_elem.get_text(strip=True)[:150] if summary_elem else title
-                    
-                    source_elem = article.find(['span', 'div'], class_=re.compile('source|author'))
-                    source = source_elem.get_text(strip=True) if source_elem else "AITOP100"
-                    
-                    category = "AI资讯"
-                    if any(kw in title + summary for kw in ['大模型', 'GPT', 'Claude', 'Gemini']):
-                        category = "大模型"
-                    elif any(kw in title + summary for kw in ['工具', '应用', '平台']):
-                        category = "新工具"
-                    elif any(kw in title + summary for kw in ['行业', '医疗', '教育', '金融']):
-                        category = "行业应用"
-                    
-                    news_list.append({
-                        'title': title,
-                        'summary': summary,
-                        'source': source,
-                        'date': date_str,
-                        'category': category,
-                        'link': link
-                    })
-                    
-                except Exception as e:
-                    print(f"    ✗ 解析文章失败: {e}")
-                    continue
-            
-            time.sleep(0.5)
-        
-    except Exception as e:
-        print(f"✗ 爬取 AITOP100 失败: {e}")
-    
-    return news_list
 
-def scrape_36kr_ai():
-    """爬取 36氪 AI频道"""
-    news_list = []
-    
     try:
-        url = "https://36kr.com/newsflashes"
-        print(f"  爬取 36氪: {url}")
+        encoded = urllib.parse.quote(query)
+        url = f"https://www.bing.com/news/search?q={encoded}&count={count}&qft=interval%3d%227%22"
+        print(f"  Bing搜索: {query}")
         
         html = fetch_url(url)
         if not html:
             return news_list
         
-        soup = BeautifulSoup(html, 'lxml')
+        soup = BeautifulSoup(html, 'html.parser')
         
-        items = soup.select('.newsflash-item, .article-item')
+        # Bing新闻卡片
+        cards = soup.select('.news-card, .newsitem, article')
+        if not cards:
+            cards = soup.find_all('div', class_=re.compile('news|card|item'))
         
-        for item in items[:15]:
+        for card in cards[:count]:
             try:
-                title_elem = item.find(['h2', 'h3']) or item.find('a')
+                # 标题
+                title_elem = card.find(['h2', 'h3', 'h4']) or card.find('a', class_=re.compile('title'))
                 title = title_elem.get_text(strip=True) if title_elem else ""
                 
-                if not title or len(title) < 5:
+                if not title or len(title) < 8:
                     continue
                 
-                if not any(kw in title for kw in ['AI', '人工智能', '大模型', 'GPT', '智能']):
-                    continue
+                # 链接
+                link = ""
+                link_elem = card.find('a', href=True)
+                if link_elem:
+                    link = link_elem['href']
                 
-                summary = title
-                source = "36氪"
-                date = datetime.now().strftime('%Y-%m-%d')
-                category = "AI资讯"
+                # 摘要
+                snippet = card.find(['p', 'div'], class_=re.compile('snippet|desc|body|content'))
+                summary = snippet.get_text(strip=True)[:200] if snippet else title
+                
+                # 来源
+                source_elem = card.find(['span', 'cite'], class_=re.compile('source|provider|attribution'))
+                source = source_elem.get_text(strip=True) if source_elem else "新闻"
                 
                 news_list.append({
                     'title': title,
                     'summary': summary,
                     'source': source,
-                    'date': date,
-                    'category': category,
-                    'link': ""
+                    'date': datetime.now().strftime('%Y-%m-%d'),
+                    'dateRaw': datetime.now().strftime('%Y-%m-%d'),
+                    'category': 'AI资讯',
+                    'link': link
                 })
-                
-            except Exception as e:
+            except:
                 continue
         
     except Exception as e:
-        print(f"✗ 爬取 36氪 失败: {e}")
+        print(f"  ✗ Bing搜索失败: {e}")
     
     return news_list
 
-def scrape_jiqizhixin():
-    """爬取 机器之心"""
+def scrape_aitop100_info():
+    """爬取 AITOP100 资讯列表页"""
     news_list = []
     
     try:
-        url = "https://www.jiqizhixin.com/"
-        print(f"  爬取 机器之心: {url}")
+        # AITOP100的资讯列表页（注意URL拼写）
+        urls = [
+            "https://aitop100.cn/infomation/",
+            "https://www.aitop100.cn/infomation/",
+        ]
+        
+        for url in urls:
+            print(f"  AITOP100: {url}")
+            html = fetch_url(url)
+            if not html:
+                continue
+            
+            soup = BeautifulSoup(html, 'html.parser')
+            
+            # 查找文章列表
+            articles = soup.select('.infomation-item, .article-item, .news-item, .post-item')
+            if not articles:
+                articles = soup.find_all(['article', 'div'], class_=re.compile('info|article|news|post'))
+            
+            for article in articles[:20]:
+                try:
+                    title_elem = article.find(['h2', 'h3', 'h4', 'a'], class_=re.compile('title'))
+                    if not title_elem:
+                        title_elem = article.find('a')
+                    title = title_elem.get_text(strip=True) if title_elem else ""
+                    
+                    if not title or len(title) < 5:
+                        continue
+                    
+                    link = ""
+                    link_elem = article.find('a', href=True)
+                    if link_elem:
+                        link = link_elem['href']
+                        if link and not link.startswith('http'):
+                            link = "https://www.aitop100.cn" + link
+                    
+                    summary_elem = article.find(['p', 'div'], class_=re.compile('desc|summary|excerpt'))
+                    summary = summary_elem.get_text(strip=True)[:200] if summary_elem else title
+                    
+                    # 提取日期
+                    date_elem = article.find(['span', 'time'], class_=re.compile('date|time'))
+                    date_str = date_elem.get_text(strip=True) if date_elem else datetime.now().strftime('%Y-%m-%d')
+                    
+                    news_list.append({
+                        'title': title,
+                        'summary': summary,
+                        'source': 'AITOP100',
+                        'date': date_str if re.match(r'\d{4}-\d{2}-\d{2}', date_str) else datetime.now().strftime('%Y-%m-%d'),
+                        'dateRaw': datetime.now().strftime('%Y-%m-%d'),
+                        'category': 'AI资讯',
+                        'link': link
+                    })
+                except:
+                    continue
+            
+            if news_list:
+                break
+    
+    except Exception as e:
+        print(f"  ✗ AITOP100失败: {e}")
+    
+    return news_list
+
+def scrape_google_news_rss():
+    """通过 Google News RSS 获取AI资讯"""
+    news_list = []
+    
+    try:
+        # Google News RSS
+        url = "https://news.google.com/rss/search?q=AI+人工智能+大模型&hl=zh-CN&gl=CN&ceid=CN:zh-Hans"
+        print(f"  Google News RSS")
         
         html = fetch_url(url)
         if not html:
             return news_list
         
-        soup = BeautifulSoup(html, 'lxml')
+        soup = BeautifulSoup(html, 'xml')
+        items = soup.find_all('item')[:20]
         
-        articles = soup.select('.article-item, .post-item')
-        
-        for article in articles[:10]:
+        for item in items:
             try:
-                title_elem = article.find(['h2', 'h3'])
-                title = title_elem.get_text(strip=True) if title_elem else ""
-                
-                if not title or len(title) < 5:
+                title = item.find('title').get_text(strip=True) if item.find('title') else ""
+                if not title:
                     continue
                 
-                summary_elem = article.find(['p', 'div'], class_=re.compile('summary|excerpt'))
-                summary = summary_elem.get_text(strip=True)[:150] if summary_elem else title
+                # 去掉来源后缀
+                title = re.sub(r'\s*-\s*\S+$', '', title)
+                
+                link = item.find('link').get_text(strip=True) if item.find('link') else ""
+                pub_date = item.find('pubDate')
+                date_str = datetime.now().strftime('%Y-%m-%d')
+                if pub_date:
+                    try:
+                        from email.utils import parsedate_to_datetime
+                        date_str = parsedate_to_datetime(pub_date.get_text()).strftime('%Y-%m-%d')
+                    except:
+                        pass
+                
+                source_elem = item.find('source')
+                source = source_elem.get_text(strip=True) if source_elem else "新闻"
+                
+                desc = item.find('description')
+                summary = desc.get_text(strip=True)[:200] if desc else title
                 
                 news_list.append({
                     'title': title,
                     'summary': summary,
-                    'source': '机器之心',
-                    'date': datetime.now().strftime('%Y-%m-%d'),
+                    'source': source,
+                    'date': date_str,
+                    'dateRaw': datetime.now().strftime('%Y-%m-%d'),
                     'category': 'AI资讯',
-                    'link': ""
+                    'link': link
                 })
-                
-            except Exception as e:
+            except:
                 continue
         
     except Exception as e:
-        print(f"✗ 爬取 机器之心 失败: {e}")
+        print(f"  ✗ Google News失败: {e}")
     
     return news_list
 
 def fetch_ai_news():
-    """爬取最新AI资讯 - 主函数"""
-    
+    """聚合所有数据源"""
     all_news = []
     
-    # 数据源1: AITOP100（回溯30天）
-    print("\n[1/3] 爬取 AITOP100（回溯30天）...")
-    news1 = scrape_aitop100(days_back=30)
-    print(f"  ✓ 获取到 {len(news1)} 条")
-    all_news.extend(news1)
+    # 源1: Google News RSS
+    print("\n[1/3] Google News RSS...")
+    n1 = scrape_google_news_rss()
+    print(f"  ✓ {len(n1)} 条")
+    all_news.extend(n1)
     
-    # 数据源2: 36氪
-    print("\n[2/3] 爬取 36氪...")
-    news2 = scrape_36kr_ai()
-    print(f"  ✓ 获取到 {len(news2)} 条")
-    all_news.extend(news2)
+    # 源2: AITOP100 资讯列表
+    print("\n[2/3] AITOP100 资讯列表...")
+    n2 = scrape_aitop100_info()
+    print(f"  ✓ {len(n2)} 条")
+    all_news.extend(n2)
     
-    # 数据源3: 机器之心
-    print("\n[3/3] 爬取 机器之心...")
-    news3 = scrape_jiqizhixin()
-    print(f"  ✓ 获取到 {len(news3)} 条")
-    all_news.extend(news3)
+    # 源3: Bing搜索
+    print("\n[3/3] Bing搜索...")
+    n3 = search_bing_news("AI 人工智能 大模型 最新资讯")
+    print(f"  ✓ {len(n3)} 条")
+    all_news.extend(n3)
     
-    # 去重（根据标题）
-    seen_titles = set()
-    unique_news = []
-    for news in all_news:
-        title = news.get('title', '')
-        if title and title not in seen_titles:
-            seen_titles.add(title)
-            unique_news.append(news)
+    # 去重
+    seen = set()
+    unique = []
+    for n in all_news:
+        t = n.get('title', '').strip()
+        if t and t not in seen:
+            seen.add(t)
+            unique.append(n)
     
-    print(f"\n✓ 总计获取到 {len(unique_news)} 条 unique AI资讯")
-    
-    return unique_news
-
-def load_existing_news():
-    """加载现有的新闻数据"""
-    try:
-        with open('data/newsData.json', 'r', encoding='utf-8') as f:
-            return json.load(f)
-    except Exception as e:
-        print(f"✗ 加载现有数据失败: {e}")
-        return []
+    print(f"\n总计 unique: {len(unique)} 条")
+    return unique
 
 def get_sortable_date(item):
-    """从新闻条目中提取可排序的日期键"""
     date_val = item.get('date', '')
-    # 标准化日期格式用于排序
     try:
         if re.match(r'\d{4}-\d{2}-\d{2}', date_val):
             return date_val
         elif re.match(r'\d{1,2}月\d{1,2}日', date_val):
-            # "7月4日" → "2026-07-04"
             m = re.match(r'(\d{1,2})月(\d{1,2})日', date_val)
             if m:
                 return f"2026-{int(m.group(1)):02d}-{int(m.group(2)):02d}"
         elif re.match(r'\d{4}/\d{2}/\d{2}', date_val):
             return date_val.replace('/', '-')
-        # 特殊日期描述（如 "智源2026十大趋势"）
         return '2026-01-01'
     except:
         return '2026-01-01'
 
+def load_existing_news():
+    try:
+        with open('data/newsData.json', 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except:
+        return []
+
 def save_news(news_list):
-    """保存新闻数据"""
     try:
         with open('data/newsData.json', 'w', encoding='utf-8') as f:
             json.dump(news_list, f, ensure_ascii=False, indent=2)
         
-        # 更新meta.json
         try:
             with open('data/meta.json', 'r', encoding='utf-8') as f:
                 meta = json.load(f)
-            
             now = datetime.now()
             meta['lastUpdated'] = now.strftime('%Y-%m-%d')
             meta['lastUpdatedTime'] = now.strftime('%Y-%m-%d %H:%M:%S')
             meta['version'] = meta.get('version', 1) + 1
-            
             with open('data/meta.json', 'w', encoding='utf-8') as f:
                 json.dump(meta, f, ensure_ascii=False, indent=2)
-            
-            print(f"✓ 已更新 meta.json (版本 {meta['version']})")
-        except Exception as e:
-            print(f"✗ 更新 meta.json 失败: {e}")
+        except:
+            pass
         
-        print(f"✓ 已保存 {len(news_list)} 条资讯到 newsData.json")
+        print(f"✓ 已保存 {len(news_list)} 条")
     except Exception as e:
         print(f"✗ 保存失败: {e}")
 
 def main():
-    """主函数"""
     print("=" * 60)
-    print("AI资讯自动更新脚本 v2")
+    print("AI资讯聚合脚本 v3 (搜索引擎聚合)")
     print("=" * 60)
     
-    # 爬取最新资讯
-    print("\n▶ 开始爬取最新AI资讯...")
+    print("\n▶ 聚合最新AI资讯...")
     new_news = fetch_ai_news()
     
-    # 加载现有数据
     print("\n▶ 加载现有数据...")
-    existing_news = load_existing_news()
-    print(f"  现有 {len(existing_news)} 条资讯")
+    existing = load_existing_news()
+    print(f"  现有 {len(existing)} 条")
     
-    # 合并数据（去重，基于标题）
-    print("\n▶ 合并数据...")
-    existing_titles = {n.get('title', '') for n in existing_news}
-    
-    added_count = 0
+    # 合并去重
+    existing_titles = {n.get('title', '') for n in existing}
+    added = 0
     for news in new_news:
         title = news.get('title', '')
         if title and title not in existing_titles:
-            existing_news.insert(0, news)
+            existing.append(news)
             existing_titles.add(title)
-            added_count += 1
+            added += 1
     
-    print(f"  添加了 {added_count} 条新资讯")
+    print(f"  新增 {added} 条")
     
-    # 按日期降序排序，确保保留最新内容
-    print("\n▶ 排序与裁剪...")
-    existing_news.sort(key=get_sortable_date, reverse=True)
+    # 排序，保留200条
+    existing.sort(key=get_sortable_date, reverse=True)
+    if len(existing) > 200:
+        removed = len(existing) - 200
+        existing = existing[:200]
+        print(f"  裁剪 {removed} 条（上限200）")
     
-    # 提高保留上限至 200 条（覆盖约半年到全年的资讯量）
-    max_keep = 200
-    if len(existing_news) > max_keep:
-        removed = len(existing_news) - max_keep
-        existing_news = existing_news[:max_keep]
-        print(f"  裁剪了 {removed} 条最旧资讯（保留上限 {max_keep}）")
+    # 清理内部字段
+    for item in existing:
+        item.pop('dateRaw', None)
     
-    print(f"  最终保留 {len(existing_news)} 条资讯")
+    print(f"\n▶ 保存...")
+    save_news(existing)
     
-    # 保存
-    print("\n▶ 保存数据...")
-    save_news(existing_news)
+    dates = [get_sortable_date(x) for x in existing if x.get('date')]
+    dates = sorted(set(d for d in dates if d != '2026-01-01'))
     
-    # 统计
     print("\n" + "=" * 60)
-    print("✓ 更新完成!")
-    print(f"  总计: {len(existing_news)} 条")
-    
-    # 日期范围
-    dates = []
-    for item in existing_news:
-        d = get_sortable_date(item)
-        if d and d != '2026-01-01':
-            dates.append(d)
+    print(f"✓ 完成! 共 {len(existing)} 条")
     if dates:
-        dates.sort()
         print(f"  覆盖: {dates[0]} ~ {dates[-1]}")
-    
     print("=" * 60)
 
 if __name__ == '__main__':
