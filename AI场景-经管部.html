@@ -1,0 +1,1341 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI进展日报 · 经管部专属版</title>
+<style>
+:root {
+  --bg: #0d1117;
+  --card-bg: #161b22;
+  --card-hover: #1c2129;
+  --border: #30363d;
+  --text: #e6edf3;
+  --text-secondary: #8b949e;
+  --accent: #6e40c9;
+  --accent-light: #a371f7;
+  --accent-dim: rgba(110,64,201,.2);
+  --green: #3fb950;
+  --orange: #d2991d;
+  --blue: #58a6ff;
+  --pink: #f778ba;
+  --beginner: #d2991d;
+  --intermediate: #58a6ff;
+  --advanced: #f778ba;
+  --radius: 10px;
+  --radius-lg: 14px;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.65;
+  min-height: 100vh;
+}
+
+/* ===== Header ===== */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(13,17,23,.92);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+.header-left h1 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--accent-light), #d2a8ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.header-left .date { font-size:.82rem; color:var(--text-secondary); margin-top:2px; }
+.role-badge {
+  display: inline-block;
+  background: var(--accent-dim);
+  color: var(--accent-light);
+  font-size: .72rem;
+  font-weight: 600;
+  padding: 3px 12px;
+  border-radius: 12px;
+  margin-left: 10px;
+  vertical-align: 3px;
+  border: 1px solid rgba(110,64,201,.3);
+}
+
+/* ===== Tab Navigation ===== */
+.tab-bar {
+  display: flex;
+  gap: 0;
+  justify-content: center;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  position: sticky;
+  top: 77px;
+  z-index: 99;
+}
+.tab-btn {
+  padding: 12px 32px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: .9rem;
+  font-weight: 500;
+  position: relative;
+  transition: color .2s;
+  white-space: nowrap;
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--accent-light); }
+.tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 16px; right: 16px;
+  height: 2px;
+  background: var(--accent-light);
+  border-radius: 2px 2px 0 0;
+}
+.tab-badge {
+  display: inline-block;
+  background: var(--accent-dim);
+  color: var(--accent-light);
+  font-size: .7rem;
+  padding: 1px 7px;
+  border-radius: 8px;
+  margin-left: 6px;
+  vertical-align: 1px;
+}
+
+/* ===== Page Container ===== */
+.page { display: none; padding: 28px 0; }
+.page.active { display: block; }
+
+/* ===== Container ===== */
+.container { max-width: 1200px; margin:0 auto; padding:0 28px; }
+
+/* ===== Section ===== */
+.section-title {
+  font-size: 1.3rem; font-weight: 700; margin-bottom: 6px;
+}
+.section-desc { color:var(--text-secondary); font-size:.86rem; margin-bottom: 24px; line-height: 1.7; }
+
+/* ===== Filter Bar ===== */
+.filter-bar {
+  display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; align-items:center;
+}
+.filter-bar .label { font-size:.82rem; color:var(--text-secondary); margin-right:2px; }
+.filter-pill {
+  padding: 5px 14px; border-radius: 16px; border:1px solid var(--border);
+  background: transparent; color: var(--text-secondary); cursor: pointer;
+  font-size: .8rem; transition: all .2s;
+}
+.filter-pill:hover { border-color: var(--accent-light); color: var(--text); }
+.filter-pill.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.filter-count { font-size:.68rem; opacity:.6; margin-left:2px; }
+
+/* ===== Inspiration Cards ===== */
+.inspiration-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap:16px; }
+
+.insp-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: all .2s;
+  position: relative;
+}
+.insp-card:hover { border-color: var(--accent-light); }
+
+.insp-card-body { padding: 18px 20px 14px; }
+.insp-card .category {
+  font-size: .72rem; font-weight: 600; color: var(--accent-light);
+  text-transform: uppercase; letter-spacing: .6px; margin-bottom: 8px;
+}
+.insp-card h4 { font-size: 1.02rem; margin-bottom: 6px; }
+.insp-card .desc { color: var(--text-secondary); font-size: .84rem; margin-bottom: 10px; }
+.insp-card .tool-row { display:flex; gap:6px; flex-wrap:wrap; margin-bottom: 2px; }
+.insp-card .tool-tag {
+  padding: 2px 10px; border-radius: 10px; font-size:.73rem;
+  background: rgba(63,185,80,.12); color: var(--green);
+}
+
+/* Level tabs inside card */
+.level-tabs {
+  display: flex; gap: 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+}
+.level-tab {
+  flex:1; padding: 8px 0; text-align:center; border:none; background:transparent;
+  color: var(--text-secondary); cursor:pointer; font-size:.78rem; font-weight:500;
+  transition: all .2s;
+}
+.level-tab:hover { color: var(--text); }
+.level-tab.active { color: var(--green); background: rgba(63,185,80,.06); }
+.level-tab.lv2.active { color: var(--blue); background: rgba(88,166,255,.06); }
+.level-tab.lv3.active { color: var(--pink); background: rgba(247,119,186,.06); }
+
+.prompt-panel {
+  padding: 14px 18px;
+  display: none;
+}
+.prompt-panel.active { display: block; }
+.prompt-panel .prompt-label {
+  font-size: .73rem; color: var(--text-secondary); margin-bottom: 6px;
+  display: flex; align-items: center; gap: 6px;
+}
+.prompt-panel .prompt-label .dot {
+  width: 7px; height: 7px; border-radius: 50%; display: inline-block;
+}
+.dot-beginner { background: var(--beginner); }
+.dot-intermediate { background: var(--blue); }
+.dot-advanced { background: var(--pink); }
+
+.prompt-box {
+  background: #0d1117;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: .8rem;
+  color: var(--text-secondary);
+  font-family: "SF Mono", "Fira Code", "Cascadia Code", monospace;
+  line-height: 1.55;
+  position: relative;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 320px;
+  overflow-y: auto;
+}
+.prompt-box .copy-btn {
+  position: absolute; top:8px; right:8px;
+  background: var(--border); border:1px solid var(--border);
+  color: var(--text-secondary); padding: 3px 10px; border-radius: 6px;
+  cursor: pointer; font-size: .7rem; transition: all .2s;
+  z-index: 2;
+}
+.prompt-box .copy-btn:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.fav-btn {
+  position: absolute; top: 14px; right: 16px;
+  background: none; border:none; font-size:1.3rem; cursor:pointer;
+  opacity: .35; color: var(--text-secondary); transition: all .2s; z-index:2;
+}
+.fav-btn:hover { opacity:1; }
+.fav-btn.faved { opacity:1; color: var(--pink); }
+
+/* Level badge */
+.level-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px; border-radius: 10px; font-size: .68rem; font-weight: 600;
+}
+.level-badge.l1 { background: rgba(210,153,29,.15); color: var(--beginner); }
+.level-badge.l2 { background: rgba(88,166,255,.15); color: var(--blue); }
+.level-badge.l3 { background: rgba(247,119,186,.15); color: var(--pink); }
+
+/* ===== News Cards ===== */
+.news-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap:14px; }
+
+.news-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  cursor: pointer;
+  transition: all .2s;
+}
+.news-card:hover { background: var(--card-hover); border-color: var(--accent-light); }
+.news-card .news-header { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:8px; }
+.news-card h4 { font-size:.95rem; line-height:1.4; flex:1; }
+.news-card .news-badge {
+  font-size:.68rem; padding:2px 8px; border-radius:8px; white-space:nowrap;
+}
+.badge-beginner { background: rgba(210,153,29,.15); color: var(--beginner); }
+.badge-expert { background: rgba(88,166,255,.15); color: var(--blue); }
+.badge-all { background: rgba(63,185,80,.15); color: var(--green); }
+
+.news-card .news-summary { color:var(--text-secondary); font-size:.83rem; margin-bottom:8px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.news-card .news-meta { display:flex; gap:10px; font-size:.76rem; color:var(--text-secondary); flex-wrap:wrap; }
+.news-card .news-meta a { color: var(--accent-light); text-decoration:none; }
+.news-card .news-meta a:hover { text-decoration:underline; }
+.news-card .news-tag { padding:1px 8px; border-radius:8px; font-size:.7rem; background:var(--border); color:var(--text-secondary); }
+
+/* ===== News Modal ===== */
+.modal-overlay {
+  display:none; position:fixed; top:0;left:0;right:0;bottom:0;
+  background: rgba(0,0,0,.7); z-index:200;
+  align-items:center; justify-content:center;
+}
+.modal-overlay.show { display:flex; }
+.modal {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  max-width: 640px; width: 90%; max-height: 80vh;
+  overflow-y: auto; padding: 28px;
+  position: relative;
+}
+.modal-close {
+  position: absolute; top:14px; right:18px;
+  background: none; border:none; color: var(--text-secondary);
+  font-size: 1.6rem; cursor: pointer; transition: color .2s;
+}
+.modal-close:hover { color: var(--text); }
+.modal h3 { font-size:1.15rem; margin-bottom:12px; padding-right:30px; }
+.modal .modal-meta { font-size:.8rem; color:var(--text-secondary); margin-bottom:16px; display:flex; gap:14px; flex-wrap:wrap; }
+.modal .modal-body { color:var(--text); font-size:.9rem; line-height:1.8; margin-bottom:16px; }
+.modal .modal-link { display:inline-flex; align-items:center; gap:6px; padding:8px 18px; background:var(--accent); color:#fff; border-radius:8px; text-decoration:none; font-size:.85rem; transition:all .2s; }
+.modal .modal-link:hover { background: #5b35b0; }
+
+/* ===== Knowledge Base Page ===== */
+.kb-split { display:grid; grid-template-columns: 1fr 1fr; gap:20px; }
+@media (max-width:900px) { .kb-split { grid-template-columns: 1fr; } }
+
+.kb-panel {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.kb-panel-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  font-size: 1rem; font-weight: 700;
+  display: flex; align-items: center; gap: 8px;
+}
+.kb-panel-body { padding: 0; max-height: 600px; overflow-y: auto; }
+
+/* Compact Timeline */
+.timeline-compact { padding: 0; }
+.timeline-item-c {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex; gap: 14px; align-items: flex-start;
+  transition: background .2s;
+  cursor: default;
+}
+.timeline-item-c:hover { background: var(--card-hover); }
+.timeline-item-c:last-child { border-bottom: none; }
+.timeline-year {
+  font-size: .78rem; font-weight: 700; color: var(--accent-light);
+  min-width: 42px; padding-top: 1px;
+}
+.timeline-content h5 { font-size: .88rem; margin-bottom: 3px; }
+.timeline-content .tc-explain { font-size: .78rem; color: var(--text-secondary); }
+.timeline-tech { display:flex; gap:4px; flex-wrap:wrap; margin-top:4px; }
+.timeline-tech span { font-size:.68rem; padding:1px 7px; border-radius:6px; background:var(--border); color:var(--text-secondary); }
+
+.timeline-search { padding:12px 20px; border-bottom:1px solid var(--border); }
+.timeline-search input {
+  width:100%; padding:8px 12px; border-radius:8px; border:1px solid var(--border);
+  background: #0d1117; color: var(--text); font-size:.82rem; outline:none;
+  transition: border-color .2s;
+}
+.timeline-search input:focus { border-color: var(--accent-light); }
+.timeline-search input::placeholder { color: var(--text-secondary); }
+
+/* Compact Dictionary */
+.dict-compact { padding: 0; }
+.dict-item-c {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  transition: background .2s;
+  cursor: pointer;
+}
+.dict-item-c:hover { background: var(--card-hover); }
+.dict-item-c:last-child { border-bottom: none; }
+.dict-item-c h5 { font-size: .88rem; color: var(--accent-light); margin-bottom: 4px; }
+.dict-item-c .dc-plain { font-size: .78rem; color: var(--text); margin-bottom: 2px; }
+.dict-item-c .dc-tech { font-size: .74rem; color: var(--text-secondary); display:none; }
+.dict-item-c.expanded .dc-tech { display:block; }
+.dict-item-c .dc-related { display:flex; gap:3px; flex-wrap:wrap; margin-top:4px; }
+.dict-item-c .dc-related span { font-size:.68rem; padding:1px 7px; border-radius:6px; background:var(--border); color:var(--text-secondary); }
+
+.dict-search { padding:12px 20px; border-bottom:1px solid var(--border); }
+.dict-search input {
+  width:100%; padding:8px 12px; border-radius:8px; border:1px solid var(--border);
+  background: #0d1117; color: var(--text); font-size:.82rem; outline:none;
+  transition: border-color .2s;
+}
+.dict-search input:focus { border-color: var(--accent-light); }
+.dict-search input::placeholder { color: var(--text-secondary); }
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%);
+  background: var(--accent); color:#fff; padding:10px 24px; border-radius:20px;
+  font-size:.85rem; opacity:0; transition:opacity .3s; z-index:999; pointer-events:none;
+}
+.toast.show { opacity:1; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header, .container { padding-left:16px; padding-right:16px; }
+  .tab-btn { padding:10px 18px; font-size:.82rem; }
+  .inspiration-grid, .news-grid { grid-template-columns: 1fr; }
+  .modal { padding:18px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-left">
+    <h1>AI 进展日报<span class="role-badge">总部经管部专属</span></h1>
+    <div class="date" id="todayDate">2026年7月4日 星期六</div>
+  </div>
+</div>
+
+<!-- Tab Navigation -->
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchPage('inspiration', this)">💡 灵感池<span class="tab-badge">25场景</span></button>
+  <button class="tab-btn" onclick="switchPage('news', this)">📰 今日动态<span class="tab-badge">新</span></button>
+  <button class="tab-btn" onclick="switchPage('knowledge', this)">📖 知识库</button>
+</div>
+
+<!-- ==================== PAGE 1: 灵感池 ==================== -->
+<div class="page active" id="page-inspiration">
+<div class="container">
+  <div class="section-title">💡 AI 灵感池 —— 总部经管部专属场景库</div>
+  <div class="section-desc">
+    围绕<strong style="color:var(--accent-light)">集团经营分析会议、会议管理、绩效考核、经管条线管理、人资工作</strong>五大核心职责，精选 25 个高频工作场景。<br>
+    每个场景提供三档难度：<span style="color:var(--beginner)">✨ 初级</span>让AI快速上手 → <span style="color:var(--blue)">🌟 进阶</span>产出专业成果 → <span style="color:var(--pink)">💎 高级</span>解锁专家级工作流。点击卡片底部标签切换 Prompt，一键复制即可使用。
+  </div>
+  <div class="filter-bar">
+    <span class="label">分类：</span>
+    <button class="filter-pill active" onclick="filterInsp('all',this)">全部<span class="filter-count">25</span></button>
+    <button class="filter-pill" onclick="filterInsp('经营分析',this)">经营分析<span class="filter-count">5</span></button>
+    <button class="filter-pill" onclick="filterInsp('会议管理',this)">会议管理<span class="filter-count">4</span></button>
+    <button class="filter-pill" onclick="filterInsp('绩效考核',this)">绩效考核<span class="filter-count">5</span></button>
+    <button class="filter-pill" onclick="filterInsp('经管条线',this)">经管条线<span class="filter-count">3</span></button>
+    <button class="filter-pill" onclick="filterInsp('人资管理',this)">人资管理<span class="filter-count">5</span></button>
+    <button class="filter-pill" onclick="filterInsp('综合提效',this)">综合提效<span class="filter-count">3</span></button>
+  </div>
+
+  <div class="inspiration-grid" id="inspGrid"></div>
+</div>
+</div>
+
+<!-- ==================== PAGE 2: 今日动态 ==================== -->
+<div class="page" id="page-news">
+<div class="container">
+  <div class="section-title">📰 今日AI最新动态</div>
+  <div class="section-desc">每日自动拉取最新AI资讯。点击任意卡片查看详情预览，支持一键跳转原文。</div>
+  <div class="filter-bar">
+    <span class="label">维度：</span>
+    <button class="filter-pill active" onclick="filterNews('all',this)">全部</button>
+    <button class="filter-pill" onclick="filterNews('大模型',this)">大模型</button>
+    <button class="filter-pill" onclick="filterNews('新工具',this)">新工具</button>
+    <button class="filter-pill" onclick="filterNews('行业应用',this)">行业应用</button>
+    <button class="filter-pill" onclick="filterNews('政策',this)">政策与大会</button>
+    <button class="filter-pill" onclick="filterNews('新概念',this)">新概念</button>
+  </div>
+  <div class="news-grid" id="newsGrid"></div>
+</div>
+</div>
+
+<!-- News Modal -->
+<div class="modal-overlay" id="newsModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">&times;</button>
+    <h3 id="modalTitle"></h3>
+    <div class="modal-meta" id="modalMeta"></div>
+    <div class="modal-body" id="modalBody"></div>
+    <a class="modal-link" id="modalLink" href="#" target="_blank">🔗 查看原文</a>
+  </div>
+</div>
+
+<!-- ==================== PAGE 3: 知识库 ==================== -->
+<div class="page" id="page-knowledge">
+<div class="container">
+  <div class="section-title">📖 知识库 · 随时备查</div>
+  <div class="section-desc">左侧为AI发展时间线，右侧为核心概念词典。支持搜索和点击展开详情。</div>
+  <div class="kb-split">
+
+    <!-- 左：时间线 -->
+    <div class="kb-panel">
+      <div class="kb-panel-header">📜 AI 发展时间线</div>
+      <div class="timeline-search">
+        <input type="text" placeholder="搜索事件..." oninput="filterTimeline(this.value)">
+      </div>
+      <div class="timeline-compact" id="timelineList"></div>
+    </div>
+
+    <!-- 右：概念词典 -->
+    <div class="kb-panel">
+      <div class="kb-panel-header">📖 核心概念词典 <span style="font-size:.7rem;color:var(--text-secondary);font-weight:400;margin-left:auto;">点击展开技术定义</span></div>
+      <div class="dict-search">
+        <input type="text" placeholder="搜索概念..." oninput="filterDict(this.value)">
+      </div>
+      <div class="dict-compact" id="dictList"></div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+//  灵感池数据 —— 25个经管部专属场景
+// ============================================================
+const inspData = [
+
+// ========== 经营分析（5张）==========
+{
+  id:'i01', cat:'经营分析', icon:'📊',
+  title:'集团经营分析报告自动生成',
+  desc:'把散落的经营数据交给AI，自动生成结构化分析报告。从"数据罗列"到"管理层可读的洞察"。',
+  tools:['WorkBuddy','ChatGPT','Claude'],
+  l1:{
+    label:'初级版 · 数据直接变报告',
+    prompt:'帮我把以下经营数据整理成一份月度经营分析报告。数据如下：\n[粘贴数据]\n\n格式要求：\n一、经营概况\n二、主要指标完成情况\n三、存在的问题\n四、下月工作重点\n\n每部分3-5条，语言简洁。'
+  },
+  l2:{
+    label:'进阶版 · 专业分析师视角',
+    prompt:'你是集团经营管理部的专业分析师。请根据以下经营数据，生成一份面向集团高管的月度经营分析报告。\n\n要求：\n1. 经营概况：用3-5句话概述本月整体表现，含营收/利润/增长率等核心指标\n2. 指标分析：按业务板块分组，计算环比和同比增长率，标注超额完成/未达标的指标\n3. 异常识别：找出偏离预算±10%以上的指标，分析可能原因\n4. 区域对比：如果数据含多区域，按业绩排名并分析差距原因\n5. 风险预警：识别需要管理层关注的2-3个风险点\n6. 建议措施：针对每个问题给出具体行动建议\n\n语气：专业、客观、数据驱动。报告控制在1500字以内。\n\n数据：\n[粘贴数据]'
+  },
+  l3:{
+    label:'高级版 · 首席分析官工作流',
+    prompt:'角色：你是集团经管部首席分析官，需要为每月经营分析会准备一份高质量报告。\n\n背景：集团有[N]个业务板块，覆盖[M]个区域，本季度OKR是[简述]。上月报告指出的3个重点问题是[列出]。\n\n请根据本月经营数据，完成：\n\n1. 执行摘要（300字）：用"成绩-问题-建议"三段式，高管30秒抓住核心\n2. 经营仪表盘：用表格呈现核心指标（预算/实际/完成率/环比/同比），红黄绿灯标注\n3. 深度归因分析：对偏离预算±15%的指标，用"现象→直接原因→根本原因"三层分析\n4. 趋势预测：基于近6个月数据趋势，预测下月表现并给出置信区间\n5. 上月问题追踪：上月报告提出的问题/建议，本月进展如何？闭环或超期标注\n6. 管理层决策建议：列出3个需要本次经营分析会讨论决策的事项，每个附背景+选项+建议\n7. 生成一份15页PPT大纲（每页标题+核心数据+建议图表类型）\n\n本月数据：[粘贴数据]\n上月报告摘要：[粘贴或简述]'
+  }
+},
+
+{
+  id:'i02', cat:'经营分析', icon:'📊',
+  title:'经营数据异常预警与归因分析',
+  desc:'让AI自动识别经营数据中的异常波动，多维度归因分析，输出预警报告。',
+  tools:['WorkBuddy','ChatGPT','Python'],
+  l1:{
+    label:'初级版 · 快速找异常',
+    prompt:'以下是我司本月各区域经营数据。请帮我找出哪些指标出现了明显异常（比上月变化超过20%），并简单说明可能的原因。\n\n数据：\n[粘贴表格]'
+  },
+  l2:{
+    label:'进阶版 · 多维度归因',
+    prompt:'你是一名经营分析专家。以下是集团各区域/板块的月度经营数据，包含营收、成本、利润率等指标。\n\n请完成：\n1. 异常检测：识别所有偏离近3个月均值±2个标准差的指标，按严重程度排序\n2. 归因分析：对每个异常指标，从"外部环境/行业趋势/内部管理/季节因素"四个维度分析可能原因\n3. 关联分析：哪些异常指标之间存在因果关系或共因？（如成本上升是否导致利润率下降）\n4. 影响评估：每个异常对全年经营目标的影响程度（高/中/低）\n5. 行动建议：针对每个高影响异常，给出"立即行动/持续观察/无需干预"的建议\n\n数据：\n[粘贴]'
+  },
+  l3:{
+    label:'高级版 · 预警体系搭建',
+    prompt:'你是集团经管部数据分析负责人。需要建立一套经营数据异常预警与归因分析体系。\n\n现有数据：\n- 集团[N]个区域、[M]个业务板块的月度经营数据（附后）\n- 过去12个月历史趋势\n- 本年度经营预算和KPI目标\n\n请完成：\n\n1. 预警体系设计：\n   - 定义预警阈值（一级/二级/三级），说明每级触发条件和响应机制\n   - 设计预警指标清单（领先指标 vs 滞后指标分类）\n\n2. 本月异常分析报告：\n   - 用Z-score和环比变化率双重筛选异常指标\n   - 对Top 5异常进行深度归因（现象→直接原因→根因→影响传导链）\n   - 构建"异常传导图谱"：哪些异常会引发连锁反应？\n\n3. 预测性预警：\n   - 基于趋势外推，预警未来2个月可能出现异常的指标\n   - 给出预防性措施建议\n\n4. 自动化方案：\n   - 设计Python脚本框架，实现每月数据自动检测异常并生成预警报告\n   - 输出Markdown格式的预警简报模板\n\n数据：\n[粘贴]'
+  }
+},
+
+{
+  id:'i03', cat:'经营分析', icon:'📊',
+  title:'多维度经营数据对比分析',
+  desc:'同比/环比/跨区域/跨业务线多维度对比，找出标杆、发现差距、量化改进空间。',
+  tools:['ChatGPT','Claude','Excel'],
+  l1:{
+    label:'初级版 · 两个季度对比',
+    prompt:'帮我对比以下两个季度的经营数据，找出：\n1. 哪些指标改善了，哪些恶化了\n2. 改善/恶化幅度最大的是哪几个\n3. 总体趋势如何\n\nQ1数据：\n[粘贴]\nQ2数据：\n[粘贴]'
+  },
+  l2:{
+    label:'进阶版 · 四维交叉分析',
+    prompt:'你是经营分析专家。以下是集团各区域本季度与上季度的经营数据。\n\n请完成多维度对比分析：\n\n1. 时间维度：环比（vs上季度）和同比（vs去年同期）增长分析\n2. 区域维度：各区域业绩排名变化，找出"进步最大"和"退步最明显"的区域\n3. 结构维度：各业务板块占比变化，分析业务结构是否在优化\n4. 效率维度：人均产出、成本费用率等效率指标对比\n5. 标杆分析：找出各项指标最优的区域，提炼可复制的经验\n6. 可视化方案：描述5张最适合展示这些对比的图表（类型+维度+呈现重点）\n\n数据：\n[粘贴]'
+  },
+  l3:{
+    label:'高级版 · 对标体系+行动矩阵',
+    prompt:'角色：集团经管部高级分析师。\n背景：管理层要求建立常态化多维度经营对比分析机制，覆盖"时间-区域-业务-效率"四维度。\n\n请根据以下数据，输出一份完整的对比分析方案：\n\n1. 分析框架设计：\n   - 构建"四维分析矩阵"（时间×区域×业务×效率），定义每个维度的核心指标\n   - 设计"红黄绿"三色评级标准\n\n2. 深度对比分析：\n   - 横向：各区域/板块对标集团平均水平，计算偏离度\n   - 纵向：12个月趋势分析，识别拐点和周期性规律\n   - 交叉：区域×业务矩阵，找出"高潜低效"和"高效饱和"象限\n\n3. 标杆研究：\n   - 选出3个标杆区域，用"做法-机制-效果"三层次拆解成功因素\n   - 判断其经验的可复制性和适用条件\n\n4. 差距诊断：\n   - 对落后区域，量化与标杆的差距（绝对值+百分比）\n   - 分析差距来源（资源不足/管理不善/市场差异/历史遗留）\n\n5. 行动矩阵：\n   - 按"影响度×紧迫度"排出Top 10改进事项\n   - 每个事项明确：责任主体/改进目标/时间节点/资源需求\n\n6. 自动化方案：\n   - 用Python设计可复用的对比分析脚本框架\n   - 输出交互式数据看板的设计方案（指标卡+图表布局）\n\n数据：\n[粘贴]'
+  }
+},
+
+{
+  id:'i04', cat:'经营分析', icon:'📊',
+  title:'经营会议议题智能征集与优先级排序',
+  desc:'各部门提交的议题杂乱无章？让AI帮你分类、评估优先级、编排高效议程。',
+  tools:['WorkBuddy','腾讯文档','企业微信'],
+  l1:{
+    label:'初级版 · 议题整理排程',
+    prompt:'我需要准备一次月度经营分析会。以下是各部门提交的议题，帮我整理成一份会议议程，按重要程度排序，每个议题标注预计讨论时间。\n\n议题清单：\n[粘贴]'
+  },
+  l2:{
+    label:'进阶版 · 四类分组+优先级矩阵',
+    prompt:'你是会议管理专家。以下是各部门提交的本月经营分析会议议题，共[N]项。\n\n请完成：\n1. 议题分类：按"战略决策/经营分析/问题协调/信息同步"四类分组\n2. 优先级评估：用"影响度×紧迫度"矩阵给每个议题评分（1-5分），排序\n3. 议程编排：\n   - 总时长[2小时]，合理分配各议题时间\n   - 高优先级议题放在前1/3时段\n   - 标注哪些议题需要会前预读材料\n   - 标注哪些议题可以合并讨论\n4. 参会建议：每个议题建议哪些角色必须参会/可选参会\n5. 会前准备清单：列出会议组织者需要提前准备的事项\n\n议题清单：\n[粘贴]'
+  },
+  l3:{
+    label:'高级版 · 全套会议筹备方案',
+    prompt:'角色：集团经管部会议组织负责人。\n背景：每月经营分析会参会者包括集团高管、各区域负责人、各业务线负责人，共30+人。会议效率直接影响管理决策速度。\n\n以下是本月征集到的[N]项议题。请完成一套完整的会议筹备方案：\n\n1. 议题智能筛选与排序：\n   - 建立"决策价值×时效性×影响范围"三维评估模型\n   - 筛选出"必须在本次会议决策"的议题（A类，不超过5项）\n   - "需要讨论但可简化"的议题（B类）\n   - "改为书面汇报"的议题（C类，建议不上会）\n   - 输出议题优先级矩阵图\n\n2. 议程精细编排：\n   - 按"黄金90分钟"原则：前90分钟集中讨论A类议题\n   - 每个议题设定"讨论目标"（决策/征求意见/通报）\n   - 为每个议题设计"3句话开场白"，确保讨论聚焦\n   - 预留15分钟"开放讨论"和5分钟"总结+待办确认"\n\n3. 差异化材料准备：\n   - 为A类议题准备"决策建议书"（含背景/选项/利弊/建议）\n   - 为B类议题准备"讨论提纲"\n   - 为C类议题准备"书面汇报模板"，转为会前阅读\n   - 列出每个议题需要的数据/图表清单\n\n4. 参会者管理：\n   - 按"决策者/汇报者/顾问/列席"分类参会者\n   - 标注每个议题的"关键决策人"，确保到场\n   - 设计"参会承诺表"，减少无故缺席\n\n5. 会后跟进方案：\n   - 设计决议追踪模板（决议内容/责任人/截止日/验收标准）\n   - 设定"决议执行率"考核指标\n\n议题清单：\n[粘贴]'
+  }
+},
+
+{
+  id:'i05', cat:'经营分析', icon:'📊',
+  title:'竞争对手经营情报分析',
+  desc:'从公开信息中提炼竞争对手战略意图、能力短板和对我司的威胁，生成竞争情报简报。',
+  tools:['ChatGPT','Claude','WorkBuddy'],
+  l1:{
+    label:'初级版 · 信息整理摘要',
+    prompt:'帮我整理以下竞争对手的公开信息（财报/新闻/产品动态），生成一份简要的竞争情报摘要，包含：对手最近有什么大动作、对我们可能有什么影响、建议关注什么。\n\n信息：\n[粘贴或描述]'
+  },
+  l2:{
+    label:'进阶版 · SWOT+应对建议',
+    prompt:'你是竞争情报分析专家。请根据以下信息，完成一份竞争对手分析报告：\n\n1. 竞争对手画像：主营业务/市场地位/核心优势/近期战略方向\n2. 财务对比：营收规模/增长率/利润率与我们对比（如有公开数据）\n3. 动态监测：近3个月的重要动作（产品/组织/资本/合作）\n4. SWOT分析：对手的优势/劣势/机会/威胁\n5. 影响评估：对手的哪些动作对我们构成直接威胁？哪些领域存在机会？\n6. 应对建议：3-5条具体行动建议\n\n竞争对手信息：\n[粘贴]\n我司基本情况：\n[简述]'
+  },
+  l3:{
+    label:'高级版 · 季度竞争情报简报',
+    prompt:'角色：集团经管部竞争情报负责人。\n背景：集团需要在每季度经营分析会上提供竞争格局分析，管理层用于战略决策。\n\n现有3家主要竞争对手的公开信息（财报/新闻/招聘/专利/产品发布等）。\n\n请完成一份"季度竞争情报简报"：\n\n1. 竞争格局全景：\n   - 行业竞争地图（领导者/挑战者/跟随者/利基者）\n   - 市场份额变化趋势（近4个季度）\n   - 各对手的战略定位差异\n\n2. 逐家深度分析（每家含）：\n   - 战略意图判断：从其近期动作推断未来6个月可能的方向\n   - 能力评估：技术/渠道/品牌/资金/人才五维评分\n   - 短板识别：最可能暴露的弱点\n   - 与我司交集分析：直接竞争领域和潜在冲突点\n\n3. 竞争态势研判：\n   - "威胁矩阵"：按"威胁概率×影响程度"排列各对手的各动作\n   - 预警信号清单：哪些信号出现意味着对手即将发起攻势？\n   - 机会窗口：对手的哪些薄弱期是我们的进攻机会？\n\n4. 战略应对方案：\n   - 防御策略：针对高威胁动作的应对预案\n   - 进攻策略：利用对手弱点的主动出击建议\n   - 监测机制：建议建立常态化的竞争情报监测清单（信息源/频率/责任人）\n\n5. 高管摘要：\n   - 3句话概述竞争态势\n   - 3个需要管理层立即决策的事项\n   - 3个需要在下次经营分析会跟踪的问题\n\n竞争对手信息：\n[粘贴]'
+  }
+},
+
+// ========== 会议管理（4张）==========
+{
+  id:'i06', cat:'会议管理', icon:'📅',
+  title:'会议纪要智能生成与决议追踪',
+  desc:'会议录音转写文本→结构化纪要→决议提取→待办分配→执行追踪，一条龙搞定。',
+  tools:['WorkBuddy','飞书','腾讯文档'],
+  l1:{
+    label:'初级版 · 录音转纪要',
+    prompt:'以下是一场会议的录音转文字记录。帮我整理成会议纪要，包含：参会人员、讨论要点、决议事项、待办任务（谁、做什么、何时完成）。\n\n会议记录：\n[粘贴]'
+  },
+  l2:{
+    label:'进阶版 · 结构化纪要+待办表',
+    prompt:'你是专业的会议纪要撰写人。以下是会议录音转写文本。\n\n请生成一份结构化会议纪要：\n\n1. 会议基本信息：时间/地点/主持人/参会人员/缺席人员\n2. 议题与讨论：按议题分组，每个议题记录"讨论要点→不同意见→最终结论"\n3. 决议事项：明确列出会议做出的所有决定，标注是"一致通过"还是"多数意见"\n4. 待办任务清单：用表格格式，包含：任务描述/责任人/协助人/截止日期/验收标准\n5. 遗留问题：未能达成一致的问题，记录分歧点和后续处理建议\n6. 下次会议建议：基于本次遗留问题，建议下次会议议题\n\n语气：客观、简洁、无遗漏。纪要总长控制在2页以内。\n\n会议记录：\n[粘贴]'
+  },
+  l3:{
+    label:'高级版 · 决议追踪闭环体系',
+    prompt:'角色：集团经管部会议管理负责人。\n背景：集团每月召开经营分析会及各类专题会议20+场，需要建立标准化的纪要生成与决议追踪体系。\n\n以下是本次会议的完整转写记录。请完成：\n\n1. 标准化会议纪要（按集团模板）：\n   - 执行摘要（200字）：3分钟内让未参会者了解会议核心\n   - 详细纪要：按"议题-讨论-决议-待办"四段式结构\n   - 每个决议标注：决策层级（集团级/部门级）/决策类型（战略/经营/事务）/影响范围\n   - 每个待办标注：优先级（P0/P1/P2）/预计工时/依赖关系\n\n2. 决议追踪方案：\n   - 设计"决议生命周期管理"模板：决议→分解任务→执行→汇报→验收→归档\n   - 为每个决议定义"成功标准"和"验收方式"\n   - 标注哪些决议需要向上汇报（董事会/集团领导）\n   - 设计"决议看板"：用红黄绿三色标注执行状态\n\n3. 风险预警：\n   - 识别执行过程中可能遇到的阻碍（资源/跨部门配合/外部因素）\n   - 为高风险待办制定"Plan B"\n   - 建议哪些任务需要设立里程碑检查点\n\n4. 知识沉淀：\n   - 提炼本次会议中的"经验教训"和"最佳实践"\n   - 标注哪些讨论内容值得纳入经管知识库\n   - 建议哪些议题需要制定或修订管理制度\n\n5. 后续动作建议：\n   - 会后24小时内需完成的事项清单\n   - 需要发起的跨部门协调事项\n   - 需要向上级汇报的事项及汇报要点\n\n会议记录：\n[粘贴]'
+  }
+},
+
+{
+  id:'i07', cat:'会议管理', icon:'📅',
+  title:'会议材料智能准备与分发',
+  desc:'不同参会者需要不同详略度的材料？让AI帮你设计差异化材料包和预读机制。',
+  tools:['WorkBuddy','腾讯文档','企业微信'],
+  l1:{
+    label:'初级版 · 材料清单生成',
+    prompt:'我要组织一场经营分析会，参会人员有集团高管、区域负责人、业务线负责人。帮我列一份会议材料准备清单，包含每份材料的名称、用途、准备人。'
+  },
+  l2:{
+    label:'进阶版 · 差异化材料包',
+    prompt:'你是会议管理专家。以下是本月经营分析会的信息：\n- 会议主题：[主题]\n- 参会人员：[列表，含角色]\n- 议题清单：[列表]\n- 会议时长：[N小时]\n\n请完成：\n1. 材料清单：按议题列出每份需要的材料（名称/内容概要/格式/准备人/截止时间）\n2. 差异化分发方案：\n   - 高管版材料包：精简版，只含决策必需信息\n   - 区域负责人版：含本区域相关详细数据\n   - 业务线版：含本业务线详细数据\n   - 列席人员版：公开版，去除敏感信息\n3. 预读要求：标注哪些材料需要会前预读，建议预读时间\n4. 材料质量检查清单：确保数据准确、格式统一、结论清晰\n5. 会议物资清单：打印份数/投影要求/白板/音响等'
+  },
+  l3:{
+    label:'高级版 · 材料管理体系设计',
+    prompt:'角色：集团经管部会议管理负责人。\n背景：集团经营分析会材料准备环节耗时耗力，经常出现"数据不一致/重点不突出/高管没时间看"等问题，需要建立标准化材料管理体系。\n\n本次会议信息：\n- 参会者：集团高管5人、区域负责人8人、业务线负责人6人、经管部3人\n- 议题：8项（含3项A类决策议题）\n\n请设计一套完整的"会议材料智能管理体系"：\n\n1. 材料标准化框架：\n   - 定义5种材料模板：决策建议书/经营分析报告/专题汇报/数据附表/决议追踪表\n   - 每种模板的"必含要素"清单和"篇幅限制"\n   - 统一数据口径和图表规范\n\n2. 差异化材料包设计：\n   - 为4类参会者设计"个性化材料包"，明确每类的信息密度和重点\n   - 设计"一页纸摘要"：高管3分钟内掌握全部议题要点\n   - 敏感信息分级处理方案（公开/内部/机密）\n\n3. 预读机制设计：\n   - "预读包"发送时间节点（会前72/48/24小时各发什么）\n   - 预读确认机制（谁需要回复确认已读）\n   - 设计"预读效率评估"：会后统计预读率与讨论效率的关联\n\n4. 材料质量管控：\n   - 建立"材料提交→经管部初审→分管领导复审→终版定稿"的审核流程\n   - 常见质量问题清单（数据矛盾/口径不一/结论模糊/图表误导）\n   - 设计"材料质量评分表"（5维度，每项1-5分）\n\n5. 智能化方案：\n   - 设计AI辅助材料生成的工作流（数据→模板→AI生成→人工校验）\n   - 标注哪些材料适合AI自动生成，哪些必须人工撰写\n   - 材料版本管理和归档方案\n\n6. 会后材料管理：\n   - 会议材料归档分类方案\n   - 敏感材料销毁/回收流程\n   - 历史材料检索方案'
+  }
+},
+
+{
+  id:'i08', cat:'会议管理', icon:'📅',
+  title:'会议效率分析与优化建议',
+  desc:'统计会议数量/时长/成本，识别效率瓶颈，设计会议治理方案，让组织减少无效会议。',
+  tools:['ChatGPT','WorkBuddy','Excel'],
+  l1:{
+    label:'初级版 · 会议统计',
+    prompt:'以下是我部门最近3个月的会议记录（会议名称、时长、参会人数、是否有纪要）。帮我分析：\n1. 平均会议时长\n2. 哪些会议耗时最长\n3. 有多少会议没有产出纪要\n4. 简单建议\n\n数据：\n[粘贴]'
+  },
+  l2:{
+    label:'进阶版 · 效率瓶颈+成本计算',
+    prompt:'你是会议效率分析专家。以下是集团经管部管辖范围内近6个月的会议统计数据。\n\n请完成：\n1. 效率指标统计：\n   - 月均会议数量/总时长/人均参会时长\n   - 会议类型分布（决策类/协调类/汇报类/培训类）\n   - 纪要产出率/决议执行率\n2. 效率瓶颈分析：\n   - 哪些类型的会议效率最低？为什么？\n   - 哪些会议可以合并/取消/缩短？\n   - 参会人数与会议效果的关系分析\n3. 时间成本计算：\n   - 按参会者平均时薪计算会议总成本\n   - 识别"投入产出比"最差的会议\n4. 优化建议：\n   - 制定"会议准入标准"：什么事项必须开会，什么可以异步处理\n   - 建议"无会议日"和"会议时长上限"\n   - 设计"会议效率评分卡"\n\n数据：\n[粘贴]'
+  },
+  l3:{
+    label:'高级版 · 会议治理专项行动方案',
+    prompt:'角色：集团经管部运营效率负责人。\n背景：集团高管反映"会议太多、太长、没效果"，要求经管部牵头开展会议治理专项行动。\n\n以下是近12个月全集团会议数据（含各部门/各层级会议记录）。\n\n请完成一份"会议治理诊断与优化方案"：\n\n1. 全面诊断：\n   - 按部门/层级/类型多维度统计会议画像\n   - 识别"会议重灾区"：哪些部门/层级会议负担最重？\n   - 计算"会议ROI"：决议执行率×参会必要率÷时间成本\n   - 对标行业最佳实践，量化差距\n\n2. 根因分析：\n   - 用"人/流程/文化/工具"四维分析法找出效率低下的根本原因\n   - 识别"会议依赖症"的表现和成因\n   - 分析"会议→决策→执行"链路中的断点\n\n3. 治理方案设计：\n   - 会议分级管理标准（A/B/C三级，各级审批权限和时长限制）\n   - "无会议"机制：每周设定1天无会议日+每天保留2小时专注时间\n   - 异步协作替代方案：哪些会议可以用文档协作/在线审批替代\n   - 会议"减肥"清单：建议取消/合并/缩短的具体会议列表\n\n4. 标准化体系：\n   - 制定《集团会议管理规范》核心条款\n   - 设计"会议全生命周期"SOP（申请→准备→召开→纪要→追踪→归档）\n   - 建立"会议效率月报"模板\n\n5. 推进计划：\n   - 3个月治理路线图（诊断→试点→推广）\n   - 试点部门选择建议\n   - 预期效果量化（减少会议时长X%、提升决议执行率Y%）\n   - 风险识别与应对\n\n数据：\n[粘贴]'
+  }
+},
+
+{
+  id:'i09', cat:'会议管理', icon:'📅',
+  title:'会议日程智能排期',
+  desc:'多场会议参会者重叠？让AI帮你检测冲突、优化排期、留出专注时间。',
+  tools:['WorkBuddy','企业微信','飞书'],
+  l1:{
+    label:'初级版 · 冲突检测排期',
+    prompt:'以下是我下周需要安排的5场会议，参会人员有重叠。帮我排出一个不冲突的日程表，尽量把相关会议排在相近时间。\n\n会议信息：\n[粘贴]'
+  },
+  l2:{
+    label:'进阶版 · 优先级+专注时间优化',
+    prompt:'你是会议排期优化专家。以下是下周需要安排的[N]场会议信息，含参会人员、所需时长、优先级。\n\n请完成：\n1. 冲突检测：识别所有参会人员时间冲突\n2. 智能排期：\n   - 按优先级确保A类会议优先安排\n   - 同一参会者的会议尽量集中在某几天，留出专注工作时间\n   - 高强度决策会议不连续安排\n   - 预留20%缓冲时间应对临时会议\n3. 时间优化建议：\n   - 哪些会议可以缩短时长？\n   - 哪些可以改为异步沟通？\n   - 哪些可以合并？\n4. 输出一份周历视图（按天/时段排列所有会议）\n\n会议清单：\n[粘贴]'
+  },
+  l3:{
+    label:'高级版 · 高管时间治理体系',
+    prompt:'角色：集团经管部会议管理负责人。\n背景：集团高管每月平均参会30+场，时间碎片化严重，需要建立智能化会议排期机制。\n\n以下是集团核心管理层（8人）下月的会议需求清单（共45场），以及他们的日历偏好和约束条件。\n\n请完成一套"智能排期方案"：\n\n1. 排期优化模型：\n   - 定义优化目标：最小化冲突×最大化专注时间×最小化切换成本\n   - 约束条件：每人每日会议不超过4小时/每周至少1天无会议/决策类会议不晚于下午3点\n   - 为每场会议标注"弹性指数"（可调整时间范围）\n\n2. 排期方案：\n   - 输出4周完整排期表（按人×按天两个视图）\n   - 标注每场会议的"准备就绪度"（材料是否齐备）\n   - 识别"排期死锁"（无法满足所有约束的情况），给出取舍建议\n\n3. 时间治理建议：\n   - 分析8位高管的"时间分配画像"（决策/协调/汇报/学习各占比）\n   - 识别"时间浪费点"并给出改进建议\n   - 建议每位高管的"理想时间结构"\n\n4. 机制设计：\n   - 会议排期审批流程（谁有权占用高管时间）\n   - 紧急会议"插队"规则\n   - 定期排期复盘机制（月度评估排期效率）\n\n5. 工具化方案：\n   - 设计AI排期助手的需求规格（输入/输出/规则引擎/人机交互）\n   - 与现有日历系统的集成方案\n\n会议需求清单：\n[粘贴]\n高管时间偏好：\n[粘贴]'
+  }
+},
+
+// ========== 绩效考核（5张）==========
+{
+  id:'i10', cat:'绩效考核', icon:'🎯',
+  title:'区域团队绩效考核报告生成',
+  desc:'各区域KPI数据→自动汇总排名→多维分析→绩效诊断→改进建议→面谈准备，一站式完成。',
+  tools:['WorkBuddy','ChatGPT','Excel'],
+  l1:{
+    label:'初级版 · 数据汇总排名',
+    prompt:'以下是各区域本季度KPI完成数据。帮我生成一份绩效考核汇总表，包含：各区域排名、完成率、达标/未达标标注。\n\n数据：\n[粘贴]'
+  },
+  l2:{
+    label:'进阶版 · 多维分析+诊断',
+    prompt:'你是绩效考核分析专家。以下是集团各区域经营管理团队本季度的KPI完成数据。\n\n请完成：\n1. 业绩排名：按综合得分排名，列出各区域总分和各维度得分\n2. 达标分析：哪些区域超额完成？哪些未达标？差距多大？\n3. 维度分析：\n   - 营收维度：各区域营收完成率和增长率对比\n   - 效率维度：人均产出、成本控制率对比\n   - 管理维度：团队稳定率、客户满意度等定性指标对比\n4. 趋势分析：与上季度对比，哪些区域进步/退步？\n5. 异常识别：是否存在某区域某指标异常偏高/偏低？可能原因？\n6. 改进建议：对排名后3位的区域，给出具体改进方向\n\n数据：\n[粘贴]'
+  },
+  l3:{
+    label:'高级版 · 全套绩效报告+面谈准备',
+    prompt:'角色：集团经管部绩效考核负责人。\n背景：集团每季度对各区域经营管理团队进行绩效考核，需要输出完整的考核报告并支持绩效面谈。\n\n以下是本季度8个区域的KPI数据、上季度数据、年度目标。\n\n请完成：\n\n1. 考核报告正文：\n   - 执行摘要：本季考核总体结论（300字）\n   - 业绩总览表：各区域综合排名+各维度得分+红黄绿灯\n   - 标杆分析：Top 2区域的成功因素拆解\n   - 后进诊断：Bottom 2区域的问题根因分析\n   - 趋势研判：连续4个季度的绩效走势，识别"持续优秀"和"持续落后"\n   - 考核结论：各区域考核等级建议（S/A/B/C/D）及依据\n\n2. 绩效面谈准备（针对每个区域）：\n   - 业绩亮点（2-3条，面谈时先肯定）\n   - 改进点（2-3条，附数据和期望值）\n   - 面谈要点提纲（开场/核心议题/期望共识/收尾）\n   - 可能的异议及应对话术\n   - 个人发展建议\n\n3. 组织层面建议：\n   - 绩效分布是否健康？（是否符合正态分布预期）\n   - 是否存在指标设计不合理的情况？（如全员超额或全员不达标）\n   - KPI指标体系的优化建议\n\n4. 报告附件：\n   - 各区域详细得分表\n   - 历史绩效趋势图设计\n   - 绩效奖金测算表（按考核等级×基数）\n\n数据：\n[粘贴]'
+  }
+},
+
+{
+  id:'i11', cat:'绩效考核', icon:'🎯',
+  title:'绩效面谈准备与辅导建议',
+  desc:'基于绩效数据，AI帮你准备个性化面谈方案：话术、异议应对、辅导建议、跟进计划。',
+  tools:['WorkBuddy','ChatGPT','Claude'],
+  l1:{
+    label:'初级版 · 面谈话术模板',
+    prompt:'我需要对一名区域负责人进行绩效面谈。他的本季度KPI完成率是[XX]%，其中营收达标但团队管理得分偏低。帮我准备一份面谈话术，包含：开场、业绩回顾、问题讨论、改进计划、结束。'
+  },
+  l2:{
+    label:'进阶版 · 个性化面谈方案',
+    prompt:'你是绩效管理专家。我需要对一位区域经营管理团队负责人进行季度绩效面谈。\n\n被面谈人信息：\n- 职位：[区域负责人]\n- 本季度KPI完成率：[XX]%，考核等级：[B]\n- 强项：[如营收增长15%]\n- 弱项：[如团队流失率高、成本超标]\n- 上季度面谈承诺：[列出]\n- 性格特点：[如比较强势/偏内向等]\n\n请准备一份完整的面谈方案：\n\n1. 面谈目标：本次面谈要达成的3个共识\n2. 面谈提纲（30分钟）：\n   - 开场（3分钟）：破冰+肯定成绩\n   - 业绩回顾（10分钟）：数据呈现方式+引导自我评价\n   - 问题讨论（10分钟）：如何引出弱项？对方可能怎么回应？\n   - 改进计划（5分钟）：共同制定下季度改进目标\n   - 收尾（2分钟）：鼓励+后续支持\n3. 关键话术：\n   - 如何开场肯定成绩又不显得敷衍\n   - 如何引出弱项而不引发抵触\n   - 如果对方找借口，如何引导回正题\n   - 如何引导对方自己说出改进方案\n4. 异议应对：预设3个对方可能的异议及应对策略\n5. 改进计划草案：\n   - 2-3个改进目标（SMART原则）\n   - 所需资源和支持\n   - 检查节点\n6. 跟进方案：面谈后1周/1个月/季度中的check-in计划'
+  },
+  l3:{
+    label:'高级版 · 全流程辅导体系',
+    prompt:'角色：集团经管部绩效管理负责人+高管教练。\n背景：集团需要对8个区域负责人逐一进行季度绩效面谈，需要一套标准化又不失个性化的面谈体系。\n\n请完成：\n\n1. 面谈体系框架：\n   - 定义4类面谈场景：优秀保持型/中等提升型/后进改进型/异常处理型\n   - 每类场景的面谈策略差异（目标/重点/时长/后续跟进频率）\n   - 面谈话术库：每个场景的"开场-过渡-深入-收束-结束"五段式话术\n\n2. 个性化面谈方案（按以下8位负责人的画像，逐一准备）：\n   每位含：\n   - 面谈策略判断（属于哪类场景）\n   - 核心信息传递清单（必须传达的3条信息）\n   - 对方情绪预判和应对预案\n   - "三明治反馈法"的具体内容（肯定-改进-鼓励）\n   - 改进目标协商空间（底线目标vs理想目标）\n   - 后续30天/60天/90天的跟进计划\n\n3. 困难场景应对手册：\n   - 对方情绪激动：如何降温和引导\n   - 对方完全不认同考核结果：如何用数据说话\n   - 对方提出系统性问题（资源不够/市场差）：如何区分客观与主观\n   - 对方提出辞职暗示：如何挽留或平稳过渡\n   - 对方要求调岗：如何评估和回应\n\n4. 面谈质量管控：\n   - 面谈记录模板（关键信息/情绪状态/达成共识/遗留分歧）\n   - 面谈效果评估表（被面谈人匿名反馈）\n   - 常见面谈错误清单（如说教过多/目标模糊/承诺过多）\n\n5. 组织层面建议：\n   - 8位负责人的面谈优先级排序（先谈谁后谈谁）\n   - 哪些需要集团高管出面面谈\n   - 面谈结果汇总报告模板\n\n8位负责人画像和绩效数据：\n[粘贴]'
+  }
+},
+
+{
+  id:'i12', cat:'绩效考核', icon:'🎯',
+  title:'KPI指标体系设计与优化',
+  desc:'从战略目标出发，设计科学的KPI指标体系，避免"考什么干什么"的陷阱。',
+  tools:['ChatGPT','Claude','WorkBuddy'],
+  l1:{
+    label:'初级版 · 指标梳理',
+    prompt:'我们区域经营管理团队的考核目前有以下KPI指标：[列出]。请帮我分析这些指标是否合理，有没有遗漏重要的维度，有没有重复或冲突的指标。'
+  },
+  l2:{
+    label:'进阶版 · 平衡计分卡+OKR',
+    prompt:'你是绩效管理专家。集团需要重新设计区域经营管理团队的KPI指标体系。\n\n背景：\n- 集团战略目标：[简述，如规模增长20%、利润率提升2个百分点]\n- 区域团队职责：经营管理、市场拓展、团队建设、风险控制\n- 现有问题：[如指标过多/权重不合理/只看短期/缺乏过程指标]\n\n请完成：\n\n1. 指标体系设计（平衡计分卡框架）：\n   - 财务维度：2-3个核心指标（如营收完成率、利润率、成本控制率）\n   - 客户维度：2-3个指标（如客户满意度、市占率、新客户获取）\n   - 内部流程维度：2-3个指标（如经营分析会执行率、制度落实率）\n   - 学习成长维度：2-3个指标（如人才流失率、培训完成率）\n\n2. 权重分配：\n   - 各维度权重建议及理由\n   - 各指标权重及理由\n   - 总分100分制还是1000分制？建议及理由\n\n3. 目标值设定：\n   - 如何设定合理的目标值？（历史数据法/标杆法/协商法）\n   - 保底值/目标值/挑战值的建议比例\n\n4. 考核周期与方式：\n   - 月度/季度/年度考核的指标分配建议\n   - 定量指标vs定性指标的比例\n\n5. 防作弊设计：\n   - 哪些指标容易被操纵？如何防范？\n   - 指标间的制衡关系设计\n\n6. 现有指标对比：\n   - 列出建议新增/删除/修改的指标及理由'
+  },
+  l3:{
+    label:'高级版 · 战略对齐+动态调整',
+    prompt:'角色：集团经管部绩效体系设计负责人。\n背景：集团正处于战略转型期，现有KPI体系已运行3年，存在"指标僵化/与战略脱节/短期主义"等问题，需要全面重构。\n\n集团新战略：[简述，如从规模扩张转向高质量发展]\n区域团队现状：8个区域，管理水平参差不齐\n\n请完成一套完整的KPI体系重构方案：\n\n1. 战略解码：\n   - 从集团战略→区域目标→岗位指标的层层分解逻辑\n   - 绘制"战略地图"：财务/客户/内部/学习四个层面的因果关系链\n   - 识别"战略必赢指标"（必须达成才能实现战略的3-5个指标）\n\n2. 指标体系设计：\n   - 核心指标层（5个，权重60%）：与战略直接挂钩\n   - 管理指标层（5个，权重25%）：过程管理和基础管理\n   - 创新指标层（2-3个，权重15%）：鼓励创新和长期投入\n   - 每个指标定义：名称/计算公式/数据来源/目标值/权重/考核周期\n   - 一票否决项设计（如重大合规事件/安全事故）\n\n3. 差异化考核方案：\n   - 按区域发展阶段（成熟期/成长期/开拓期）设计差异化指标权重\n   - 避免一刀切：不同区域用什么不同的考核侧重\n\n4. 动态调整机制：\n   - 指标更新的触发条件（战略调整/市场变化/内部改革）\n   - 年度指标评审流程（谁发起/谁审批/如何沟通）\n   - 临时调整的权限和流程\n\n5. 行业对标：\n   - 列出行业内3-5家标杆企业的考核指标参考\n   - 我们与标杆的差异分析\n   - 可借鉴的做法建议\n\n6. 落地实施计划：\n   - 试点→推广路线图（3个月试点+6个月全面推行）\n   - 培训方案：如何让区域负责人理解和接受新体系\n   - 系统支持：需要什么IT系统支撑\n   - 风险预案：可能遇到什么阻力，如何应对\n\n集团战略和现有KPI体系：\n[粘贴]'
+  }
+},
+
+{
+  id:'i13', cat:'绩效考核', icon:'🎯',
+  title:'跨区域绩效对比与排名分析',
+  desc:'多维排名、标杆识别、公平性检验，让绩效对比真正驱动组织进步。',
+  tools:['ChatGPT','Claude','Excel'],
+  l1:{
+    label:'初级版 · 排名表生成',
+    prompt:'以下是各区域本季度考核得分。帮我生成一份排名表，按总分从高到低排列，并标注各单项排名。\n\n数据：\n[粘贴]'
+  },
+  l2:{
+    label:'进阶版 · 多维对比+标杆分析',
+    prompt:'你是绩效分析专家。以下是集团8个区域经营管理团队本季度的多维考核数据。\n\n请完成：\n1. 综合排名：按加权总分排名，附各维度得分和排名\n2. 维度排名：分别列出各单项指标的排名（如营收排名/利润排名/团队管理排名）\n3. 标杆识别：\n   - 综合标杆：哪个区域整体表现最优？\n   - 单项标杆：每个维度的最优区域是谁？\n   - 进步标杆：哪个区域比上季度进步最大？\n4. 差距量化：\n   - 各区域与标杆的差距（绝对值+百分比）\n   - 差距分布：差距主要集中在哪个维度？\n5. 分群分析：\n   - 将8个区域分为"领先组/追赶组/落后组"\n   - 每组的特征画像\n   - 组间差距是否在缩小还是扩大？\n6. 改进路径：\n   - 追赶组要进入领先组，需要改善哪些指标？\n   - 落后组要进入追赶组，最紧迫的改进点是什么？\n\n数据：\n[粘贴]'
+  },
+  l3:{
+    label:'高级版 · 公平性检验+分布模型',
+    prompt:'角色：集团经管部绩效考核分析负责人。\n背景：管理层关注各区域绩效考核的公平性，以及绩效分布是否合理。需要一份深度分析报告。\n\n以下是近4个季度8个区域的考核数据。\n\n请完成：\n\n1. 绩效分布分析：\n   - 绘制绩效分布图：是否符合预期分布（如正态/钟形）\n   - 识别"异常聚集"：是否出现大量区域集中在某个分数段？\n   - 与行业标杆的分布对比\n\n2. 公平性检验：\n   - 指标公平性：是否存在某些指标对特定类型区域系统性不利？（如新区域在营收指标上天然吃亏）\n   - 评分公平性：同一水平的表现在不同评分者之间得分是否一致？\n   - 目标公平性：目标值设定是否合理？（是否"鞭打快牛"）\n   - 量化"公平性指数"：设计一个衡量考核公平性的综合指标\n\n3. 绩效驱动因素分析：\n   - 用相关性分析找出哪些指标对总分影响最大\n   - 识别"高投入低产出"指标（花了大力气但对总分影响小）\n   - 分析区域特征（市场规模/发展阶段/人员配置）与绩效的关系\n\n4. 排名稳定性分析：\n   - 4个季度的排名变化：哪些区域排名稳定？哪些波动大？\n   - 排名波动的原因分析（业绩波动 vs 指标调整 vs 评分者变化）\n   - "真实水平"vs"运气成分"的区分\n\n5. 管理建议：\n   - 指标体系调整建议（基于公平性检验结果）\n   - 差异化目标设定建议（基于区域特征分析）\n   - 标杆学习方案：设计"领先区域经验向落后区域传导"的机制\n   - 预警机制：当某区域连续2个季度排名后2位，触发什么行动？\n\n6. 数据可视化方案：\n   - 设计一份"绩效看板"：包含哪些图表/指标卡/预警标识\n   - 设计一份"区域对比雷达图"方案\n\n数据：\n[粘贴]'
+  }
+},
+
+{
+  id:'i14', cat:'绩效考核', icon:'🎯',
+  title:'绩效改进计划(PIP)智能生成',
+  desc:'对绩效不达标的员工/团队，生成个性化改进计划：目标、措施、里程碑、风险预案。',
+  tools:['WorkBuddy','ChatGPT','企业微信'],
+  l1:{
+    label:'初级版 · PIP模板',
+    prompt:'一名区域负责人的绩效连续两个季度不达标，需要制定绩效改进计划(PIP)。帮我生成一份PIP模板，包含：改进目标、改进措施、时间节点、检查方式、未达标的后果。'
+  },
+  l2:{
+    label:'进阶版 · 个性化改进方案',
+    prompt:'你是绩效管理专家。需要为以下员工制定绩效改进计划(PIP)。\n\n员工信息：\n- 职位：[区域经营管理团队负责人]\n- 考核结果：连续2个季度C级\n- 主要问题：[如营收完成率65%、团队流失率25%、客户投诉增加]\n- 员工态度：[如承认问题但归因市场环境/有抵触情绪]\n- 历史表现：[入职3年，前2年B级，今年下滑]\n\n请制定一份60天PIP：\n\n1. 改进目标（SMART原则）：\n   - 营收目标：[具体数值和达成路径]\n   - 团队管理目标：[如流失率降至X%]\n   - 过程管理目标：[如经营分析会执行率100%]\n\n2. 改进措施：\n   - 个人层面：需要改变什么行为/习惯\n   - 资源层面：集团提供什么支持（培训/教练/资源倾斜）\n   - 管理层面：上级需要增加什么辅导频率\n\n3. 里程碑：\n   - 第15天：[检查点1]\n   - 第30天：[中期评估]\n   - 第45天：[检查点2]\n   - 第60天：[终期评估]\n   - 每个里程碑的验收标准和评估方式\n\n4. 风险预案：\n   - 如果中期评估仍未改善，启动什么备选方案\n   - 如果员工拒绝签署PIP，如何处理\n   - 如果员工提出劳动仲裁，如何确保程序合规\n\n5. 沟通话术：\n   - 如何向员工传达PIP（避免引发对抗）\n   - 如何引导员工认同改进目标\n   - 如何在PIP期间保持积极沟通'
+  },
+  l3:{
+    label:'高级版 · 全周期辅导+风险管控',
+    prompt:'角色：集团经管部绩效管理负责人 + HRBP。\n背景：集团有3名区域负责人进入PIP流程，需要一套完整的PIP管理体系，既帮助改进又防范用工风险。\n\n请完成：\n\n1. PIP制度框架：\n   - PIP触发条件：什么情况启动PIP（连续C级/重大失误/能力明显不匹配）\n   - PIP分级：轻度改进(30天)/中度改进(60天)/重度改进(90天)\n   - PIP流程SOP：发起→沟通→签署→执行→评估→决策\n   - PIP成功标准：什么样的结果算"改进成功"\n   - PIP失败处理：调岗/降级/解除合同的合规路径\n\n2. 3位员工个性化PIP方案（逐一）：\n   每位含：\n   - 问题诊断：绩效不达标是能力问题/态度问题/资源问题/匹配问题？\n   - 改进目标：3-5个SMART目标，按"保底/目标/挑战"三档设定\n   - 改进措施：个人行为改变+管理支持+培训计划+资源调整\n   - 辅导计划：每周1次1V1辅导，设定每次辅导的主题和目标\n   - 里程碑：30/60/90天的检查点和验收标准\n   - 支持资源：导师配对/培训课程/管理工具/临时人力支援\n   - 风险评估：改进成功率预估（高/中/低）及依据\n   - Plan B：如果PIP失败，备选方案（调岗建议/补偿方案/法律风险评估）\n\n3. 辅导者手册：\n   - PIP期间辅导者的角色定位（教练 vs 监督者 vs 裁判）\n   - 每周辅导清单：必须覆盖的话题\n   - 辅导记录模板：关键信息/情绪状态/进展评估/风险信号\n   - 常见困难场景应对（对方消极/找借口/情绪崩溃/提出辞职）\n\n4. 法律合规保障：\n   - PIP文件的合规要求（哪些必须书面签署）\n   - 过程证据收集清单（考核记录/辅导记录/改进证据）\n   - 如最终需解除合同，完整的证据链要求\n   - 劳动法相关条款速查\n\n5. 组织层面建议：\n   - 3人同时进入PIP对组织的影响评估\n   - 区域团队稳定性的保障措施\n   - 是否需要启动人才储备/继任计划\n\n3位员工详细信息：\n[粘贴]'
+  }
+},
+
+// ========== 经管条线（3张）==========
+{
+  id:'i15', cat:'经管条线', icon:'📋',
+  title:'经管制度梳理与流程优化',
+  desc:'梳理现有经管制度，识别冗余和空白，设计精简高效的制度体系。',
+  tools:['WorkBuddy','ChatGPT','腾讯文档'],
+  l1:{
+    label:'初级版 · 制度清单整理',
+    prompt:'以下是我们经管条线现有的制度文件清单。帮我整理成一份分类目录，标注每项制度的发布时间、适用范围、是否需要更新。\n\n制度清单：\n[粘贴]'
+  },
+  l2:{
+    label:'进阶版 · 流程瓶颈分析',
+    prompt:'你是经营管理流程优化专家。以下是集团经管条线的核心管理制度和流程清单。\n\n请完成：\n1. 制度盘点：\n   - 按职能分类（会议管理/绩效考核/经营分析/数据报送/制度审批等）\n   - 识别"制度重叠"：不同制度中重复规定的条款\n   - 识别"制度空白"：哪些重要事项缺乏制度规范\n   - 识别"过时制度"：发布超过3年未更新的\n\n2. 流程分析：\n   - 梳理核心业务流程（如经营分析会流程/绩效考核流程/数据上报流程）\n   - 每个流程的步骤数/耗时/涉及部门/瓶颈点\n   - 哪些步骤可以简化/合并/自动化？\n\n3. 优化建议：\n   - 制度层面：建议新增/修订/废止的制度清单\n   - 流程层面：每个核心流程的优化方案（简化前vs简化后对比）\n   - 预期效果：能减少多少审批环节/缩短多少周期\n\n4. 实施建议：\n   - 优化方案的优先级排序\n   - 需要哪些部门配合\n   - 可能的阻力及应对\n\n制度清单：\n[粘贴]'
+  },
+  l3:{
+    label:'高级版 · 制度体系重构方案',
+    prompt:'角色：集团经管部制度管理负责人。\n背景：集团经管条线制度体系运行5年，累计制度40+项，存在"制度碎片化/流程冗长/执行走样/更新滞后"等问题，管理层要求全面梳理重构。\n\n现有制度清单和核心流程（附后）。\n\n请完成一份"经管制度体系重构方案"：\n\n1. 现状诊断：\n   - 制度覆盖度评估：哪些领域有制度？哪些没有？\n   - 制度质量评估：抽查核心制度的条款完整度/可操作性/合规性\n   - 执行力评估：制度执行率/偏差率/违规案例\n   - 用"制度成熟度模型"评估当前水平（1-5级）\n\n2. 体系设计：\n   - 构建"经管制度树"：一级（基本制度）→二级（管理办法）→三级（操作细则）→四级（表单模板）\n   - 每一级的制度数量和范围规划\n   - 制度间的逻辑关系图（引用/补充/制衡）\n   - 与其他条线（财务/人资/风控）制度的衔接关系\n\n3. 流程再造：\n   - 选出5个核心流程进行再造设计\n   - 每个流程：现状（AS-IS）→问题→优化（TO-BE）→收益\n   - 设计"流程owner"机制：每个流程明确责任人\n   - 设计"流程KPI"：如何衡量流程运行效果\n\n4. 数字化方案：\n   - 哪些制度/流程适合线上化？\n   - 设计"经管制度在线管理平台"功能需求\n   - 制度全生命周期管理：起草→评审→发布→培训→执行→评估→修订→废止\n\n5. 实施路线图：\n   - 6个月实施计划（月度里程碑）\n   - 制度修订优先级矩阵（重要性×紧迫性）\n   - 培训宣贯方案（如何确保全员知晓和执行）\n   - 效果评估机制（制度执行率/流程效率提升/违规事件下降）\n\n6. 风险管控：\n   - 制度重构期间的过渡方案\n   - 可能遇到的阻力（部门利益/执行惯性/认知差异）\n   - 合规风险排查\n\n现有制度清单和流程：\n[粘贴]'
+  }
+},
+
+{
+  id:'i16', cat:'经管条线', icon:'📋',
+  title:'经管报表自动化方案设计',
+  desc:'从手工拼表到自动化报表体系，设计数据流、模板库、自动化流程和BI看板。',
+  tools:['WorkBuddy','Python','PowerBI'],
+  l1:{
+    label:'初级版 · 报表模板设计',
+    prompt:'我需要设计一份月度经营管理报表模板，包含营收/成本/利润/区域排名等核心指标。帮我设计表格结构（表头、行列、汇总方式），并说明数据来源。'
+  },
+  l2:{
+    label:'进阶版 · 自动化流程设计',
+    prompt:'你是数据管理和BI设计专家。集团经管部每月需要生成以下报表：\n- 经营月报（面向高管）\n- 区域绩效排名表（面向各区域）\n- 专题分析报告（按需）\n\n目前数据来源包括：[ERP系统/财务系统/各区域手工上报/CRM系统]\n\n请设计一套报表自动化方案：\n\n1. 数据流设计：\n   - 各数据源→中间层→报表层的流转架构\n   - 数据采集频率和时间节点\n   - 数据清洗和校验规则\n\n2. 报表体系设计：\n   - 定义3-5张核心报表的模板（表头/维度/指标/粒度）\n   - 各报表的数据源映射\n   - 报表生成的时间节点和责任人\n\n3. 自动化方案：\n   - 哪些环节可以实现自动化？\n   - 需要什么工具/技术？（如Python脚本/RPA/API对接）\n   - 自动化前后的效率对比预估\n\n4. 质量管控：\n   - 数据准确性校验机制\n   - 报表审核流程\n   - 异常处理预案\n\n5. 权限管理：\n   - 各报表的查看权限设计\n   - 数据安全分级'
+  },
+  l3:{
+    label:'高级版 · BI看板架构+实施路径',
+    prompt:'角色：集团经管部数据治理负责人。\n背景：集团管理层要求建设"经营管理驾驶舱"，实现经营数据实时可视化、自动化报表、智能预警。目前经管部每月手工拼表耗时5人天，数据口径不一致，历史数据难以追溯。\n\n请完成一份"经管报表自动化与BI建设方案"：\n\n1. 现状评估：\n   - 盘点现有报表清单（名称/频率/数据源/制作耗时/使用人）\n   - 痛点诊断：数据孤岛/口径不一/效率低下/时效性差\n   - 成熟度评估：当前处于什么水平？目标水平是什么？\n\n2. 数据治理体系：\n   - 主数据标准：定义核心维度（区域/产品/客户/组织）的统一编码和口径\n   - 指标字典：定义50+核心经营指标的名称/公式/口径/数据源/刷新频率\n   - 数据质量规则：完整性/准确性/一致性/及时性的校验规则\n   - 数据治理组织：数据owner/数据管家/质量审核员的职责分工\n\n3. BI看板架构设计：\n   - 高管驾驶舱：5-8个核心指标卡+趋势图+预警标识\n   - 经管部工作台：全量指标+多维分析+下钻能力\n   - 区域负责人看板：本区域数据+集团对标+差距分析\n   - 每个看板设计：布局图/图表类型/交互方式/刷新频率\n\n4. 技术方案：\n   - 数据仓库架构（ODS→DWD→DWS→ADS四层）\n   - ETL流程设计（抽取/转换/加载的时间窗口）\n   - BI工具选型建议（PowerBI/Tableau/FineBI/自研 对比）\n   - 与现有系统（ERP/财务/CRM）的集成方案\n\n5. 自动化报表Pipeline：\n   - 月报/季报/年报的自动生成流程设计\n   - 异常数据自动检测和标记\n   - 报表自动分发机制（邮件/企业微信/平台推送）\n   - 历史报表归档和检索方案\n\n6. 实施路线图（12个月）：\n   - Phase 1（1-3月）：数据治理+核心报表自动化\n   - Phase 2（4-6月）：BI看板上线+高管驾驶舱\n   - Phase 3（7-9月）：区域看板+多维分析\n   - Phase 4（10-12月）：智能预警+预测分析\n   - 每阶段：交付物/所需资源/关键里程碑/验收标准\n\n7. 预算估算：\n   - 工具采购/人力投入/培训成本/运维成本\n   - ROI测算：投入vs效率提升/错误减少/决策加速的量化收益\n\n现有报表清单和系统情况：\n[粘贴]'
+  }
+},
+
+{
+  id:'i17', cat:'经管条线', icon:'📋',
+  title:'跨部门协作流程梳理',
+  desc:'梳理经管部与其他部门的协作流程，识别堵点，设计高效协作机制。',
+  tools:['WorkBuddy','ChatGPT','企业微信'],
+  l1:{
+    label:'初级版 · 协作流程清单',
+    prompt:'经管部需要与财务部、人资部、各业务线、各区域频繁协作。帮我列出主要的跨部门协作事项清单，每项标注：对接部门、协作内容、当前方式、频率。'
+  },
+  l2:{
+    label:'进阶版 · 协作痛点分析',
+    prompt:'你是组织效能专家。以下是经管部与各部门的主要协作事项及当前存在的问题。\n\n请完成：\n1. 协作流程地图：\n   - 梳理经管部与财务/人资/业务线/区域的协作流程\n   - 每个流程的：触发条件/步骤/涉及角色/产出物/耗时\n\n2. 痛点诊断：\n   - 信息类痛点：信息不对称/数据口径不一/沟通不及时\n   - 流程类痛点：审批环节多/流程断点/责任不清\n   - 协同类痛点：目标不一致/优先级冲突/资源争夺\n   - 每个痛点的影响评估（频率×严重程度）\n\n3. 优化方案：\n   - 针对每个痛点，提出具体改进措施\n   - 设计"跨部门协作SLA"：响应时间/交付标准/升级机制\n   - 建议建立哪些常态化沟通机制（如周例会/月度联席会）\n\n4. 机制设计：\n   - 跨部门项目协作规范\n   - 信息共享机制（什么信息在什么平台以什么频率共享）\n   - 冲突升级和处理机制\n\n协作事项和问题：\n[粘贴]'
+  },
+  l3:{
+    label:'高级版 · 协作流程再造方案',
+    prompt:'角色：集团经管部组织效能负责人。\n背景：集团跨部门协作效率低下，经管部作为"枢纽部门"感受最深。高管要求经管部牵头设计跨部门协作优化方案。\n\n涉及部门：经管部、财务部、人资部、战略部、风控部、5个业务线、8个区域\n\n请完成一份"跨部门协作流程再造方案"：\n\n1. 协作全景图：\n   - 绘制"部门协作网络图"：哪些部门之间协作最频繁？\n   - 识别"协作热点"和"协作断点"\n   - 量化协作成本：每月跨部门会议时长/沟通邮件量/协调耗时\n\n2. 核心协作流程再造（选5个高频流程）：\n   每个流程：\n   - AS-IS（现状）：步骤/耗时/痛点/满意度\n   - TO-BE（目标）：简化后的流程/预期效果\n   - 变更点：哪些步骤被删除/合并/自动化\n   - 风险点：流程变更可能引发什么问题\n   - 过渡方案：如何平滑切换\n\n3. 协作机制设计：\n   - 常态化沟通体系：日/周/月/季各层级沟通机制\n   - 跨部门项目组管理规范（立项/执行/验收/解散）\n   - "协作公约"：各部门共同遵守的行为准则\n   - 冲突管理机制：升级路径/调解人/决策权\n\n4. 信息共享体系：\n   - 设计"经管数据共享清单"：什么数据对谁开放/什么频率/什么格式\n   - 统一数据口径方案：跨部门数据标准化的推进路径\n   - 共享平台建设：用什么工具实现信息透明\n\n5. 考核联动：\n   - 设计"跨部门协作满意度"互评机制\n   - 将协作效率纳入各部门绩效考核\n   - 设立"最佳协作部门"奖项\n\n6. 实施计划：\n   - 3个月试点→6个月推广路线图\n   - 试点部门选择（选协作痛点最突出的2-3个部门）\n   - 变革管理方案：如何克服部门壁垒\n   - 效果评估指标（协作周期缩短率/满意度提升/冲突事件下降）\n\n现有协作流程和问题：\n[粘贴]'
+  }
+},
+
+// ========== 人资管理（5张）==========
+{
+  id:'i18', cat:'人资管理', icon:'👥',
+  title:'职位描述(JD)撰写与优化',
+  desc:'从"招人启事"到"岗位吸引力文案"，让AI帮你写出专业且吸引人的JD。',
+  tools:['WorkBuddy','ChatGPT','Claude'],
+  l1:{
+    label:'初级版 · 基础JD生成',
+    prompt:'帮我写一份[职位名称]的职位描述，要求包含：岗位职责（5-8条）、任职要求（学历/经验/技能/素质）、工作地点[XX]。我们是一家[行业]企业，规模[XX]人。'
+  },
+  l2:{
+    label:'进阶版 · 多版本+吸引力优化',
+    prompt:'你是招聘专家。请为以下岗位撰写职位描述：\n\n岗位信息：\n- 职位：[名称]\n- 部门：[部门]\n- 层级：[层级]\n- 汇报对象：[职位]\n- 核心职责：[简述]\n- 任职要求：[简述]\n- 薪酬范围：[范围]\n- 我们的优势：[如行业地位/发展前景/团队氛围]\n\n请输出：\n\n1. 三个版本的JD：\n   - 标准版：适合招聘网站发布，完整规范\n   - 吸引力版：用"你能获得什么"的视角重写，突出发展机会和工作体验\n   - 社交媒体版：适合朋友圈/社群传播，短平快，用钩子开头\n\n2. 每个版本包含：\n   - 一句话岗位定位\n   - 岗位职责（用动词开头，聚焦产出而非过程）\n   - 任职要求（区分"必须"和"加分项"）\n   - 我们提供什么（薪酬/成长/福利/文化）\n\n3. 关键词优化：\n   - 列出10个该岗位求职者常搜的关键词\n   - 标注哪些已融入JD，哪些建议补充\n\n4. 筛选辅助：\n   - 列出5个"红旗信号"（看到这些要谨慎）\n   - 列出5个"绿灯信号"（看到这些优先考虑）'
+  },
+  l3:{
+    label:'高级版 · 岗位画像+胜任力模型',
+    prompt:'角色：集团经管部HRBP + 人才测评专家。\n背景：集团需要招聘一批区域经营管理团队核心岗位，需要从JD开始建立完整的人才标准体系。\n\n岗位：[区域经营管理部负责人]\n\n请完成：\n\n1. 岗位画像：\n   - 岗位价值主张：这个岗位对集团的独特价值是什么？\n   - 典型一天：描述这个岗位一天的工作场景\n   - 核心挑战：前3个月/6个月/1年分别面临什么挑战？\n   - 成功画像：在这个岗位上做到Top 10%的人有什么共同特征？\n   - 失败画像：什么样的特质在这个岗位上容易失败？\n\n2. 胜任力模型：\n   - 设计8-10项核心胜任力，分为3层：\n     * 专业能力层（如经营分析/财务理解/数据洞察）\n     * 管理能力层（如团队管理/跨部门协作/决策能力）\n     * 个人特质层（如抗压性/学习敏锐度/成就动机）\n   - 每项胜任力：定义/行为指标（分1-5级）/评估方式/权重\n   - 胜任力之间的关联关系\n\n3. JD撰写（基于胜任力模型）：\n   - 将胜任力要求转化为JD中的任职要求\n   - 区分"门槛指标"（必须满足）和"区分指标"（用于排序候选人）\n   - 撰写吸引力版JD（融入岗位价值主张和发展路径）\n\n4. 面试评估方案：\n   - 设计结构化面试问题库（每项胜任力2-3个行为面试问题）\n   - 设计情境模拟题（模拟区域经营管理中的真实挑战）\n   - 设计评分表（每项胜任力1-5分，附评分标准）\n   - 多轮面试的分工（HR面/业务面/高管面各关注什么胜任力）\n\n5. 人才吸引策略：\n   - 目标候选人画像（在什么公司/什么岗位上的人）\n   - 招聘渠道建议（猎头/招聘平台/内部推荐/社交媒体）\n   - 雇主品牌信息传递要点\n   - 薪酬竞争力分析建议（如何定薪才能吸引目标人群）\n\n岗位详细信息：\n[粘贴]'
+  }
+},
+
+{
+  id:'i19', cat:'人资管理', icon:'👥',
+  title:'面试问题库生成',
+  desc:'结构化面试题库+评分标准+追问技巧，让面试从"凭感觉"变成"靠体系"。',
+  tools:['ChatGPT','WorkBuddy','Claude'],
+  l1:{
+    label:'初级版 · 基础面试题',
+    prompt:'我要面试一个[职位名称]的候选人，请帮我准备10个面试问题，涵盖专业技能、管理能力、个人素质等方面。'
+  },
+  l2:{
+    label:'进阶版 · 结构化面试+评分表',
+    prompt:'你是面试专家。需要为以下岗位设计结构化面试问题库。\n\n岗位：[职位名称]\n核心胜任力：[列出5-8项，如经营分析能力/团队管理/沟通协调/抗压能力/战略思维]\n\n请完成：\n\n1. 结构化面试问题库：\n   - 按每项胜任力设计2-3个行为面试问题（用STAR法则：情境-任务-行动-结果）\n   - 每个问题标注：考察维度/难度/预期回答要点\n   - 设计2-3个情境模拟题（模拟真实工作场景）\n   - 设计1-2个案例分析题\n\n2. 追问技巧：\n   - 每个问题的常见"浅层回答"及追问方向\n   - 如何判断候选人是在编故事还是真经历\n   - "压力追问"技巧：如何测试真实性\n\n3. 评分表：\n   - 每项胜任力1-5分评分标准（每个分值对应什么行为表现）\n   - 区分"不合格/合格/优秀"的分数线\n   - 各项胜任力权重\n\n4. 面试流程设计：\n   - 45分钟面试的时间分配\n   - 开场破冰/核心提问/候选人提问/收尾\n   - 面试官注意事项清单\n\n5. 红旗清单：\n   - 10个"危险信号"（出现就要慎重考虑）\n   - 5个"亮点信号"（出现要重点关注）'
+  },
+  l3:{
+    label:'高级版 · 评估中心+多轮面试体系',
+    prompt:'角色：集团人才测评专家 + 经管部HRBP。\n背景：集团需要选拔区域经营管理团队负责人，这是一个关键岗位，需要设计严谨的多轮评估体系。\n\n岗位胜任力模型：[附上或简述8项核心胜任力]\n\n请完成：\n\n1. 多轮面试体系设计：\n   - 第一轮（HR初筛，30分钟）：关注基本素质和动机\n   - 第二轮（业务面，60分钟）：关注专业能力和管理经验\n   - 第三轮（高管面，45分钟）：关注战略思维和文化匹配\n   - 第四轮（评估中心，半天）：综合能力模拟评估\n   - 每轮的：考察重点/面试官/问题清单/评分标准/淘汰分数线\n\n2. 评估中心设计：\n   - 无领导小组讨论：设计一个区域经营管理议题，6-8人讨论45分钟\n     * 议题背景/讨论规则/观察维度/评分标准\n   - 公文筐测试：设计10份"待处理文件"（模拟区域负责人的日常）\n     * 文件类型/处理时间/评估维度/优秀表现标准\n   - 案例汇报：给候选人一份经营数据，30分钟准备+15分钟汇报+10分钟答辩\n     * 案例设计/评估维度/评分表\n   - 角色扮演：模拟绩效面谈场景\n     * 场景设定/角色说明/评估要点\n\n3. 面试官培训手册：\n   - 常见面试偏见及克服方法（首因效应/晕轮效应/相似性偏好）\n   - STAR追问法实操指南（附话术示例）\n   - 评分校准：如何确保不同面试官评分一致\n   - 面试记录规范：记什么/怎么记/用于什么\n\n4. 决策模型：\n   - 多轮评分的汇总方法（加权平均vs一票否决vs综合讨论）\n   - "人才九宫格"应用：能力×潜力矩阵\n   - 背景调查重点清单\n   - 录用决策流程（谁参与/谁拍板/如何记录）\n\n5. 候选人体验设计：\n   - 面试前/中/后的沟通话术\n   - 如何在评估过程中传递雇主品牌\n   - 落选候选人的维护（人才库管理）\n\n6. 体系优化：\n   - 如何追踪评估有效性（入职后绩效与面试评分的相关性）\n   - 面试官评分质量监控\n   - 题库更新机制\n\n岗位胜任力模型和背景信息：\n[粘贴]'
+  }
+},
+
+{
+  id:'i20', cat:'人资管理', icon:'👥',
+  title:'培训方案设计',
+  desc:'从单次培训到混合式学习项目，设计有针对性、可评估、能落地的培训方案。',
+  tools:['WorkBuddy','ChatGPT','Claude'],
+  l1:{
+    label:'初级版 · 培训计划',
+    prompt:'我需要为区域经营管理团队设计一期培训，主题是[如经营分析能力提升/新任管理者集训]。帮我设计一个1天的培训计划，包含：培训目标、课程模块、时间安排、培训方式。'
+  },
+  l2:{
+    label:'进阶版 · 混合式学习方案',
+    prompt:'你是培训设计专家。需要为以下人群设计一套培训方案：\n\n培训对象：[如区域经营管理团队负责人，共20人]\n培训目标：[如提升经营分析能力+团队管理能力+跨部门协作能力]\n培训时长：[如2个月混合式学习项目]\n预算：[如每人5000元]\n\n请完成：\n\n1. 需求分析：\n   - 基于岗位胜任力模型，识别"现状-目标"能力差距\n   - 按优先级排列需要提升的能力项\n   - 区分"知识类/技能类/态度类"培训需求\n\n2. 学习项目设计（混合式）：\n   - 线上学习（30%）：哪些内容适合线上自学？（如经营分析方法论/财务知识）\n     * 推荐平台/课程/学习时长/考核方式\n   - 线下工作坊（40%）：哪些内容必须线下？（如绩效面谈演练/案例研讨）\n     * 每次工作坊的主题/时长/形式/产出物\n   - 实践任务（20%）：工作中如何应用？（如用新方法写一份经营分析报告）\n     * 任务设计/导师辅导/成果验收\n   - 社群学习（10%）：同伴互学机制\n     * 学习社群运营/分享会/读书会\n\n3. 课程大纲：\n   - 每个模块：学习目标/核心内容/教学方法/时长/讲师要求\n   - 案例设计：每门课配2-3个真实案例\n   - 练习设计：每门课配实操练习\n\n4. 评估方案：\n   - 四级评估：反应层（满意度）/学习层（知识测试）/行为层（工作应用）/结果层（业绩影响）\n   - 每级的评估工具和时间节点\n   - 培训ROI测算方法\n\n5. 实施保障：\n   - 讲师选聘标准\n   - 学习物料清单\n   - 学员管理机制（出勤/作业/奖惩）\n   - 管理层参与方式（开学/结业/中期check-in）'
+  },
+  l3:{
+    label:'高级版 · 人才发展体系+ROI评估',
+    prompt:'角色：集团经管部人才发展负责人。\n背景：集团战略转型对区域经营管理团队的能力提出新要求，需要设计一套系统性的"区域经营管理人才发展项目"，覆盖现任提升+后备培养。\n\n目标人群：8个区域的经营管理团队核心成员（约40人）+ 后备人才（约20人）\n项目周期：6个月\n\n请完成：\n\n1. 人才发展策略：\n   - 基于"战略-组织-人才"对齐模型，推导人才发展重点\n   - 设计"双轨制"发展路径：管理轨（向更高管理层级发展）+ 专家轨（向更深专业纵深发展）\n   - 定义各层级能力标准（区域主管→区域总监→集团高管）\n\n2. 能力差距诊断方案：\n   - 设计360度评估问卷（上级/平级/下级/自评）\n   - 设计"经营管理情景模拟测评"\n   - 输出每人一份"能力差距报告"模板\n   - 汇总输出"团队能力热力图"\n\n3. 6个月学习项目设计：\n\n   Phase 1（第1月）：诊断与对齐\n   - 360度评估+测评\n   - 每人IDP（个人发展计划）制定\n   - 启动仪式+战略解读工作坊\n\n   Phase 2（第2-4月）：核心能力提升\n   - 模块A：经营分析与决策（2天工作坊+3周实践）\n   - 模块B：团队领导力（2天工作坊+3周实践）\n   - 模块C：战略思维与变革管理（2天工作坊+3周实践）\n   - 每模块：学习目标/课程大纲/案例/练习/实践任务/导师辅导\n   - 模块间设置"实践周"，在工作中应用所学\n\n   Phase 3（第5月）：综合应用\n   - 行动学习项目：分组解决真实的集团经营难题\n   - 跨区域轮岗体验（2天）\n   - 高管导师1V1辅导（每月1次）\n\n   Phase 4（第6月）：评估与转化\n   - 结业汇报（向集团高管展示行动学习成果）\n   - 后测评估（与Phase 1对比）\n   - 个人发展计划更新\n   - 后续3-6个月跟踪方案\n\n4. 导师体系设计：\n   - 导师选聘标准（集团高管/优秀区域负责人/外部专家）\n   - 导师-学员匹配原则\n   - 导师辅导手册（辅导频率/话题清单/记录模板）\n   - 导师激励机制\n\n5. 后备人才培养方案：\n   - 选拔标准（绩效+潜力+意愿）\n   - "影子计划"：跟随现任负责人学习3个月\n   - 加速培养路径：哪些能力需要重点加速\n   - 继任时间表和触发条件\n\n6. 效果评估体系：\n   - 柯氏四级评估的具体实施方案\n   - 培训ROI测算模型（投入：培训费+工时成本 vs 产出：绩效提升+人才保留率提升+决策质量提升）\n   - 6个月/12个月/24个月的跟踪评估计划\n   - 评估结果如何反馈到下一期项目优化\n\n7. 项目管理方案：\n   - 项目治理结构（发起人/项目负责人/工作组）\n   - 里程碑和关键交付物\n   - 风险管理计划\n   - 预算明细（按模块拆分）\n\n集团战略和人才现状：\n[粘贴]'
+  }
+},
+
+{
+  id:'i21', cat:'人资管理', icon:'👥',
+  title:'员工发展计划(IDP)生成',
+  desc:'基于岗位胜任力和个人现状，生成个性化发展计划：目标、路径、资源、检查点。',
+  tools:['WorkBuddy','ChatGPT','Claude'],
+  l1:{
+    label:'初级版 · IDP模板',
+    prompt:'帮我为一名员工制定个人发展计划(IDP)。员工信息：[职位/司龄/当前能力水平/发展方向]。包含：发展目标（短期/中期/长期）、发展方式（培训/实践/导师）、时间节点、检查方式。'
+  },
+  l2:{
+    label:'进阶版 · 个性化发展路径',
+    prompt:'你是人才发展专家。需要为以下员工制定个性化发展计划(IDP)。\n\n员工信息：\n- 职位：[当前职位]\n- 司龄：[X年]\n- 360评估结果：[列出各维度得分]\n- 能力优势：[如数据分析能力强/执行力好]\n- 能力短板：[如战略思维不足/跨部门影响力弱]\n- 职业意愿：[希望往XX方向发展]\n- 上级评价：[列出上级的期望]\n\n请完成：\n\n1. 发展目标设定：\n   - 短期目标（6个月）：2-3个具体能力提升目标\n   - 中期目标（1-2年）：岗位/角色发展目标\n   - 长期目标（3-5年）：职业愿景\n   - 每个目标用SMART原则描述\n\n2. 能力发展路径：\n   - 针对每个短板，设计发展路径：\n     * 学什么（知识/技能）\n     * 怎么学（培训/阅读/观察/实践）\n     * 怎么练（工作中什么机会可以锻炼）\n     * 怎么验（如何证明能力提升了）\n   - 70-20-10法则分配：70%实践+20%社交学习+10%正式培训\n\n3. 行动计划表：\n   - 每月具体行动事项\n   - 每项行动的：内容/方式/产出物/所需资源/截止日\n\n4. 支持资源：\n   - 导师匹配建议（需要什么样的导师）\n   - 推荐的培训课程/书籍/资源\n   - 需要上级提供的支持（如授权/机会/反馈）\n\n5. 检查与调整：\n   - 月度自查清单\n   - 季度与上级的check-in话题\n   - 半年度正式评估的标准\n   - 计划调整的触发条件'
+  },
+  l3:{
+    label:'高级版 · 职业规划+能力建模',
+    prompt:'角色：集团经管部人才发展专家 + 职业规划师。\n背景：集团需要为核心员工系统性制定个人发展计划，建立"人才发展-业务发展"联动机制。\n\n员工信息（可批量处理3-5人）：\n每人含：当前职位/司龄/360评估/绩效历史/职业意愿/上级评价\n\n请完成：\n\n1. 职业发展规划（每人）：\n   - 职业锚诊断：分析该员工的职业动机类型（技术职能型/管理型/安全稳定型/创业型/服务型/挑战型/生活型）\n   - 职业路径设计：在集团内可能的2-3条发展路径\n     * 每条路径：需要什么能力/需要什么经历/预计时间/可能的障碍\n   - 推荐路径及理由\n   - 3-5年发展里程碑\n\n2. 能力发展方案（每人）：\n   - 能力差距矩阵：当前能力 vs 目标岗位要求的差距（按胜任力维度逐项分析）\n   - 70-20-10发展计划：\n     * 70%实践：列出5-8个"Stretch Assignment"（挑战性任务），每个任务锻炼什么能力\n     * 20%社交：导师配对+同行学习圈+跨部门轮岗\n     * 10%培训：针对性课程/认证/读书计划\n   - 能力发展优先级排序（哪些先补，哪些后补）\n   - 每项能力的发展周期和验收标准\n\n3. 发展对话指南：\n   - 上级与员工的"发展对话"话术框架\n   - 如何引导员工自己发现差距（而非直接指出）\n   - 如何处理"员工期望与组织期望不一致"的情况\n   - 如何帮助"高潜低意愿"员工找到动力\n\n4. 组织层面方案：\n   - 人才池设计：将IDP与集团人才池建设联动\n   - 继任计划：哪些关键岗位需要后备？谁在后备池中？\n   - 发展资源统筹：导师池/课程库/轮岗机会的管理\n   - IDP执行率监控机制\n\n5. 效果追踪体系：\n   - IDP执行看板设计（完成率/能力提升度/晋升率）\n   - 6个月/12个月/24个月的效果评估方案\n   - IDP有效性分析：哪些发展方式效果最好？\n   - 反馈机制：如何将IDP执行效果反馈到人才管理体系优化\n\n6. 制度化建议：\n   - IDP管理制度建议（制定/审批/执行/评估的流程）\n   - IDP模板标准化方案\n   - 与绩效管理/薪酬激励的联动机制\n\n员工信息：\n[粘贴]'
+  }
+},
+
+{
+  id:'i22', cat:'人资管理', icon:'👥',
+  title:'人才盘点报告',
+  desc:'九宫格盘点、继任者计划、人才供应链设计，让组织的人才家底一目了然。',
+  tools:['ChatGPT','Claude','WorkBuddy'],
+  l1:{
+    label:'初级版 · 人才清单',
+    prompt:'以下是经管条线核心岗位人员名单及基本信息（职位/司龄/绩效/学历）。帮我整理成一份人才盘点表，按绩效从高到低排列，标注关键人才。'
+  },
+  l2:{
+    label:'进阶版 · 九宫格盘点',
+    prompt:'你是人才管理专家。以下是集团经管条线[N]名核心人员的信息。\n\n人员数据：\n- 姓名/职位/司龄\n- 近2年绩效考核结果\n- 360评估的"潜力"得分\n- 上级对其发展意愿的评价\n\n请完成：\n\n1. 九宫格盘点：\n   - 按"绩效（纵轴：低/中/高）×潜力（横轴：低/中/高）"将人员填入九宫格\n   - 每个格子列出人员名单\n   - 对9个格子分别定义管理策略：\n     * 绩效高+潜力高（明星）：重点保留+加速发展\n     * 绩效高+潜力中（骨干）：稳定使用+横向扩展\n     * 绩效中+潜力高（高潜）：加大挑战+导师辅导\n     * ... 其余6个格子的策略\n\n2. 人才分类：\n   - 关键人才：不可替代性高的人员清单\n   - 高潜人才：未来2年有晋升可能的人员\n   - 待发展人才：需要能力提升或岗位调整的人员\n   - 风险人才：有流失风险或绩效下滑的人员\n\n3. 关键岗位继任分析：\n   - 列出5-8个关键岗位\n   - 每个岗位的继任者准备度（就绪/1年内/2-3年/无继任者）\n   - 无继任者的岗位风险及建议\n\n4. 人才流动建议：\n   - 建议晋升/轮岗/外派的人员清单\n   - 人才结构调整建议\n\n数据：\n[粘贴]'
+  },
+  l3:{
+    label:'高级版 · 继任者计划+人才供应链',
+    prompt:'角色：集团经管部人才管理负责人。\n背景：集团正处于快速发展期，关键岗位人才供给不足，需要建立系统性的人才盘点与继任计划机制。\n\n盘点范围：经管条线核心人员50人，覆盖8个区域负责人+15个业务线负责人+27个骨干员工\n\n请完成一份"年度人才盘点报告"：\n\n1. 组织人才全景分析：\n   - 人才结构画像：年龄/司龄/学历/职级分布\n   - 人才密度分析：核心岗位人才覆盖率\n   - 人才流动分析：近2年入职/离职/晋升/轮岗数据\n   - 关键风险：哪些岗位"一人当关"？哪些人才有流失风险？\n\n2. 九宫格深度盘点：\n   - 50人按"绩效×潜力"九宫格分布\n   - 每人的盘点结论（保留/发展/调整/观察）\n   - "明星员工"（绩效高+潜力高）的保留方案：个性化激励+发展路径+风险预案\n   - "问题员工"（绩效低+潜力低）的处理方案\n   - 九宫格分布健康度评估（与标杆对比）\n\n3. 关键岗位继任计划：\n   - 定义15个关键岗位（含岗位价值评估和不可替代性分析）\n   - 每个关键岗位的继任者管线：\n     * Ready Now（现在可接任）：1-2人\n     * Ready 1-2 years（1-2年内可培养）：2-3人\n     * Ready 3+ years（3年以上）：2-3人\n   - 继任者发展计划（每人）：当前差距+发展措施+时间表+检查点\n   - "空缺风险"岗位清单及应急预案\n\n4. 人才供应链设计：\n   - 人才需求预测：未来3年各层级人才需求量\n   - 人才供给分析：内部培养+外部招聘的供给能力\n   - 供需缺口分析及应对策略\n   - "人才蓄水池"设计：每个层级保持多少人？如何流动？\n\n5. 人才发展投资建议：\n   - 按"九宫格类别"分配发展资源（明星多投/骨干适量/问题员工有限投）\n   - 高潜人才加速培养方案\n   - 导师制/轮岗制/项目制的发展资源配置\n   - 培训预算分配建议\n\n6. 人才保留策略：\n   - 流失风险预警清单（哪些人需要重点关注）\n   - 分类保留方案：\n     * 明星员工：薪酬+股权+发展空间\n     * 高潜员工：晋升机会+导师+挑战性任务\n     * 骨干员工：稳定感+认可+工作生活平衡\n   - 离职面谈信息利用方案\n\n7. 管理层汇报方案：\n   - 人才盘点汇报PPT大纲（10页）\n   - 需要管理层决策的事项清单\n   - 敏感信息的处理原则\n\n8. 机制建设建议：\n   - 年度人才盘点制度化方案（时间/流程/参与者/产出）\n   - 人才盘点与绩效管理/薪酬激励的联动\n   - 人才数据管理系统需求\n\n人员数据：\n[粘贴]'
+  }
+},
+
+// ========== 综合提效（3张）==========
+{
+  id:'i23', cat:'综合提效', icon:'⚡',
+  title:'经营管理月报/季报一键生成',
+  desc:'多源数据整合→自动分析→报告生成→PPT输出，把5天的工作压缩到半天。',
+  tools:['WorkBuddy','ChatGPT','Python'],
+  l1:{
+    label:'初级版 · 数据填入模板',
+    prompt:'以下是本月经营管理核心数据。帮我填入月报模板：\n\n一、经营概况（3-5句话概述）\n二、核心指标完成情况（表格：指标/目标/实际/完成率）\n三、区域排名（表格）\n四、主要问题及建议（3-5条）\n五、下月重点（3-5条）\n\n数据：\n[粘贴]'
+  },
+  l2:{
+    label:'进阶版 · 多源整合+深度分析',
+    prompt:'你是集团经管部报告撰写负责人。每月需要生成经营管理月报，数据来源包括：\n- 财务系统导出的营收/成本/利润数据\n- 各区域上报的KPI完成情况\n- CRM系统的客户数据\n- HR系统的组织人员数据\n\n请设计一套"月报生成工作流"并生成本月报告：\n\n1. 数据整合方案：\n   - 各数据源的字段映射和口径统一规则\n   - 数据校验清单（完整性/准确性/一致性检查项）\n   - 数据整合的时间节点和责任人\n\n2. 报告生成流程：\n   - 步骤1：数据汇总（模板+自动计算公式）\n   - 步骤2：分析研判（AI辅助生成洞察）\n   - 步骤3：报告撰写（按模板填充+AI润色）\n   - 步骤4：审核校验（数据复核+领导审核）\n   - 步骤5：分发存档\n\n3. 本月报告内容：\n   - 执行摘要（200字，高管30秒可读完）\n   - 经营仪表盘（核心指标红黄绿灯表格）\n   - 业绩分析（环比/同比/预算对比）\n   - 区域对比（排名+差距分析）\n   - 专题分析（本月选1个专题深入）\n   - 风险预警（2-3个需关注的风险点）\n   - 下月工作建议\n\n4. 效率优化建议：\n   - 当前月报制作耗时分析\n   - 哪些环节可以自动化？\n   - 优化后的时间预估\n\n各数据源数据：\n[粘贴]'
+  },
+  l3:{
+    label:'高级版 · 自动化Pipeline+Dashboard',
+    prompt:'角色：集团经管部数字化负责人。\n背景：集团管理层要求"月报从5天缩短到半天"，需要建立从数据采集到报告生成的自动化Pipeline，并配套高管Dashboard。\n\n请完成一套"经营管理报告自动化方案"：\n\n1. 自动化Pipeline架构：\n   - Layer 1 - 数据采集层：\n     * 各系统（ERP/财务/CRM/HR）数据自动抽取方案\n     * 手工数据在线收集模板设计\n     * 数据采集时间窗口和SLA\n   - Layer 2 - 数据处理层：\n     * ETL流程设计（清洗/转换/聚合）\n     * 数据质量自动校验规则\n     * 异常数据自动标记和告警\n   - Layer 3 - 分析计算层：\n     * 核心指标自动计算规则库\n     * 环比/同比/预算对比自动计算\n     * 排名和评级自动生成\n     * 异常检测算法应用\n   - Layer 4 - 报告生成层：\n     * 报告模板库设计（月报/季报/年报/专题报告）\n     * AI辅助洞察生成（自动识别关键变化和趋势）\n     * 自动生成图表和可视化\n     * 报告自动排版和格式化\n   - Layer 5 - 分发存档层：\n     * 多渠道分发（邮件/企业微信/平台推送）\n     * 历史报告归档和检索\n     * 访问权限管理\n\n2. 高管Dashboard设计：\n   - 首页布局：核心指标卡（8个）+趋势图（3张）+预警区\n   - 交互设计：支持下钻/筛选/对比/导出\n   - 数据刷新机制：实时/T+1/T+5\n   - 移动端适配方案\n\n3. AI增强分析：\n   - 自动洞察：AI自动识别数据中的关键变化并生成文字洞察\n   - 智能预警：基于历史趋势预测下月可能异常的指标\n   - 自然语言查询：高管用自然语言提问，AI返回数据和分析\n   - 报告摘要：AI自动生成200字执行摘要\n\n4. 实施方案：\n   - 技术选型：\n     * 数据仓库（Snowflake/自建/云端）\n     * ETL工具（Airflow/informatica/自研）\n     * BI平台（PowerBI/FineBI/Tableau）\n     * AI能力（LLM API/自建模型）\n   - 人力资源：需要什么角色（数据工程师/BI分析师/AI工程师）\n   - 预算估算：工具+人力+运维\n   - 时间线：3个月MVP→6个月完整版→12个月优化\n\n5. 变革管理：\n   - 如何让团队接受自动化（从手工到自动的心理转变）\n   - 培训方案（新工具使用培训）\n   - 过渡期双轨运行方案\n   - 效果评估指标（耗时缩短/错误减少/满意度提升）\n\n6. 风险管控：\n   - 数据安全风险\n   - 自动化错误风险（AI生成内容的不准确性）\n   - 过度依赖风险\n\n现有月报流程和系统情况：\n[粘贴]'
+  }
+},
+
+{
+  id:'i24', cat:'综合提效', icon:'⚡',
+  title:'SWOT分析与战略建议',
+  desc:'从简单SWOT到战略矩阵到行动方案，让经典分析工具真正产出可执行的战略。',
+  tools:['ChatGPT','Claude','WorkBuddy'],
+  l1:{
+    label:'初级版 · SWOT梳理',
+    prompt:'请帮我做一个SWOT分析。分析对象是[我司/某区域/某业务线]。以下是我了解的信息：\n\n优势(S)：[列出你知道的]\n劣势(W)：[列出你知道的]\n机会(O)：[列出你知道的]\n威胁(T)：[列出你知道的]\n\n请帮我补充完善，并简单给出战略建议。'
+  },
+  l2:{
+    label:'进阶版 · 战略矩阵+行动方案',
+    prompt:'你是战略分析专家。请基于以下信息，为[分析对象]完成一份深度SWOT分析及战略建议。\n\n背景信息：\n- 分析对象：[我司XX业务/某区域/某业务线]\n- 行业背景：[简述]\n- 竞争格局：[简述]\n- 近期变化：[如新政策/新技术/新对手]\n\n请完成：\n\n1. SWOT深度分析（每项5-8条）：\n   - 优势(S)：内部能力优势，含资源/能力/品牌/渠道/人才等\n   - 劣势(W)：内部短板，含能力缺口/资源不足/流程问题等\n   - 机会(O)：外部有利因素，含市场趋势/政策红利/技术变革/竞争空隙等\n   - 威胁(T)：外部不利因素，含竞争加剧/政策限制/替代品/需求变化等\n   - 每条标注：重要程度（高/中/低）和时效性（长期/中期/短期）\n\n2. SWOT交叉战略矩阵：\n   - SO战略（优势+机会）：用优势抓住机会，列出3-5个进攻型策略\n   - WO战略（劣势+机会）：借机会补劣势，列出2-3个改进型策略\n   - ST战略（优势+威胁）：用优势防威胁，列出2-3个防御型策略\n   - WT战略（劣势+威胁）：避险收缩，列出1-2个止损型策略\n\n3. 战略选择：\n   - 从上述8-12个策略中，选出3-5个核心战略\n   - 每个核心战略：实施理由/所需资源/预期收益/风险评估/时间表\n\n4. 行动方案：\n   - 将核心战略转化为具体行动项\n   - 每个行动项：责任人/时间节点/里程碑/验收标准\n   - 按季度排出实施节奏\n\n背景信息：\n[粘贴或描述]'
+  },
+  l3:{
+    label:'高级版 · 动态分析+情景规划',
+    prompt:'角色：集团经管部战略分析负责人。\n背景：集团即将制定下一轮三年战略规划，需要经管部提供深度的战略分析输入。SWOT是分析起点，但需要升级为动态战略分析框架。\n\n分析对象：集团整体经营\n\n请完成：\n\n1. 基础SWOT分析（深度版）：\n   - 内部能力审计：\n     * 资源端：资金/人才/技术/数据/品牌/渠道，逐项评估"充足度×利用率"\n     * 能力端：经营管理/市场拓展/产品创新/风险控制，逐项评估"水平×成长性"\n   - 外部环境扫描：\n     * 宏观：政策/经济/社会/技术（PEST分析）\n     * 行业：市场规模/增长率/竞争强度/盈利水平\n     * 竞争：主要对手的战略意图/能力评估/可能动作\n   - SWOT交叉分析（TOWS矩阵）：产出12-15个策略选项\n\n2. 情景规划分析：\n   - 定义3个未来情景：\n     * 乐观情景：行业增长超预期+关键威胁未发生\n     * 基准情景：行业正常发展+竞争温和加剧\n     * 悲观情景：行业下行+主要威胁同时发生\n   - 每个情景下：\n     * SWOT如何变化？（优势可能变劣势，威胁可能变大）\n     * 各策略选项的有效性评估\n     * 应对该情景的关键举措\n   - 情景概率评估及依据\n\n3. 动态战略制定：\n   - 核心战略（在任何情景下都应执行）：3-5个\n   - 情景应对战略（特定情景下启动）：每个情景2-3个\n   - 战略触发条件：什么信号出现时启动什么战略\n   - 战略退出条件：什么信号出现时调整或退出某战略\n\n4. 战略实施路线图（3年）：\n   - Year 1：核心战略启动+能力建设\n   - Year 2：核心战略深化+情景监测\n   - Year 3：战略评估+下轮规划\n   - 每年的关键里程碑和决策点\n\n5. 战略风险管控：\n   - 每个核心战略的主要风险及缓解措施\n   - 战略执行偏差的预警信号\n   - 战略调整的决策机制\n\n6. 管理层汇报方案：\n   - 战略分析报告大纲（30页）\n   - 汇报PPT结构（20页）\n   - 需要管理层决策的关键事项\n   - 需要进一步研究的问题清单\n\n集团背景信息：\n[粘贴]'
+  }
+},
+
+{
+  id:'i25', cat:'综合提效', icon:'⚡',
+  title:'公文/制度文件撰写',
+  desc:'通知/请示/报告/管理办法/实施细则，让AI帮你快速起草规范公文。',
+  tools:['WorkBuddy','ChatGPT','腾讯文档'],
+  l1:{
+    label:'初级版 · 基础公文生成',
+    prompt:'帮我写一份[公文类型，如通知/请示/报告]，主题是[主题]。要求格式规范、语言得体，篇幅约[XX]字。'
+  },
+  l2:{
+    label:'进阶版 · 多类型+格式规范',
+    prompt:'你是公文写作专家。请根据以下需求撰写公文：\n\n1. 公文类型：[通知/通报/请示/报告/函/会议纪要/管理办法/实施细则]\n2. 发文机关：[如集团经营管理部]\n3. 主送：[如各区域经营管理团队]\n4. 事由：[简述发文事由]\n5. 核心内容要点：[列出3-5个要传达/请示/规定的内容]\n6. 特殊要求：[如需包含附件/有时间要求/涉及多部门等]\n\n请按党政机关公文格式撰写：\n- 标题：发文机关+事由+文种\n- 正文：开头（背景/依据）→主体（内容/要求）→结尾（要求/期请语）\n- 附件说明（如有）\n- 发文机关署名+日期\n\n语言要求：准确/简洁/庄重/规范，避免口语化。\n\n同时提供：\n- 一份"发文说明"（解释为什么发这个文，供领导审批参考）\n- 相关制度条款引用（如涉及现有制度修订）'
+  },
+  l3:{
+    label:'高级版 · 制度体系设计+合规审查',
+    prompt:'角色：集团经管部制度起草负责人。\n背景：需要起草一份《集团区域经营管理考核办法》及配套实施细则，这是经管条线的核心制度，影响8个区域的考核体系。\n\n请完成：\n\n1. 制度体系设计：\n   - 梳理该制度与现有制度体系的关系（哪些制度需要联动修订）\n   - 定义制度层级：基本制度（考核办法）→实施细→操作手册→表单模板\n   - 每一层的内容范围和详略程度\n\n2. 《考核办法》正文撰写（按标准制度格式）：\n   - 第一章 总则：目的/依据/适用范围/基本原则\n   - 第二章 考核组织：考核委员会/职责分工/考核周期\n   - 第三章 考核指标：指标体系/权重分配/目标设定/调整机制\n   - 第四章 考核程序：数据采集→评分→审核→反馈→申诉\n   - 第五章 考核结果应用：等级划分/奖金挂钩/晋升关联/改进计划\n   - 第六章 特殊情形处理：新任/调岗/兼岗/待岗人员考核\n   - 第七章 附则：解释权/生效日期/修订程序\n   - 每条条款：编号规范/用词准确/无歧义/可操作\n\n3. 实施细则撰写：\n   - 对办法中的每个关键环节制定操作细则\n   - 如：指标计算公式的详细说明/数据采集的具体流程/评分标准的具体描述\n   - 配套表单模板设计（考核表/评分表/申诉表/结果通知单）\n\n4. 合规性审查：\n   - 劳动法合规性检查（考核与薪酬/解除合同的关系）\n   - 内部制度一致性检查（与薪酬制度/晋升制度/奖惩制度是否冲突）\n   - 公平性审查（是否存在歧视性条款/不合理条款）\n   - 常见法律风险点清单\n\n5. 制度宣贯方案：\n   - 宣贯材料准备：制度解读PPT/FAQ/操作指南\n   - 培训计划：面向不同受众（高管/区域负责人/HR/员工）的宣贯重点\n   - 过渡期安排：新旧制度衔接/历史数据处理/特殊情形过渡\n\n6. 制度评估机制：\n   - 试运行期（3个月）的评估方案\n   - 制度执行监控指标（执行率/申诉率/满意度）\n   - 年度评审流程和修订触发条件\n\n制度背景信息：\n[粘贴]'
+  }
+}
+
+];
+
+// ============================================================
+//  今日动态数据（与原版一致）
+// ============================================================
+const newsData = [
+  {
+    category:"大模型", audience:"expert", date:"7月4日", source:"钛媒体", sourceUrl:"https://www.tmtpost.com/8052685.html",
+    title:"英伟达开源双塔扩散语言模型，大模型进入「并行生成」时代",
+    summary:"Nemotron-Labs-TwoTower采用60B双塔架构，生成吞吐量提升2.42倍，打破逐Token自回归范式。保留98.7%质量的同时实现架构层面的范式切换。",
+    detail:"英伟达于2026年7月开源Nemotron-Labs-TwoTower双塔扩散语言模型，采用60B参数双塔架构（上下文塔+去噪塔），通过并行生成机制突破传统自回归模型逐Token生成的限制。\n\n在保留98.7%原版生成质量的前提下，将文本生成吞吐量提升2.42倍。综合基准测试中MMLU从78.56降至78.24，ARC-Challenge从91.72升至92.66，代码和数学任务有小幅下滑但常识推理表现稳定。\n\n该模型采用NVIDIA Nemotron Open Model License协议允许商用，推理服务提供商可大幅降低单位生成成本，边缘设备厂商有望获得更好的AI交互体验，可能推动未来大模型从纯自回归转向混合架构。"
+  },
+  {
+    category:"大模型", audience:"all", date:"7月1日", source:"腾讯新闻", sourceUrl:"https://new.qq.com/rain/a/20260701A01RY800",
+    title:"Anthropic发布Claude Sonnet 5：低价版「小Opus」登场",
+    summary:"能力接近Opus 4.8但价格更低，API首发窗口至8月31日。强化Agent能力，支持浏览器和终端工具调用。",
+    detail:"7月1日，Anthropic推出Claude Sonnet 5，定位为「便宜版Opus」。能力接近Opus 4.8但价格更低，API首发窗口期至8月31日。\n\n新模型强化Agent能力，支持浏览器和终端工具调用。同时发布面向科研场景的Claude Science平台，集成60+科研数据库和工具包，诺奖得主Jumper加盟。\n\n此举标志着AI巨头在模型能力「民主化」方向上的重要一步——不再只有最高端模型才具备强Agent能力，中杯模型也能胜任复杂任务。"
+  },
+  {
+    category:"大模型", audience:"expert", date:"7月1日", source:"腾讯新闻", sourceUrl:"https://new.qq.com/rain/a/20260701A01RY800",
+    title:"美团LongCat-2.0调用量跻身全球前三",
+    summary:"1.6万亿参数MoE架构，原生1M超长上下文。OpenRouter平台调用量仅次于Claude Opus 4.8，缓存免费策略成效显著。",
+    detail:"6月30日，美团正式发布采用MoE架构的LongCat-2.0大模型，总参数1.6万亿，原生支持1M超长上下文。\n\nPreview版本在OpenRouter平台调用量跻身全球前三，在Claude Code场景月调用量仅次于Claude Opus 4.8。凭借缓存免费策略和高性价比，迅速获得开发者青睐。\n\n这表明中国大模型在全球开发者生态中的影响力持续上升，从「追赶」进入「并跑」阶段。"
+  },
+  {
+    category:"大模型", audience:"expert", date:"6月30日", source:"IT时代网", sourceUrl:"https://new.qq.com/rain/a/20260701A01RY800",
+    title:"DeepSeek联合北大发布DSpark推理加速框架",
+    summary:"半自回归推测解码新方法，DeepSeek-V4推理速度提升60%-85%。创始人梁文锋亲自参与，框架已开源并适配Qwen3等主流模型。",
+    detail:"6月30日，DeepSeek团队联合北京大学发布DSpark论文，提出半自回归推测解码新方法。在DeepSeek-V4线上系统中推理速度提升60%至85%。创始人梁文锋亲自参与研发，框架已开源并适配阿里Qwen3等主流模型。推理加速是大模型落地的核心瓶颈之一。DSpark通过推测解码大幅降低首Token延迟和整体生成时间，对实时交互场景意义重大。"
+  },
+  {
+    category:"新工具", audience:"expert", date:"7月3日", source:"猴岛", sourceUrl:"https://www.houdao.com/d/15404",
+    title:"Anthropic发布Claude Science：诺奖得主加盟的科研工作台",
+    summary:"集成60+科研数据库和工具包，覆盖基因组学、蛋白质结构、化学信息学等前沿领域。输出附带完整执行代码，支持可追溯与可复现。",
+    detail:"2026年7月3日，Anthropic正式发布Claude Science，定位为面向科学家的集成工作台。核心创新在于构建了集成环境，将超过60个科研领域常用数据库和工具包预装进统一对话界面，涵盖基因组学、蛋白质结构分析、单细胞分析、化学信息学等领域。研究人员可通过自然语言指令让AI代理执行数据查询、分析、图表绘制乃至论文草稿撰写等复杂任务。"
+  },
+  {
+    category:"新工具", audience:"all", date:"7月4日", source:"钛媒体", sourceUrl:"https://www.tmtpost.com/8052685.html",
+    title:"微软Project Aion曝光：Copilot就是整个操作系统",
+    summary:"AI原生操作系统实验项目，无传统开始菜单和桌面图标，完全依赖Copilot作为交互核心。标志着文件+应用范式向AI+上下文转变。",
+    detail:"微软Project Aion是2024年启动的AI原生操作系统实验项目，基于Edge浏览器和轻量化Web代码库构建，完全依赖Copilot作为交互核心，无传统开始菜单和桌面图标。该系统不兼容传统Win32程序，仅支持Web应用。这标志着操作系统从文件加应用向AI加上下文的范式转变。"
+  },
+  {
+    category:"新工具", audience:"beginner", date:"7月1日", source:"AI科技日报", sourceUrl:"https://new.qq.com/rain/a/20260702A01OWM00",
+    title:"BNB Agent Studio上线主网：一键创建AI Agent",
+    summary:"AI Agent开发平台正式上线，降低智能体开发门槛。任何人都能创建和部署自己的AI智能体。",
+    detail:"2026年7月1日，BNB Chain宣布AI Agent开发平台BNB Agent Studio正式上线主网。该平台大幅降低AI Agent开发门槛，用户无需深厚的技术背景即可创建、配置和部署自己的AI智能体。这标志着Agent开发从少数人的特权走向大众化。"
+  },
+  {
+    category:"行业应用", audience:"beginner", date:"7月4日", source:"广州日报", sourceUrl:"https://new.qq.com/rain/a/20260704A04ZM600",
+    title:"广州发布政务AI中枢「穗智政」，总投资40亿元",
+    summary:"全栈式政务AI体系，639实践路径推动数字政府智能化转型。百信广州整机智能制造基地同步落地。",
+    detail:"7月4日，广州市政务服务和数据管理局正式发布穗智政政务人工智能中枢。实行639实践路径，总投资40亿元，百信广州整机智能制造基地项目同步落地签约。这是继深圳之后，大湾区又一城市全面推进政务AI化。"
+  },
+  {
+    category:"行业应用", audience:"all", date:"7月4日", source:"财联社", sourceUrl:"https://www.toutiao.com/article/7658475579783660082",
+    title:"工信部等八部门：工业互联网+AI融合，2030年核心产业破2.5万亿",
+    summary:"深化AI与工业互联网融合应用，工业智能体、创成式设计等加速落地。算力设施成关键底座。",
+    detail:"工信部等八部门印发《关于推动工业互联网高质量发展的实施意见》，提出深化人工智能与工业互联网融合应用，到2030年推动核心产业增加值突破2.5万亿元。文件明确支持发展平台+大模型、平台+数字孪生等新业态。"
+  },
+  {
+    category:"行业应用", audience:"expert", date:"7月2日", source:"36氪/量子位", sourceUrl:"https://blog.csdn.net/aibridge/article/details/162531753",
+    title:"具身智能赛道资本涌入：自变量估值突破200亿元",
+    summary:"两月连融四轮，30余家机构参与。Etched完成8亿美元融资，Physical AI成资本最大热点。",
+    detail:"具身智能正在成为2026年AI领域最大的资本集聚方向。自变量在两个月内连续完成B+、B++、C三轮融资，投后估值突破200亿元。AI芯片领域，Etched完成8亿美元融资，Karpathy、李飞飞、Hinton均为投资方。"
+  },
+  {
+    category:"政策", audience:"all", date:"7月1日", source:"中国商界", sourceUrl:"https://www.163.com/dy/article/L0TUM89U0512F5G0.html",
+    title:"国常会部署AI高质量发展：四大政策要点落地",
+    summary:"开放政企场景、新建万卡智算中心、芯片研发补贴加码、强化高质量数据供给。从审议到执行仅两天。",
+    detail:"6月29日国常会定调、7月1日政策正式落地，从审议到执行仅用两天。四大政策要点直接利好制造业AI商业化：首次在国常会层级明确要求开放政企场景，政府和国企将成为AI应用的大规模采购方。"
+  },
+  {
+    category:"政策", audience:"expert", date:"7月3日", source:"腾讯新闻", sourceUrl:"https://new.qq.com/rain/a/20260704A057MG00",
+    title:"智能体互联「国标」正式发布：Agent时代的TCP/IP",
+    summary:"7项国家标准规范智能体跨系统、跨平台、跨场景互联协作。MCP/A2A等通信协议趋于标准化。",
+    detail:"7月3日，《人工智能 智能体互联》7项国家标准正式发布，规范智能体跨系统、跨平台、跨场景互联协作。这标志着Agent通信协议从各自为战走向标准化，类似于互联网时代的TCP/IP协议统一。"
+  },
+  {
+    category:"政策", audience:"beginner", date:"7月3日", source:"参考消息", sourceUrl:"https://new.qq.com/rain/a/20260704A04ZM600",
+    title:"国务院「十五五」规划：推进AI全学段教育",
+    summary:"从小学到大学全面普及AI教育，人工智能+教育行动深入实施，提升全民AI素养。",
+    detail:"7月3日，国务院发布《教育发展十五五规划》，提出推进人工智能全学段教育，提升学生AI素养。深入实施国家教育数字化战略，开展人工智能+教育行动。"
+  },
+  {
+    category:"新概念", audience:"expert", date:"智源2026十大趋势", source:"新华网", sourceUrl:"https://www.news.cn/tech/20260108/b99127c88a4640bbab49e5c6294264d2/c.html",
+    title:"世界模型成为AGI共识方向：从预测词到预测世界状态",
+    summary:"AI核心范式从Next-Token Prediction转向Next-State Prediction（NSP），学习物理规律、时空连续性与因果关系。",
+    detail:"智源研究院发布《2026十大AI技术趋势》指出：AI的演进核心正发生关键转移——从追求参数规模的语言学习，迈向对物理世界底层秩序的深刻理解与建模。从预测下一个词跨越到预测世界的下一个状态。"
+  },
+  {
+    category:"新概念", audience:"all", date:"7月4日", source:"钛媒体", sourceUrl:"https://www.tmtpost.com/8052685.html",
+    title:"Meta年烧1350亿美元，扎克伯格承认超级智能「卡壳」",
+    summary:"资本支出预计达1250-1450亿美元，但AI智能体技术进展慢于预期，预计3-6个月后才能显现成果。",
+    detail:"Meta 2026年资本支出预计达1250亿至1450亿美元。与CoreWeave的算力租赁协议累计超350亿美元。但扎克伯格承认AI智能体技术进展慢于预期，预计成果需3至6个月才能显现。"
+  },
+  {
+    category:"新概念", audience:"expert", date:"7月3日", source:"盐城市互联网协会", sourceUrl:"https://new.qq.com/rain/a/20260704A057MG00",
+    title:"北京发布AI赋能科研方案：2028年建成科学智能创新中枢",
+    summary:"AI Scientist从辅助工具升级为自主研究主体。结合自动化实验室加速新材料与药物研发。",
+    detail:"7月3日，北京印发《北京市加快推进人工智能赋能科学研究实施方案》，提出到2028年建成辐射全球的科学智能创新中枢。AI在科研中的角色正从辅助工具升级为自主研究的AI科学家。"
+  }
+];
+
+// ============================================================
+//  知识库 - 时间线数据（与原版一致）
+// ============================================================
+const timelineData = [
+  {y:1950,t:'图灵测试 · AI概念诞生',e:'艾伦·图灵提出：如果机器能让人以为它是人类，算不算会思考？',tech:['图灵测试','计算理论','符号主义AI']},
+  {y:1956,t:'达特茅斯会议 · AI正式命名',e:'一群天才科学家开了个会，正式给让机器变聪明起名叫人工智能。',tech:['麦卡锡/明斯基','符号推理']},
+  {y:1986,t:'反向传播算法推广',e:'找到让计算机从错误中学习的方法，就像你做题后对答案然后不再错。',tech:['BP算法','Rumelhart/Hinton','分布式表示']},
+  {y:1998,t:'LeNet-5 · CNN雏形',e:'Yann LeCun让计算机学会看手写数字，就像教会机器看图第一个字母。',tech:['卷积+池化','MNIST','梯度学习']},
+  {y:2006,t:'深度信念网络 · 深度学习革命',e:'Hinton证明多层网络可以一层层训练，打破深层网络无法训练的魔咒。',tech:['DBN预训练','无监督特征学习']},
+  {y:2011,t:'IBM Watson赢得《危险边缘》',e:'AI在美国最难问答节目中击败人类冠军，世界第一次见到AI理解复杂问题。',tech:['自然语言理解','知识图谱','证据推理']},
+  {y:2012,t:'AlexNet赢得ImageNet竞赛',e:'用GPU训练的深度卷积网络碾压所有传统方法，深度学习一飞冲天。',tech:['GPU加速','ReLU+Dropout','ImageNet']},
+  {y:2014,t:'GAN生成对抗网络诞生',e:'两个AI互相对抗——一个造假一个打假，造假水平越来越高。AI生成图片的始祖。',tech:['生成器-判别器博弈','对抗训练']},
+  {y:2016,t:'AlphaGo击败李世石',e:'围棋AI以4:1击败世界冠军，这一步不是人教的，是AI自己下了几百万盘棋悟出来的。',tech:['深度强化学习','蒙特卡洛树搜索','自对弈']},
+  {y:2017,t:'Transformer架构提出',e:'Google团队提出注意力机制——让模型自己学会关注输入中重要的部分。这篇论文改变了整个AI世界。',tech:['自注意力','多头注意力','位置编码','并行训练']},
+  {y:2018,t:'BERT/GPT-1 · 预训练大模型时代',e:'先让AI海量阅读互联网文字（预训练），再针对具体任务微调，效果远超从零训练。',tech:['预训练-微调','MLM','自回归生成']},
+  {y:2020,t:'GPT-3 · 大模型范式确立',e:'1750亿参数证明：只要模型够大、数据够多，AI就展现惊人通用能力，甚至不需要专门训练就能翻译、写作。',tech:['175B参数','Few-shot','Scaling Law']},
+  {y:2022,t:'ChatGPT发布 · 生成式AI引爆全球',e:'一个会聊天的AI横空出世，2个月用户破亿——能写代码、写论文、编故事，普通人第一次亲身体验AI有多强。',tech:['RLHF','InstructGPT','对话交互']},
+  {y:2023,t:'GPT-4/Claude 2 · 多模态突破',e:'AI不仅看懂文字，还能看懂图片、图表和手写笔记。拍张照片问它，它能像人类一样理解画面。',tech:['视觉-语言多模态','MoE','推理跃升']},
+  {y:2024,t:'AI Agent爆发 · 从对话到行动',e:'AI不再只是聊天，能像助手一样帮你订机票、写代码、管理文件——自己规划步骤、操作工具、完成任务。',tech:['Agentic Workflow','Tool Use','MCP/A2A']},
+  {y:2025,t:'世界模型&具身智能 · AI走进物理世界',e:'AI开始学习物理规律——理解重力、惯性、空间关系，从此不仅能说话，还能行动，驱动机器人工作。',tech:['NSP','Embodied AI','Physical AI','人形机器人']},
+  {y:2026,t:'多智能体协同&AI原生操作系统',e:'多个AI Agent像团队一样协同工作，微软开始打造完全由AI驱动的操作系统，PC使用方式正在被重新定义。',tech:['Multi-Agent','Project Aion','智能体互联国标','扩散架构']}
+];
+
+// ============================================================
+//  知识库 - 概念词典数据（与原版一致）
+// ============================================================
+const dictData = [
+  {n:'机器学习 Machine Learning',p:'让计算机通过看数据自己学会规律，而不是人工写死规则。就像教小孩认识猫：不是背定义，而是给他看100张猫的图片。',t:'通过算法从数据中自动学习模式的计算方法。分监督学习、无监督学习、强化学习。核心是构建映射函数f(x)->y，通过优化损失函数逼近真实分布。',r:['深度学习','监督学习','特征工程']},
+  {n:'深度学习 Deep Learning',p:'机器学习的进阶版，用很多层神经网络像千层饼堆叠，每一层提取更抽象的特征——从像素到边缘到眼睛到猫脸。',t:'基于多层人工神经网络的ML子集。通过反向传播和梯度下降端到端训练。关键架构：CNN（图像）、RNN/Transformer（序列）、GAN（生成）。',r:['神经网络','反向传播','CNN','Transformer']},
+  {n:'神经网络 Neural Network',p:'模仿人脑神经元连接方式的计算模型。每个神经元接收输入做简单计算，输出给下一层——大量简单计算组合出强大智能。',t:'由多层节点和加权连接构成的计算图。每层做线性变换Wx+b经激活函数（ReLU/GELU）非线性映射。深层网络通过残差连接和层归一化稳定训练。',r:['深度学习','激活函数','反向传播']},
+  {n:'大语言模型 LLM',p:'一个读了整个互联网的超级读书人。通过预测下一个词来学习语言规律，最终能对话、写作、编程、翻译，无所不能。',t:'基于Transformer Decoder的自回归语言模型（>10B参数）。通过Next-Token Prediction预训练，经SFT和RLHF对齐。涌现上下文学习、思维链推理等能力。',r:['Transformer','预训练','Scaling Law','RLHF']},
+  {n:'Transformer架构',p:'2017年的革命性模型结构，核心是注意力机制——处理每个词时都能看到整句话所有其他词，理解上下文关系。',t:'基于自注意力的编码器-解码器架构。公式：Attention(Q,K,V)=softmax(QK^T/sqrt(dk))V。多头注意力并行捕获不同子空间特征。完全并行化训练，替代RNN成为NLP基础设施。',r:['自注意力','位置编码','BERT','GPT']},
+  {n:'多模态 Multimodal',p:'AI同时理解文字、图片、声音、视频——就像人类用眼睛+耳朵+大脑一起感知世界，而不是只用一种感官。',t:'统一建模多种数据模态的AI架构。视觉-语言模型通过视觉编码器+LLM桥接实现图文理解。早期融合（训练时统一编码）比晚期融合性能更优。代表：GPT-4V、Gemini。',r:['VLM','CLIP','跨模态对齐']},
+  {n:'RAG 检索增强生成',p:'给大模型配一个实时查阅资料的能力。回答问题前先去知识库翻找相关资料，用找到的内容来回答，减少胡编乱造。',t:'结合信息检索与文本生成的混合架构。流程：Query->向量化->向量库检索Top-K->拼接进Prompt->LLM生成。核心组件：Embedding模型、向量数据库、分块策略。',r:['向量数据库','Embedding','幻觉缓解']},
+  {n:'Prompt Engineering',p:'学会怎么跟AI说话才能得到好答案。就像问不同的问题得到不同的答案——写好提示词是一门技巧。',t:'设计和优化输入提示以引导LLM产出目标输出的方法论。核心技术：Few-shot、Chain-of-Thought、Tree-of-Thoughts、ReAct。是当前人机交互的核心接口范式。',r:['Few-shot','CoT思维链','ReAct']},
+  {n:'微调 Fine-tuning',p:'在大模型基础上，用特定领域数据再教一教，让它更擅长某个专业领域，比如医疗问诊、法律咨询。',t:'在预训练模型上用领域数据做二次训练。全量微调更新所有参数；高效微调（LoRA/QLoRA）仅更新少量低秩适配器参数。SFT后通常配合RLHF对齐。',r:['LoRA','SFT','迁移学习']},
+  {n:'AI Agent 智能体',p:'一个能自己动手干活的AI。不只是聊天，它能自主规划步骤、调用工具、执行任务——就像雇了一个会思考的虚拟助理。',t:'具备自主感知、规划、决策、执行能力的AI系统。LLM作为大脑推理规划，通过Function Call调用外部工具。高级Agent具备记忆模块、反思机制和多步推理。MCP/A2A协议正在标准化。',r:['Agentic Workflow','Tool Use','MCP','Multi-Agent']},
+  {n:'世界模型 World Model',p:'AI不再是文字接龙高手，而是开始理解真实世界规律——知道杯子掉下去会碎、足球踢出去会抛物线飞行。',t:'学习物理世界底层规律的生成式模型。核心范式从Next-Token Prediction转向Next-State Prediction（NSP），学习时空连续性与因果逻辑。应用：自动驾驶仿真、机器人训练、视频生成。',r:['NSP','具身智能','Physical AI','Sora']},
+  {n:'具身智能 Embodied AI',p:'给AI一个身体——让它在真实世界中感知、移动、操作物体。就像给一个聪明的大脑装上机器人的身体。',t:'具备物理实体的AI系统，将感知、认知与运动控制深度耦合。技术栈：多模态感知+世界模型+运动规划与控制。2026年人形机器人进入真实生产场景，从Demo转向规模化落地。',r:['世界模型','Physical AI','人形机器人']},
+  {n:'Physical AI 物理AI',p:'AI的下一个形态：不仅理解语言，更理解物理世界。它知道一个物体有多重、摸起来什么感觉、移动它需要多少力。',t:'NVIDIA提出的概念，指能理解物理世界并与之交互的AI系统。需要三项核心能力：世界模型、具身智能、高精度物理仿真引擎（Omniverse/Isaac Sim）。',r:['世界模型','具身智能','Omniverse']},
+  {n:'Agentic AI 智能体化AI',p:'比普通AI Agent更进一步——不仅能完成你交代的任务，还能主动发现问题、设定目标、协调多个Agent协作完成复杂项目。',t:'下一代AI范式，从被动响应转向主动代理。核心特征：目标驱动、自主规划、工具编排、多Agent协同。Agentic Workflow包含Plan->Execute->Reflect->Iterate闭环。',r:['AI Agent','Multi-Agent','MCP','A2A']}
+];
+
+// ============================================================
+//  交互函数
+// ============================================================
+
+// Date
+(function(){
+  var n=new Date();
+  var d=['日','一','二','三','四','五','六'];
+  document.getElementById('todayDate').textContent=n.getFullYear()+'年'+(n.getMonth()+1)+'月'+n.getDate()+'日 星期'+d[n.getDay()];
+})();
+
+// Page Switch
+function switchPage(name, btn){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
+  document.getElementById('page-'+name).classList.add('active');
+  btn.classList.add('active');
+}
+
+// Toast
+function showToast(m){
+  var t=document.getElementById('toast');
+  t.textContent=m; t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show');},1800);
+}
+
+// Build Inspiration Cards
+function buildInspCards(){
+  var grid=document.getElementById('inspGrid');
+  inspData.forEach(function(item){
+    var card=document.createElement('div');
+    card.className='insp-card';
+    card.setAttribute('data-cat',item.cat);
+    card.setAttribute('data-id',item.id);
+    card.innerHTML=
+      '<button class="fav-btn" onclick="toggleFav(\''+item.id+'\',this)">\u2661</button>'+
+      '<div class="insp-card-body">'+
+        '<div class="category">'+item.icon+' '+item.cat+'</div>'+
+        '<h4>'+item.title+'</h4>'+
+        '<div class="desc">'+item.desc+'</div>'+
+        '<div class="tool-row">'+item.tools.map(function(t){return '<span class="tool-tag">'+t+'</span>';}).join('')+'</div>'+
+      '</div>'+
+      '<div class="level-tabs">'+
+        '<button class="level-tab active" onclick="switchLevel(this,\''+item.id+'-l1\')">\u2728 \u521d\u7ea7</button>'+
+        '<button class="level-tab lv2" onclick="switchLevel(this,\''+item.id+'-l2\')">\ud83c\udf1f \u8fdb\u9636</button>'+
+        '<button class="level-tab lv3" onclick="switchLevel(this,\''+item.id+'-l3\')">\ud83d\udc8e \u9ad8\u7ea7</button>'+
+      '</div>'+
+      '<div class="prompt-panel active" id="'+item.id+'-l1">'+
+        '<div class="prompt-label"><span class="dot dot-beginner"></span>'+item.l1.label+'</div>'+
+        '<div class="prompt-box"><button class="copy-btn" onclick="copyPromptText(this,\''+item.id+'\',1)">\u590d\u5236</button>'+escapeHtml(item.l1.prompt)+'</div>'+
+      '</div>'+
+      '<div class="prompt-panel" id="'+item.id+'-l2">'+
+        '<div class="prompt-label"><span class="dot dot-intermediate"></span>'+item.l2.label+'</div>'+
+        '<div class="prompt-box"><button class="copy-btn" onclick="copyPromptText(this,\''+item.id+'\',2)">\u590d\u5236</button>'+escapeHtml(item.l2.prompt)+'</div>'+
+      '</div>'+
+      '<div class="prompt-panel" id="'+item.id+'-l3">'+
+        '<div class="prompt-label"><span class="dot dot-advanced"></span>'+item.l3.label+'</div>'+
+        '<div class="prompt-box"><button class="copy-btn" onclick="copyPromptText(this,\''+item.id+'\',3)">\u590d\u5236</button>'+escapeHtml(item.l3.prompt)+'</div>'+
+      '</div>';
+    grid.appendChild(card);
+  });
+}
+
+// Escape HTML to prevent XSS in prompt text
+function escapeHtml(text){
+  var div=document.createElement('div');
+  div.textContent=text;
+  return div.innerHTML;
+}
+
+// Copy Prompt (data-driven)
+function copyPromptText(btn, id, level){
+  var item=inspData.find(function(i){return i.id===id;});
+  if(!item) return;
+  var prompt=item['l'+level].prompt;
+  navigator.clipboard.writeText(prompt).then(function(){
+    btn.textContent='\u5df2\u590d\u5236!';
+    showToast('Prompt \u5df2\u590d\u5236\u5230\u526a\u8d34\u677f');
+    setTimeout(function(){btn.textContent='\u590d\u5236';},1500);
+  });
+}
+
+// Level Switch inside card
+function switchLevel(btn, panelId){
+  var card=btn.closest('.insp-card');
+  card.querySelectorAll('.level-tab').forEach(function(t){t.classList.remove('active');});
+  card.querySelectorAll('.prompt-panel').forEach(function(p){p.classList.remove('active');});
+  btn.classList.add('active');
+  document.getElementById(panelId).classList.add('active');
+}
+
+// Favorites
+function getFavs(){ try{return JSON.parse(localStorage.getItem('ai_daily_favs')||'[]');}catch(e){return[];} }
+function saveFavs(f){ localStorage.setItem('ai_daily_favs',JSON.stringify(f)); }
+function toggleFav(id,btn){
+  var f=getFavs();
+  if(f.includes(id)){ f=f.filter(function(x){return x!==id;}); btn.textContent='\u2661'; btn.classList.remove('faved'); showToast('\u5df2\u53d6\u6d88\u6536\u85cf'); }
+  else{ f.push(id); btn.textContent='\u2665'; btn.classList.add('faved'); showToast('\u5df2\u6536\u85cf'); }
+  saveFavs(f);
+}
+function restoreFavs(){
+  var f=getFavs();
+  document.querySelectorAll('.fav-btn').forEach(function(b){
+    var c=b.closest('.insp-card');
+    if(c&&f.includes(c.dataset.id)){ b.textContent='\u2665'; b.classList.add('faved'); }
+  });
+}
+
+// Filter: Inspiration
+function filterInsp(cat,btn){
+  document.querySelectorAll('#inspGrid .insp-card').forEach(function(c){
+    c.style.display=(cat==='all'||c.dataset.cat===cat)?'':'none';
+  });
+  document.querySelectorAll('#page-inspiration .filter-pill').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+}
+
+// Build News Cards
+function buildNews(){
+  var grid=document.getElementById('newsGrid');
+  newsData.forEach(function(n,i){
+    var audLabel=n.audience==='beginner'?'\u2728 \u5c0f\u767d':n.audience==='expert'?'\ud83d\ude80 \u5927\u4f6c':'\ud83c\udf10 \u6240\u6709\u4eba';
+    var audClass=n.audience==='beginner'?'badge-beginner':n.audience==='expert'?'badge-expert':'badge-all';
+    var card=document.createElement('div');
+    card.className='news-card';
+    card.setAttribute('data-cat',n.category);
+    card.innerHTML=
+      '<div class="news-header"><h4>'+n.title+'</h4><span class="news-badge '+audClass+'">'+audLabel+'</span></div>'+
+      '<div class="news-summary">'+n.summary+'</div>'+
+      '<div class="news-meta"><span>\ud83d\udcc5 '+n.date+'</span><span class="news-tag">'+n.category+'</span><span>\ud83d\udcf0 '+n.source+'</span></div>';
+    card.onclick=function(){ openModal(i); };
+    grid.appendChild(card);
+  });
+}
+
+// News Modal
+function openModal(i){
+  var n=newsData[i];
+  document.getElementById('modalTitle').textContent=n.title;
+  document.getElementById('modalMeta').innerHTML='<span>\ud83d\udcc5 '+n.date+'</span><span>\ud83c\udff7\ufe0f '+n.category+'</span><span>\ud83d\udcf0 '+n.source+'</span>';
+  document.getElementById('modalBody').innerHTML=n.detail.replace(/\n/g,'<br>');
+  document.getElementById('modalLink').href=n.sourceUrl;
+  document.getElementById('newsModal').classList.add('show');
+}
+function closeModal(){ document.getElementById('newsModal').classList.remove('show'); }
+document.getElementById('newsModal').addEventListener('click',function(e){ if(e.target===this) closeModal(); });
+document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeModal(); });
+
+// Filter: News
+function filterNews(cat,btn){
+  document.querySelectorAll('#newsGrid .news-card').forEach(function(c){
+    c.style.display=(cat==='all'||c.dataset.cat===cat)?'':'none';
+  });
+  document.querySelectorAll('#page-news .filter-pill').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+}
+
+// Build Timeline
+function buildTimeline(){
+  var list=document.getElementById('timelineList');
+  timelineData.forEach(function(item){
+    var div=document.createElement('div');
+    div.className='timeline-item-c';
+    div.setAttribute('data-search',item.t+item.e+item.tech.join(' '));
+    div.innerHTML=
+      '<div class="timeline-year">'+item.y+'</div>'+
+      '<div class="timeline-content">'+
+        '<h5>'+item.t+'</h5>'+
+        '<div class="tc-explain">'+item.e+'</div>'+
+        '<div class="timeline-tech">'+item.tech.map(function(x){return '<span>'+x+'</span>';}).join('')+'</div>'+
+      '</div>';
+    list.appendChild(div);
+  });
+}
+
+function filterTimeline(q){
+  var ql=q.toLowerCase();
+  document.querySelectorAll('#timelineList .timeline-item-c').forEach(function(item){
+    item.style.display=ql===''||item.getAttribute('data-search').toLowerCase().includes(ql)?'':'none';
+  });
+}
+
+// Build Dictionary
+function buildDict(){
+  var list=document.getElementById('dictList');
+  dictData.forEach(function(item){
+    var div=document.createElement('div');
+    div.className='dict-item-c';
+    div.setAttribute('data-search',item.n+item.p+item.t+item.r.join(' '));
+    div.innerHTML=
+      '<h5>'+item.n+'</h5>'+
+      '<div class="dc-plain">\u2728 '+item.p+'</div>'+
+      '<div class="dc-tech">\ud83d\ude80 '+item.t+'</div>'+
+      '<div class="dc-related">'+item.r.map(function(x){return '<span>'+x+'</span>';}).join('')+'</div>';
+    div.onclick=function(){ this.classList.toggle('expanded'); };
+    list.appendChild(div);
+  });
+}
+
+function filterDict(q){
+  var ql=q.toLowerCase();
+  document.querySelectorAll('#dictList .dict-item-c').forEach(function(item){
+    item.style.display=ql===''||item.getAttribute('data-search').toLowerCase().includes(ql)?'':'none';
+  });
+}
+
+// ============================================================
+//  初始化
+// ============================================================
+buildInspCards();
+restoreFavs();
+buildNews();
+buildTimeline();
+buildDict();
+
+</script>
+</body>
+</html>
