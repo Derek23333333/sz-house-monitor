@@ -1,0 +1,6087 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>今天吃啥？</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;background:#FFF8F0;color:#4A3C28;font-size:16px;line-height:1.5;max-width:430px;margin:0 auto;min-height:100vh;position:relative;overflow-x:hidden;padding-bottom:100px}
+:root{--orange:#FF6B35;--orange-light:#FF8C5A;--cream:#FFF8F0;--coral:#FF8B94;--coral-light:#FFD1D4;--brown:#4A3C28;--brown-light:#7A6B5A;--white:#FFFFFF;--shadow:0 2px 12px rgba(255,107,53,.15);--radius:14px;--radius-sm:10px}
+
+/* Topbar */
+.topbar{position:sticky;top:0;z-index:100;background:linear-gradient(135deg,var(--orange) 0%,var(--coral) 100%);padding:14px 16px 10px;color:#fff;box-shadow:0 2px 10px rgba(255,107,53,.3)}
+.topbar-row{display:flex;align-items:center;justify-content:space-between}
+.topbar h1{font-size:22px;font-weight:800;letter-spacing:1px}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.topbar-city{font-size:14px;opacity:.9}
+.record-btn{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:50%;width:40px;height:40px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s;flex-shrink:0}
+.record-btn:active{background:rgba(255,255,255,.35)}
+.topbar-update{font-size:11px;opacity:.8;margin-top:4px;display:flex;align-items:center;gap:8px}
+.refresh-btn{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:20px;padding:4px 12px;font-size:12px;cursor:pointer;min-height:28px}
+.refresh-btn:active{background:rgba(255,255,255,.35)}
+
+/* Filter */
+.filter-section{padding:12px 16px 8px;background:var(--white);border-bottom:1px solid #F5EBE0}
+.filter-label{font-size:12px;color:var(--brown-light);margin-bottom:6px;font-weight:600}
+.exclude-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.chip{padding:7px 14px;border-radius:20px;font-size:14px;border:2px solid #F0E0D0;background:var(--cream);color:var(--brown);cursor:pointer;min-height:36px;display:flex;align-items:center;gap:2px;transition:all .2s;user-select:none}
+.chip.exclude-active{background:#FFE0E0;color:#C0392B;border-color:var(--coral)}
+.mode-toggle{display:flex;gap:8px;margin-top:4px}
+.mode-btn{flex:1;padding:9px;border-radius:var(--radius-sm);font-size:14px;font-weight:600;border:2px solid #F0E0D0;background:var(--cream);color:var(--brown-light);cursor:pointer;min-height:40px;transition:all .2s;text-align:center}
+.mode-btn.active{background:var(--orange);color:#fff;border-color:var(--orange)}
+
+/* Result */
+.result-area{padding:16px;min-height:300px}
+.result-placeholder{text-align:center;padding:60px 20px;color:var(--brown-light)}
+.result-placeholder .emoji{font-size:56px;display:block;margin-bottom:16px}
+.result-placeholder p{font-size:16px;margin-bottom:20px}
+.result-card{background:var(--white);border-radius:var(--radius);padding:20px 18px;box-shadow:var(--shadow);margin-bottom:16px;animation:cardIn .3s ease}
+@keyframes cardIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.card-name{font-size:20px;font-weight:700;color:var(--brown);flex:1;line-height:1.3}
+.card-source{font-size:11px;color:var(--brown-light);background:#FFF0E5;border-radius:8px;padding:3px 8px;white-space:nowrap;margin-left:8px}
+.card-desc{font-size:14px;color:var(--brown-light);margin-bottom:12px;line-height:1.5}
+.card-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.tag{font-size:12px;padding:3px 10px;border-radius:12px;font-weight:500}
+.tag-cuisine{background:#FFE8D6;color:var(--orange)}
+.tag-health{background:#E8F5E9;color:#2E7D32}
+.tag-health.orange{background:#FFF3E0;color:#E65100}
+.tag-health.blue{background:#E3F2FD;color:#1565C0}
+.tag-health.yellow{background:#FFFDE7;color:#F57F17}
+.tag-price{background:#FFF0F5;color:#C2185B}
+.tag-type{background:#F3E5F5;color:#7B1FA2}
+.card-extra{font-size:13px;color:var(--brown-light);border-top:1px dashed #F0E0D0;padding-top:10px;margin-top:4px}
+.card-extra-row{display:flex;gap:12px;flex-wrap:wrap}
+.card-extra-item{display:flex;align-items:center;gap:3px}
+.card-recipe-link{display:inline-block;color:var(--orange);font-size:13px;text-decoration:none;margin-top:6px}
+.triple-result{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;-webkit-overflow-scrolling:touch}
+.triple-result .result-card{min-width:240px;flex-shrink:0}
+.triple-result::-webkit-scrollbar{display:none}
+
+/* Buttons - BIG roll button */
+.action-row{display:flex;gap:10px;margin-top:10px}
+.btn{flex:1;padding:14px;border-radius:var(--radius-sm);font-size:16px;font-weight:600;border:none;cursor:pointer;min-height:52px;transition:all .15s;text-align:center}
+.btn-roll{background:linear-gradient(135deg,var(--orange),var(--coral));color:#fff;box-shadow:0 3px 12px rgba(255,107,53,.35);font-size:18px;font-weight:800;min-height:56px;width:100%;flex:none}
+.btn-roll:active{transform:scale(.97)}
+.btn-ok{background:#E8F5E9;color:#2E7D32;border:1.5px solid #A5D6A7}
+.btn-fav{background:#FFF0F5;color:#C2185B;border:1.5px solid #F8BBD0}
+.btn-no{background:#FAFAFA;color:#757575;border:1.5px solid #E0E0E0}
+.btn:active{transform:scale(.97)}
+
+/* Bottom Tab */
+.bottom-tab{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;display:flex;background:var(--white);border-top:1px solid #F5EBE0;padding:8px 0 24px;z-index:100;box-shadow:0 -2px 10px rgba(0,0,0,.06)}
+.tab-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:6px 0;min-height:52px;justify-content:center;color:var(--brown-light);transition:color .2s}
+.tab-item.active{color:var(--orange)}
+.tab-item .icon{font-size:24px}
+.tab-item .label{font-size:11px;font-weight:600}
+
+/* Record Overlay */
+.record-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:var(--cream);z-index:9999;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.record-overlay.show{display:block !important}
+.record-header{position:sticky;top:0;background:linear-gradient(135deg,var(--orange) 0%,var(--coral) 100%);padding:14px 16px;color:#fff;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 10px rgba(255,107,53,.3);z-index:10}
+.record-header h2{font-size:20px;font-weight:800}
+.record-close{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:50%;width:36px;height:36px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.record-content{padding:16px}
+.record-section{margin-bottom:24px}
+.record-section h3{font-size:15px;color:var(--brown);margin-bottom:10px;display:flex;align-items:center;gap:4px}
+.record-list{display:flex;flex-direction:column;gap:6px}
+.record-item{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--white);border-radius:var(--radius-sm);font-size:14px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.record-item .name{font-weight:600;color:var(--brown)}
+.record-item .meta{font-size:11px;color:var(--brown-light)}
+.record-item .del-btn{flex-shrink:0;width:32px;height:32px;border:none;background:rgba(255,107,53,.1);color:var(--orange);border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-left:8px;transition:background .2s}
+.record-item .del-btn:active{background:rgba(255,107,53,.25)}
+.record-empty{font-size:13px;color:#bbb;padding:12px;text-align:center}
+
+/* Toast */
+.toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(74,60,40,.92);color:#fff;padding:16px 28px;border-radius:var(--radius);font-size:16px;font-weight:600;z-index:999;opacity:0;pointer-events:none;transition:opacity .3s;max-width:320px;text-align:center}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+
+<!-- Topbar -->
+<div class="topbar">
+  <div class="topbar-row">
+    <h1>今天吃啥？</h1>
+    <div class="topbar-right">
+      <span class="topbar-city">📍深圳</span>
+      <button class="record-btn" onclick="openRecord()">📋</button>
+    </div>
+  </div>
+  <div class="topbar-update">
+    <span id="updateTime">数据加载中...</span>
+    <button class="refresh-btn" onclick="refreshData()">🔄 刷新</button>
+  </div>
+</div>
+
+<!-- Filter -->
+<div class="filter-section">
+  <div class="filter-label">🚫 排除菜系（点一下排除）</div>
+  <div class="exclude-chips" id="excludeChips">
+    <div class="chip" data-cuisine="川湘菜" onclick="toggleExclude(this)">🌶️ 川湘菜</div>
+    <div class="chip" data-cuisine="粤菜" onclick="toggleExclude(this)">🥢 粤菜</div>
+    <div class="chip" data-cuisine="日料" onclick="toggleExclude(this)">🍣 日料</div>
+    <div class="chip" data-cuisine="烤肉" onclick="toggleExclude(this)">🥩 韩餐烤肉</div>
+    <div class="chip" data-cuisine="东南亚" onclick="toggleExclude(this)">🌿 东南亚</div>
+    <div class="chip" data-cuisine="西餐" onclick="toggleExclude(this)">🍕 西餐</div>
+    <div class="chip" data-cuisine="火锅" onclick="toggleExclude(this)">🫕 火锅</div>
+  </div>
+  <div class="filter-label">📊 模式</div>
+  <div class="mode-toggle">
+    <div class="mode-btn active" data-mode="single" onclick="selectMode(this)">🎲 单选模式</div>
+    <div class="mode-btn" data-mode="triple" onclick="selectMode(this)">🎯 三选一模式</div>
+  </div>
+</div>
+
+<!-- Result -->
+<div class="result-area" id="resultArea">
+  <div class="result-placeholder" id="placeholder">
+    <span class="emoji">🤔</span>
+    <p>选好分类，点下方按钮开始！</p>
+    <button class="btn btn-roll" onclick="roll()">🎲 来一单</button>
+  </div>
+</div>
+
+<!-- Bottom Tab -->
+<div class="bottom-tab">
+  <div class="tab-item active" data-tab="takeout" onclick="switchTab('takeout')">
+    <span class="icon">🍜</span><span class="label">点外卖</span>
+  </div>
+  <div class="tab-item" data-tab="dineout" onclick="switchTab('dineout')">
+    <span class="icon">🍽️</span><span class="label">出去吃大餐</span>
+  </div>
+  <div class="tab-item" data-tab="cook" onclick="switchTab('cook')">
+    <span class="icon">👩‍🍳</span><span class="label">自己做</span>
+  </div>
+</div>
+
+<!-- Record Overlay -->
+<div class="record-overlay" id="recordOverlay" style="display:none">
+  <div class="record-header">
+    <h2>📋 我的记录</h2>
+    <button class="record-close" onclick="closeRecord()">✕</button>
+  </div>
+  <div class="record-content">
+    <div class="record-section">
+      <h3>📜 最近选择（最近5条）</h3>
+      <div class="record-list" id="historyList"></div>
+    </div>
+    <div class="record-section">
+      <h3>❤️ 我的收藏</h3>
+      <div class="record-list" id="favList"></div>
+    </div>
+    <div class="record-section">
+      <h3>🚫 不感兴趣</h3>
+      <div class="record-list" id="dislikeList"></div>
+    </div>
+    <div style="height:60px"></div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+var foodData = {
+  "generated_at": "2026-07-05 00:16:10",
+  "city": "深圳",
+  "total": 291,
+  "stats": {
+    "new": 0,
+    "updated": 1,
+    "kept": 195,
+    "total_old": 312,
+    "total_new": 312
+  },
+  "items": [
+    {
+      "id": "dp_0001",
+      "name": "野妹火锅",
+      "description": "（综合评分 95 分） 野妹火锅是深圳川渝火锅的代表 … 2026深圳火锅消费参考:热门川渝火锅门店",
+      "cuisine": "火锅",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0002",
+      "name": "小龙坎",
+      "description": "1 分 怂火锅（深业上城店）：89 分 老火锅（深圳总店）：87 分 四、热门火锅品牌评分详情 （一",
+      "cuisine": "火锅",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0003",
+      "name": "怂火锅",
+      "description": "分 朱光玉火锅（深圳总店）：91 分 （深业上城店）：89 分 小龙坎老火锅（深圳总店）：87 分",
+      "cuisine": "火锅",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0004",
+      "name": "小龙坎老火锅",
+      "description": "1 分 怂火锅（深业上城店）：89 分 （深圳总店）：87 分 四、热门火锅品牌评分详情 （一）野妹",
+      "cuisine": "火锅",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0005",
+      "name": "冯校长老火锅",
+      "description": "（深圳总店）：93 分 朱光玉火锅（深圳总店）：91 分 怂火锅（深业上城店）：89 分 小龙坎老火",
+      "cuisine": "火锅",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0006",
+      "name": "朱光玉火锅",
+      "description": "（深圳总店）：91 分 怂火锅（深业上城店）：89 分 小龙坎老火锅（深圳总店）：87 分 四、热门",
+      "cuisine": "火锅",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0007",
+      "name": "汉拿山",
+      "description": "深圳烤肉知名品牌",
+      "cuisine": "烤肉",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0008",
+      "name": "姜虎东",
+      "description": "深圳烤肉知名品牌",
+      "cuisine": "烤肉",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0009",
+      "name": "权金城",
+      "description": "深圳烤肉知名品牌",
+      "cuisine": "烤肉",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0010",
+      "name": "赤坂亭",
+      "description": "深圳烤肉知名品牌",
+      "cuisine": "烤肉",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0011",
+      "name": "萨莉亚",
+      "description": "深圳烤肉知名品牌",
+      "cuisine": "烤肉",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0012",
+      "name": "烤肉竞技场",
+      "description": "深圳烤肉知名品牌",
+      "cuisine": "烤肉",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0013",
+      "name": "水原城",
+      "description": "深圳烤肉知名品牌",
+      "cuisine": "烤肉",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0014",
+      "name": "姜虎东白丁",
+      "description": "深圳烤肉知名品牌",
+      "cuisine": "烤肉",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0015",
+      "name": "犁寺烤肉",
+      "description": "深圳烤肉知名品牌",
+      "cuisine": "烤肉",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0016",
+      "name": "客语",
+      "description": "深圳粤菜知名品牌",
+      "cuisine": "粤菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0017",
+      "name": "广州酒家",
+      "description": "深圳粤菜知名品牌",
+      "cuisine": "粤菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0018",
+      "name": "陶陶居",
+      "description": "深圳粤菜知名品牌",
+      "cuisine": "粤菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0019",
+      "name": "炳胜",
+      "description": "深圳粤菜知名品牌",
+      "cuisine": "粤菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0020",
+      "name": "顺德人家",
+      "description": "深圳粤菜知名品牌",
+      "cuisine": "粤菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0021",
+      "name": "利苑",
+      "description": "深圳粤菜知名品牌",
+      "cuisine": "粤菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0022",
+      "name": "翠华",
+      "description": "深圳粤菜知名品牌",
+      "cuisine": "粤菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0023",
+      "name": "大家乐",
+      "description": "深圳粤菜知名品牌",
+      "cuisine": "粤菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0024",
+      "name": "大快活",
+      "description": "深圳粤菜知名品牌",
+      "cuisine": "粤菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0025",
+      "name": "美心",
+      "description": "深圳粤菜知名品牌",
+      "cuisine": "粤菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0026",
+      "name": "稻香",
+      "description": "深圳粤菜知名品牌",
+      "cuisine": "粤菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0027",
+      "name": "唐宫",
+      "description": "深圳粤菜知名品牌",
+      "cuisine": "粤菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0028",
+      "name": "海港城",
+      "description": "深圳粤菜知名品牌",
+      "cuisine": "粤菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0029",
+      "name": "利宝阁",
+      "description": "深圳粤菜知名品牌",
+      "cuisine": "粤菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0030",
+      "name": "佳宁娜",
+      "description": "深圳粤菜知名品牌",
+      "cuisine": "粤菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0031",
+      "name": "丹桂轩",
+      "description": "深圳粤菜知名品牌",
+      "cuisine": "粤菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0032",
+      "name": "元气寿司",
+      "description": "深圳日料知名品牌",
+      "cuisine": "日料",
+      "health_tag": "🟡适中",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0033",
+      "name": "藏寿司",
+      "description": "深圳日料知名品牌",
+      "cuisine": "日料",
+      "health_tag": "🟡适中",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0034",
+      "name": "寿司郎",
+      "description": "深圳日料知名品牌",
+      "cuisine": "日料",
+      "health_tag": "🟡适中",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0035",
+      "name": "吉野家",
+      "description": "深圳日料知名品牌",
+      "cuisine": "日料",
+      "health_tag": "🟡适中",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0036",
+      "name": "松屋",
+      "description": "深圳日料知名品牌",
+      "cuisine": "日料",
+      "health_tag": "🟡适中",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0037",
+      "name": "河源先生",
+      "description": "深圳日料知名品牌",
+      "cuisine": "日料",
+      "health_tag": "🟡适中",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0038",
+      "name": "美浓吉",
+      "description": "深圳日料知名品牌",
+      "cuisine": "日料",
+      "health_tag": "🟡适中",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0039",
+      "name": "隐泉",
+      "description": "深圳日料知名品牌",
+      "cuisine": "日料",
+      "health_tag": "🟡适中",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0040",
+      "name": "江户前",
+      "description": "深圳日料知名品牌",
+      "cuisine": "日料",
+      "health_tag": "🟡适中",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0041",
+      "name": "大渔",
+      "description": "深圳日料知名品牌",
+      "cuisine": "日料",
+      "health_tag": "🟡适中",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0042",
+      "name": "摩打食堂",
+      "description": "深圳日料知名品牌",
+      "cuisine": "日料",
+      "health_tag": "🟡适中",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0043",
+      "name": "博多一幸舍",
+      "description": "深圳日料知名品牌",
+      "cuisine": "日料",
+      "health_tag": "🟡适中",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0044",
+      "name": "蓝蛙",
+      "description": "深圳西餐知名品牌",
+      "cuisine": "西餐",
+      "health_tag": "🟡适中",
+      "price_level": "💰💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0045",
+      "name": "Wagas",
+      "description": "深圳西餐知名品牌",
+      "cuisine": "西餐",
+      "health_tag": "🟡适中",
+      "price_level": "💰💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0046",
+      "name": "元素西餐厅",
+      "description": "深圳西餐知名品牌",
+      "cuisine": "西餐",
+      "health_tag": "🟡适中",
+      "price_level": "💰💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0047",
+      "name": "帕萨卡",
+      "description": "深圳西餐知名品牌",
+      "cuisine": "西餐",
+      "health_tag": "🟡适中",
+      "price_level": "💰💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0048",
+      "name": "达美乐",
+      "description": "深圳西餐知名品牌",
+      "cuisine": "西餐",
+      "health_tag": "🟡适中",
+      "price_level": "💰💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0049",
+      "name": "棒约翰",
+      "description": "深圳西餐知名品牌",
+      "cuisine": "西餐",
+      "health_tag": "🟡适中",
+      "price_level": "💰💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0050",
+      "name": "豪亨氏",
+      "description": "深圳西餐知名品牌",
+      "cuisine": "西餐",
+      "health_tag": "🟡适中",
+      "price_level": "💰💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0051",
+      "name": "星期五",
+      "description": "深圳西餐知名品牌",
+      "cuisine": "西餐",
+      "health_tag": "🟡适中",
+      "price_level": "💰💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0052",
+      "name": "硬石",
+      "description": "深圳西餐知名品牌",
+      "cuisine": "西餐",
+      "health_tag": "🟡适中",
+      "price_level": "💰💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0053",
+      "name": "蓝樽",
+      "description": "深圳西餐知名品牌",
+      "cuisine": "西餐",
+      "health_tag": "🟡适中",
+      "price_level": "💰💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0054",
+      "name": "Morton's",
+      "description": "深圳西餐知名品牌",
+      "cuisine": "西餐",
+      "health_tag": "🟡适中",
+      "price_level": "💰💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0055",
+      "name": "Ruth's Chris",
+      "description": "深圳西餐知名品牌",
+      "cuisine": "西餐",
+      "health_tag": "🟡适中",
+      "price_level": "💰💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0056",
+      "name": "嘉旺",
+      "description": "深圳快餐知名品牌",
+      "cuisine": "快餐",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "外卖",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0057",
+      "name": "麦当劳",
+      "description": "深圳快餐知名品牌",
+      "cuisine": "快餐",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "外卖",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0058",
+      "name": "肯德基",
+      "description": "深圳快餐知名品牌",
+      "cuisine": "快餐",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "外卖",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0059",
+      "name": "汉堡王",
+      "description": "深圳快餐知名品牌",
+      "cuisine": "快餐",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "外卖",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0060",
+      "name": "华莱士",
+      "description": "深圳快餐知名品牌",
+      "cuisine": "快餐",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "外卖",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0061",
+      "name": "德克士",
+      "description": "深圳快餐知名品牌",
+      "cuisine": "快餐",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "外卖",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0062",
+      "name": "老乡鸡",
+      "description": "深圳快餐知名品牌",
+      "cuisine": "快餐",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "外卖",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0063",
+      "name": "乡村基",
+      "description": "深圳快餐知名品牌",
+      "cuisine": "快餐",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "外卖",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0064",
+      "name": "杨国福",
+      "description": "深圳快餐知名品牌",
+      "cuisine": "快餐",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "外卖",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0065",
+      "name": "张亮",
+      "description": "深圳快餐知名品牌",
+      "cuisine": "快餐",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "外卖",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0066",
+      "name": "豚王",
+      "description": "深圳粉面知名品牌",
+      "cuisine": "粉面",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "外卖",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0067",
+      "name": "蔡林记",
+      "description": "深圳粉面知名品牌",
+      "cuisine": "粉面",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "外卖",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0068",
+      "name": "陈克明",
+      "description": "深圳粉面知名品牌",
+      "cuisine": "粉面",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "外卖",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0069",
+      "name": "康师傅",
+      "description": "深圳粉面知名品牌",
+      "cuisine": "粉面",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "外卖",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0070",
+      "name": "拉面说",
+      "description": "深圳粉面知名品牌",
+      "cuisine": "粉面",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "外卖",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0071",
+      "name": "遇见小面",
+      "description": "深圳粉面知名品牌",
+      "cuisine": "粉面",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "外卖",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0072",
+      "name": "天下粉面",
+      "description": "深圳粉面知名品牌",
+      "cuisine": "粉面",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "外卖",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0073",
+      "name": "肥肠粉",
+      "description": "深圳粉面知名品牌",
+      "cuisine": "粉面",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰",
+      "type": "外卖",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0074",
+      "name": "常德牛肉粉",
+      "description": "深圳粉面知名品牌",
+      "cuisine": "粉面",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "外卖",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0075",
+      "name": "美心皇宫",
+      "description": "深圳茶点知名品牌",
+      "cuisine": "茶点",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "外卖",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0076",
+      "name": "翠园",
+      "description": "深圳茶点知名品牌",
+      "cuisine": "茶点",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "外卖",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0077",
+      "name": "龙皇酒家",
+      "description": "深圳茶点知名品牌",
+      "cuisine": "茶点",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "外卖",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0078",
+      "name": "甘牌烧鹅",
+      "description": "深圳烧腊知名品牌",
+      "cuisine": "烧腊",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰",
+      "type": "外卖",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0079",
+      "name": "深井烧鹅",
+      "description": "深圳烧腊知名品牌",
+      "cuisine": "烧腊",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰",
+      "type": "外卖",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0080",
+      "name": "龙津烧腊",
+      "description": "深圳烧腊知名品牌",
+      "cuisine": "烧腊",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰",
+      "type": "外卖",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0081",
+      "name": "金钱豹",
+      "description": "深圳自助知名品牌",
+      "cuisine": "自助",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0082",
+      "name": "亚马逊",
+      "description": "深圳自助知名品牌",
+      "cuisine": "自助",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0083",
+      "name": "大渔铁板烧",
+      "description": "深圳自助知名品牌",
+      "cuisine": "自助",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0084",
+      "name": "上井",
+      "description": "深圳自助知名品牌",
+      "cuisine": "自助",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0085",
+      "name": "威斯汀",
+      "description": "深圳自助知名品牌",
+      "cuisine": "自助",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0086",
+      "name": "香格里拉",
+      "description": "深圳自助知名品牌",
+      "cuisine": "自助",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0087",
+      "name": "洲际酒店",
+      "description": "深圳自助知名品牌",
+      "cuisine": "自助",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0088",
+      "name": "许留山",
+      "description": "深圳糖水知名品牌",
+      "cuisine": "糖水",
+      "health_tag": "🟢轻食",
+      "price_level": "💰",
+      "type": "下午茶",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0089",
+      "name": "满记甜品",
+      "description": "深圳糖水知名品牌",
+      "cuisine": "糖水",
+      "health_tag": "🟢轻食",
+      "price_level": "💰",
+      "type": "下午茶",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0090",
+      "name": "鲜芋仙",
+      "description": "深圳糖水知名品牌",
+      "cuisine": "糖水",
+      "health_tag": "🟢轻食",
+      "price_level": "💰",
+      "type": "下午茶",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0091",
+      "name": "义顺牛奶",
+      "description": "深圳糖水知名品牌",
+      "cuisine": "糖水",
+      "health_tag": "🟢轻食",
+      "price_level": "💰",
+      "type": "下午茶",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0092",
+      "name": "糖水铺",
+      "description": "深圳糖水知名品牌",
+      "cuisine": "糖水",
+      "health_tag": "🟢轻食",
+      "price_level": "💰",
+      "type": "下午茶",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0093",
+      "name": "玫瑰甜品",
+      "description": "深圳糖水知名品牌",
+      "cuisine": "糖水",
+      "health_tag": "🟢轻食",
+      "price_level": "💰",
+      "type": "下午茶",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0094",
+      "name": "双皮奶",
+      "description": "深圳糖水知名品牌",
+      "cuisine": "糖水",
+      "health_tag": "🟢轻食",
+      "price_level": "💰",
+      "type": "下午茶",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0095",
+      "name": "陈添记",
+      "description": "深圳糖水知名品牌",
+      "cuisine": "糖水",
+      "health_tag": "🟢轻食",
+      "price_level": "💰",
+      "type": "下午茶",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0096",
+      "name": "喜茶",
+      "description": "深圳奶茶知名品牌",
+      "cuisine": "奶茶",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰",
+      "type": "下午茶",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0097",
+      "name": "茶颜悦色",
+      "description": "深圳奶茶知名品牌",
+      "cuisine": "奶茶",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰",
+      "type": "下午茶",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0098",
+      "name": "CoCo",
+      "description": "深圳奶茶知名品牌",
+      "cuisine": "奶茶",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰",
+      "type": "下午茶",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0099",
+      "name": "蜜雪冰城",
+      "description": "深圳奶茶知名品牌",
+      "cuisine": "奶茶",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰",
+      "type": "下午茶",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0100",
+      "name": "茶百道",
+      "description": "深圳奶茶知名品牌",
+      "cuisine": "奶茶",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰",
+      "type": "下午茶",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0101",
+      "name": "书亦烧仙草",
+      "description": "深圳奶茶知名品牌",
+      "cuisine": "奶茶",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰",
+      "type": "下午茶",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0102",
+      "name": "古茗",
+      "description": "深圳奶茶知名品牌",
+      "cuisine": "奶茶",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰",
+      "type": "下午茶",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0103",
+      "name": "益禾堂",
+      "description": "深圳奶茶知名品牌",
+      "cuisine": "奶茶",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰",
+      "type": "下午茶",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0104",
+      "name": "鹿角巷",
+      "description": "深圳奶茶知名品牌",
+      "cuisine": "奶茶",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰",
+      "type": "下午茶",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0105",
+      "name": "台盖",
+      "description": "深圳奶茶知名品牌",
+      "cuisine": "奶茶",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰",
+      "type": "下午茶",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0106",
+      "name": "godiva",
+      "description": "深圳甜品知名品牌",
+      "cuisine": "甜品",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "下午茶",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0107",
+      "name": "哈根达斯",
+      "description": "深圳甜品知名品牌",
+      "cuisine": "甜品",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "下午茶",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0108",
+      "name": "DQ",
+      "description": "深圳甜品知名品牌",
+      "cuisine": "甜品",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "下午茶",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0109",
+      "name": "巴黎贝甜",
+      "description": "深圳甜品知名品牌",
+      "cuisine": "甜品",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "下午茶",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0110",
+      "name": "85度C",
+      "description": "深圳甜品知名品牌",
+      "cuisine": "甜品",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "下午茶",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0111",
+      "name": "元祖",
+      "description": "深圳甜品知名品牌",
+      "cuisine": "甜品",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "下午茶",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0112",
+      "name": "周黑鸭",
+      "description": "深圳卤味知名品牌",
+      "cuisine": "卤味",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰",
+      "type": "外卖",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0113",
+      "name": "绝味",
+      "description": "深圳卤味知名品牌",
+      "cuisine": "卤味",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰",
+      "type": "外卖",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0114",
+      "name": "煌上煌",
+      "description": "深圳卤味知名品牌",
+      "cuisine": "卤味",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰",
+      "type": "外卖",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0115",
+      "name": "久久丫",
+      "description": "深圳卤味知名品牌",
+      "cuisine": "卤味",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰",
+      "type": "外卖",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0116",
+      "name": "廖记棒棒肉",
+      "description": "深圳卤味知名品牌",
+      "cuisine": "卤味",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰",
+      "type": "外卖",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0117",
+      "name": "紫燕百味鸡",
+      "description": "深圳卤味知名品牌",
+      "cuisine": "卤味",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰",
+      "type": "外卖",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0118",
+      "name": "卤江南",
+      "description": "深圳卤味知名品牌",
+      "cuisine": "卤味",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰",
+      "type": "外卖",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0119",
+      "name": "留夫鸭",
+      "description": "深圳卤味知名品牌",
+      "cuisine": "卤味",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰",
+      "type": "外卖",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0120",
+      "name": "费大厨",
+      "description": "深圳川湘菜知名品牌",
+      "cuisine": "川湘菜",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0121",
+      "name": "炊烟小炒黄牛肉",
+      "description": "深圳川湘菜知名品牌",
+      "cuisine": "川湘菜",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0122",
+      "name": "坛宗剁椒鱼头",
+      "description": "深圳川湘菜知名品牌",
+      "cuisine": "川湘菜",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0123",
+      "name": "佬麻雀",
+      "description": "深圳川湘菜知名品牌",
+      "cuisine": "川湘菜",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0124",
+      "name": "芙蓉楼",
+      "description": "深圳川湘菜知名品牌",
+      "cuisine": "川湘菜",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0125",
+      "name": "毛家饭店",
+      "description": "深圳川湘菜知名品牌",
+      "cuisine": "川湘菜",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0126",
+      "name": "玉楼东",
+      "description": "深圳川湘菜知名品牌",
+      "cuisine": "川湘菜",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0127",
+      "name": "冬阴功",
+      "description": "深圳东南亚知名品牌",
+      "cuisine": "东南亚",
+      "health_tag": "🟡适中",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0128",
+      "name": "泰蕉叶",
+      "description": "深圳东南亚知名品牌",
+      "cuisine": "东南亚",
+      "health_tag": "🟡适中",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0129",
+      "name": "越南粉",
+      "description": "深圳东南亚知名品牌",
+      "cuisine": "东南亚",
+      "health_tag": "🟡适中",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0130",
+      "name": "芽庄",
+      "description": "深圳东南亚知名品牌",
+      "cuisine": "东南亚",
+      "health_tag": "🟡适中",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0131",
+      "name": "暹罗",
+      "description": "深圳东南亚知名品牌",
+      "cuisine": "东南亚",
+      "health_tag": "🟡适中",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0132",
+      "name": "Lemongrass",
+      "description": "深圳东南亚知名品牌",
+      "cuisine": "东南亚",
+      "health_tag": "🟡适中",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0133",
+      "name": "泰式厨房",
+      "description": "深圳东南亚知名品牌",
+      "cuisine": "东南亚",
+      "health_tag": "🟡适中",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0134",
+      "name": "帕泰",
+      "description": "深圳东南亚知名品牌",
+      "cuisine": "东南亚",
+      "health_tag": "🟡适中",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "dp_0135",
+      "name": "Sawasdee",
+      "description": "深圳东南亚知名品牌",
+      "cuisine": "东南亚",
+      "health_tag": "🟡适中",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0001",
+      "name": "清爽不腻的广式蒸排骨（可用芋头土豆南瓜）",
+      "description": "排骨、芋头、盐、糖、蚝油等食材制作的家常菜",
+      "cuisine": "粤菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "排骨",
+        "芋头",
+        "盐",
+        "糖",
+        "蚝油",
+        "生抽",
+        "米酒",
+        "胡椒粉",
+        "干陈皮",
+        "葱段"
+      ],
+      "cook_time": "45分钟",
+      "difficulty": "中等",
+      "rating": 8.5,
+      "recipe_url": "https://www.xiachufang.com/recipe/107190969/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0002",
+      "name": "姜葱捞鸡",
+      "description": "手鸡腿、红葱头、姜、蒜、葱等食材制作的家常菜",
+      "cuisine": "粤菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "手鸡腿",
+        "红葱头",
+        "姜",
+        "蒜",
+        "葱",
+        "盐",
+        "生抽",
+        "白糖"
+      ],
+      "cook_time": "45分钟",
+      "difficulty": "中等",
+      "rating": 7.9,
+      "recipe_url": "https://www.xiachufang.com/recipe/106936959/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0003",
+      "name": "30道广东家常菜",
+      "description": "各种各样的时蔬、各种肉蛋等食材制作的家常菜",
+      "cuisine": "粤菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "各种各样的时蔬",
+        "各种肉蛋"
+      ],
+      "cook_time": "45分钟",
+      "difficulty": "简单",
+      "rating": 7.8,
+      "recipe_url": "https://www.xiachufang.com/recipe/106432676/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0004",
+      "name": "广式酸梅鸭",
+      "description": "鸭腿、酸梅酱、姜片、白米醋、蒜片等食材制作的家常菜",
+      "cuisine": "粤菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "鸭腿",
+        "酸梅酱",
+        "姜片",
+        "白米醋",
+        "蒜片",
+        "广东米酒",
+        "冰糖",
+        "酱油"
+      ],
+      "cook_time": "45分钟",
+      "difficulty": "中等",
+      "rating": 8.5,
+      "recipe_url": "https://www.xiachufang.com/recipe/107326893/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0005",
+      "name": "啫啫排骨(经典粤菜)",
+      "description": "排骨、葱姜蒜、洋葱等食材制作的家常菜",
+      "cuisine": "粤菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "排骨",
+        "葱姜蒜",
+        "洋葱"
+      ],
+      "cook_time": "45分钟",
+      "difficulty": "简单",
+      "rating": 8.5,
+      "recipe_url": "https://www.xiachufang.com/recipe/107317215/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0006",
+      "name": "经典粤菜-白灼菜心（超详）",
+      "description": "广东菜心、大蒜、蚝油、生抽、盐等食材制作的家常菜",
+      "cuisine": "粤菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "广东菜心",
+        "大蒜",
+        "蚝油",
+        "生抽",
+        "盐",
+        "食用油"
+      ],
+      "cook_time": "45分钟",
+      "difficulty": "中等",
+      "rating": 8.2,
+      "recipe_url": "https://www.xiachufang.com/recipe/103821457/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0007",
+      "name": "广东的咕噜肉，福建的荔枝肉(菠萝版本)超下饭",
+      "description": "腌肉部分、前腿肉、盐、鸡精、白醋等食材制作的家常菜",
+      "cuisine": "粤菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "腌肉部分",
+        "前腿肉",
+        "盐",
+        "鸡精",
+        "白醋",
+        "酱油",
+        "地瓜粉",
+        "蛋白",
+        "酱汁部分",
+        "水"
+      ],
+      "cook_time": "45分钟",
+      "difficulty": "中等",
+      "rating": 8.1,
+      "recipe_url": "https://www.xiachufang.com/recipe/106186380/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0008",
+      "name": "🌈💯广式蒜蓉豆豉蒸排骨🌈",
+      "description": "排骨、生抽、料酒、糖、盐等食材制作的家常菜",
+      "cuisine": "粤菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "排骨",
+        "生抽",
+        "料酒",
+        "糖",
+        "盐",
+        "豆豉",
+        "玉米淀粉/番薯粉",
+        "食用油",
+        "蒜",
+        "姜"
+      ],
+      "cook_time": "45分钟",
+      "difficulty": "中等",
+      "rating": 8.4,
+      "recipe_url": "https://www.xiachufang.com/recipe/105931735/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0009",
+      "name": "3岁至80岁都爱吃的经典粤菜~冬菇剁肉饼",
+      "description": "梅头肉、小花菇、姜葱、盐、糖等食材制作的家常菜",
+      "cuisine": "粤菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "梅头肉",
+        "小花菇",
+        "姜葱",
+        "盐",
+        "糖",
+        "酱油",
+        "蚝油",
+        "淀粉",
+        "食用油"
+      ],
+      "cook_time": "45分钟",
+      "difficulty": "中等",
+      "rating": 8.8,
+      "recipe_url": "https://www.xiachufang.com/recipe/106808025/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0010",
+      "name": "最简便广式叉烧",
+      "description": "梅花肉、腌制用料、李锦记叉烧酱、蜂蜜、生抽等食材制作的家常菜",
+      "cuisine": "粤菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "梅花肉",
+        "腌制用料",
+        "李锦记叉烧酱",
+        "蜂蜜",
+        "生抽",
+        "蚝油",
+        "料酒",
+        "小葱",
+        "姜片",
+        "涂抹用蜂蜜"
+      ],
+      "cook_time": "45分钟",
+      "difficulty": "中等",
+      "rating": 8.3,
+      "recipe_url": "https://www.xiachufang.com/recipe/107165811/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0011",
+      "name": "“广州人家”的椒圈豉油",
+      "description": "线椒、生抽、清水、红糖等食材制作的家常菜",
+      "cuisine": "粤菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "线椒",
+        "生抽",
+        "清水",
+        "红糖"
+      ],
+      "cook_time": "45分钟",
+      "difficulty": "简单",
+      "rating": 8.4,
+      "recipe_url": "https://www.xiachufang.com/recipe/106909512/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0012",
+      "name": "广东人的万能汤水‼️鲜甜好喝的瘦肉水",
+      "description": "瘦肉、姜、羊肚菌、瘦肉、姜、羊肚菌等食材制作的家常菜",
+      "cuisine": "粤菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "瘦肉、姜、羊肚菌",
+        "瘦肉",
+        "姜",
+        "羊肚菌"
+      ],
+      "cook_time": "45分钟",
+      "difficulty": "简单",
+      "rating": 7.6,
+      "recipe_url": "https://www.xiachufang.com/recipe/107092586/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0013",
+      "name": "广东豉油鸡",
+      "description": "鸡、生抽、老抽、玫瑰露酒、黄片糖等食材制作的家常菜",
+      "cuisine": "粤菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "鸡",
+        "生抽",
+        "老抽",
+        "玫瑰露酒",
+        "黄片糖",
+        "冰糖",
+        "姜",
+        "葱",
+        "水"
+      ],
+      "cook_time": "45分钟",
+      "difficulty": "中等",
+      "rating": 8.5,
+      "recipe_url": "https://www.xiachufang.com/recipe/104360708/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0014",
+      "name": "白切鸡（最容易被忽略的细节）",
+      "description": "走地鸡、葱结、姜片、红葱头、葱等食材制作的家常菜",
+      "cuisine": "粤菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "走地鸡",
+        "葱结",
+        "姜片",
+        "红葱头",
+        "葱",
+        "姜",
+        "盐",
+        "鸡粉"
+      ],
+      "cook_time": "45分钟",
+      "difficulty": "中等",
+      "rating": 8.3,
+      "recipe_url": "https://www.xiachufang.com/recipe/104476009/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0015",
+      "name": "广式海鲜啫啫煲食谱给大家挖来啦，成功率百分百",
+      "description": "姜、盐、葱花香菜、米酒、洋葱等食材制作的家常菜",
+      "cuisine": "粤菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "姜",
+        "盐",
+        "葱花香菜",
+        "米酒",
+        "洋葱",
+        "蒜瓣",
+        "生抽",
+        "老抽",
+        "蚝油",
+        "淀粉"
+      ],
+      "cook_time": "45分钟",
+      "difficulty": "中等",
+      "rating": 7.7,
+      "recipe_url": "https://www.xiachufang.com/recipe/107359809/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0016",
+      "name": "粤食粤滋味",
+      "description": "等食材制作的家常菜",
+      "cuisine": "粤菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [],
+      "cook_time": "45分钟",
+      "difficulty": "简单",
+      "recipe_url": "https://www.xiachufang.com/recipe_list/166136/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0017",
+      "name": "跟四川朋友学的水煮肉片 这也太香了！！",
+      "description": "里脊肉、盐 鸡精、生抽、老抽、蚝油等食材制作的家常菜",
+      "cuisine": "川菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "里脊肉",
+        "盐 鸡精",
+        "生抽",
+        "老抽",
+        "蚝油",
+        "淀粉",
+        "火锅底料",
+        "鸭",
+        "豆瓣酱",
+        "子姜"
+      ],
+      "cook_time": "30分钟",
+      "difficulty": "中等",
+      "rating": 8.2,
+      "recipe_url": "https://www.xiachufang.com/recipe/106721522/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0018",
+      "name": "又学会一道四川下饭菜！自贡小煎鸭/子姜鸭",
+      "description": "鸭、豆瓣酱、生抽、子姜、白酒等食材制作的家常菜",
+      "cuisine": "川菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "鸭",
+        "豆瓣酱",
+        "生抽",
+        "子姜",
+        "白酒",
+        "啤酒",
+        "大蒜",
+        "线椒",
+        "小米辣"
+      ],
+      "cook_time": "30分钟",
+      "difficulty": "中等",
+      "rating": 8.3,
+      "recipe_url": "https://www.xiachufang.com/recipe/106612638/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0019",
+      "name": "毛血旺～经典川菜",
+      "description": "用料看下方等食材制作的家常菜",
+      "cuisine": "川菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "用料看下方"
+      ],
+      "cook_time": "30分钟",
+      "difficulty": "简单",
+      "rating": 8.2,
+      "recipe_url": "https://www.xiachufang.com/recipe/100400250/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0020",
+      "name": "四川回锅肉",
+      "description": "郫县红油豆瓣酱、猪肉、青蒜、青椒、红椒等食材制作的家常菜",
+      "cuisine": "川菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "郫县红油豆瓣酱",
+        "猪肉",
+        "青蒜",
+        "青椒",
+        "红椒",
+        "姜片",
+        "料酒",
+        "生抽"
+      ],
+      "cook_time": "30分钟",
+      "difficulty": "中等",
+      "rating": 8.1,
+      "recipe_url": "https://www.xiachufang.com/recipe/39989/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0021",
+      "name": "川味辣子鸡",
+      "description": "鸡腿、干辣椒、花椒、葱、姜等食材制作的家常菜",
+      "cuisine": "川菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "鸡腿",
+        "干辣椒",
+        "花椒",
+        "葱",
+        "姜",
+        "料酒",
+        "生抽",
+        "五香粉",
+        "盐",
+        "糖"
+      ],
+      "cook_time": "30分钟",
+      "difficulty": "中等",
+      "rating": 7.7,
+      "recipe_url": "https://www.xiachufang.com/recipe/106396296/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0022",
+      "name": "仔姜鸡（嫩得像蛙）",
+      "description": "子姜、泡海椒、小米辣、二荆条、青花椒等食材制作的家常菜",
+      "cuisine": "川菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "子姜",
+        "泡海椒",
+        "小米辣",
+        "二荆条",
+        "青花椒",
+        "姜",
+        "蒜",
+        "黄瓜",
+        "盐",
+        "白酒"
+      ],
+      "cook_time": "30分钟",
+      "difficulty": "中等",
+      "rating": 7.7,
+      "recipe_url": "https://www.xiachufang.com/recipe/106912038/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0023",
+      "name": "正宗四川土豆烧排骨（红烧排骨）（不焯水不炒糖色）",
+      "description": "排骨、姜片、大蒜、土豆、葱白等食材制作的家常菜",
+      "cuisine": "川菜",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "排骨",
+        "姜片",
+        "大蒜",
+        "土豆",
+        "葱白",
+        "花椒",
+        "料酒",
+        "胡椒粉",
+        "郫县豆瓣",
+        "八角"
+      ],
+      "cook_time": "30分钟",
+      "difficulty": "中等",
+      "rating": 8.8,
+      "recipe_url": "https://www.xiachufang.com/recipe/106696784/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0024",
+      "name": "川菜神级鱼香肉丝",
+      "description": "肉150、白糖2、淀粉2、香醋2.5、蒜2等食材制作的家常菜",
+      "cuisine": "川菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "肉150",
+        "白糖2",
+        "淀粉2",
+        "香醋2.5",
+        "蒜2",
+        "姜3",
+        "大葱1",
+        "生抽1.5",
+        "盐",
+        "胡椒粉"
+      ],
+      "cook_time": "30分钟",
+      "difficulty": "中等",
+      "rating": 8.1,
+      "recipe_url": "https://www.xiachufang.com/recipe/106602348/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0025",
+      "name": "四川名菜“蒜泥白肉”",
+      "description": "五花肉、姜片、葱结、香叶、八角等食材制作的家常菜",
+      "cuisine": "川菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "五花肉",
+        "姜片",
+        "葱结",
+        "香叶",
+        "八角",
+        "花椒",
+        "蒜末",
+        "青葱末",
+        "小米椒圈",
+        "热油"
+      ],
+      "cook_time": "30分钟",
+      "difficulty": "中等",
+      "rating": 8.0,
+      "recipe_url": "https://www.xiachufang.com/recipe/106851398/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0026",
+      "name": "川味家常豆干",
+      "description": "卤豆干、青椒、肉、豆瓣酱、姜等食材制作的家常菜",
+      "cuisine": "川菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "卤豆干",
+        "青椒",
+        "肉",
+        "豆瓣酱",
+        "姜",
+        "蒜",
+        "料酒",
+        "盐",
+        "酱油",
+        "花椒"
+      ],
+      "cook_time": "30分钟",
+      "difficulty": "中等",
+      "rating": 7.2,
+      "recipe_url": "https://www.xiachufang.com/recipe/103809260/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0027",
+      "name": "川菜俏荤的代表—韭黄肉丝",
+      "description": "猪肉丝、韭黄、泡辣椒、葱、姜等食材制作的家常菜",
+      "cuisine": "川菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "猪肉丝",
+        "韭黄",
+        "泡辣椒",
+        "葱",
+        "姜",
+        "蒜",
+        "生抽",
+        "醋",
+        "料酒",
+        "盐"
+      ],
+      "cook_time": "30分钟",
+      "difficulty": "中等",
+      "rating": 7.8,
+      "recipe_url": "https://www.xiachufang.com/recipe/104212961/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0028",
+      "name": "无敌下饭的四川小炒（家庭自制版）｜回锅肉",
+      "description": "五花肉、青椒、豆豉、蒜、姜等食材制作的家常菜",
+      "cuisine": "川菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "五花肉",
+        "青椒",
+        "豆豉",
+        "蒜",
+        "姜",
+        "盐",
+        "料酒",
+        "生抽",
+        "老抽",
+        "蚝油"
+      ],
+      "cook_time": "30分钟",
+      "difficulty": "中等",
+      "rating": 8.3,
+      "recipe_url": "https://www.xiachufang.com/recipe/106923245/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0029",
+      "name": "蒜苗回锅肉——经典川菜",
+      "description": "五花肉、豆瓣酱、蒜苗、生抽、白糖等食材制作的家常菜",
+      "cuisine": "川菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "五花肉",
+        "豆瓣酱",
+        "蒜苗",
+        "生抽",
+        "白糖",
+        "豆豉",
+        "料酒",
+        "姜",
+        "花椒"
+      ],
+      "cook_time": "30分钟",
+      "difficulty": "中等",
+      "rating": 7.8,
+      "recipe_url": "https://www.xiachufang.com/recipe/106588436/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0030",
+      "name": "跷脚牛肉(乐山味道)",
+      "description": "牛肉、圆白菜、芹菜、香菜、葱等食材制作的家常菜",
+      "cuisine": "川菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "牛肉",
+        "圆白菜",
+        "芹菜",
+        "香菜",
+        "葱",
+        "牛骨汤料"
+      ],
+      "cook_time": "30分钟",
+      "difficulty": "中等",
+      "rating": 8.1,
+      "recipe_url": "https://www.xiachufang.com/recipe/107220955/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0031",
+      "name": "川味土豆香菇烧鸡",
+      "description": "鸡、土豆、干香菇、鸡、土豆、干香菇、青椒等食材制作的家常菜",
+      "cuisine": "川菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "鸡、土豆、干香菇",
+        "鸡",
+        "土豆",
+        "干香菇",
+        "青椒",
+        "姜，泡姜，泡椒",
+        "盐，鸡精",
+        "冰糖",
+        "豆瓣酱+黄豆酱"
+      ],
+      "cook_time": "30分钟",
+      "difficulty": "中等",
+      "rating": 8.0,
+      "recipe_url": "https://www.xiachufang.com/recipe/106083210/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0032",
+      "name": "西南川菜重庆及四川菜",
+      "description": "等食材制作的家常菜",
+      "cuisine": "川菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [],
+      "cook_time": "30分钟",
+      "difficulty": "简单",
+      "recipe_url": "https://www.xiachufang.com/recipe_list/443052293508575232/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0033",
+      "name": "零基础教程，湘菜小炒",
+      "description": "牛肉、香菜/芹菜、红辣椒、小米椒、蒜等食材制作的家常菜",
+      "cuisine": "湘菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "牛肉",
+        "香菜/芹菜",
+        "红辣椒",
+        "小米椒",
+        "蒜",
+        "泡椒",
+        "湖南剁椒",
+        "生抽",
+        "白胡椒粉",
+        "植物油"
+      ],
+      "cook_time": "30分钟",
+      "difficulty": "中等",
+      "rating": 7.8,
+      "recipe_url": "https://www.xiachufang.com/recipe/107554210/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0034",
+      "name": "下饭湘菜【小炒攸县香干】，随手一炒就好吃！",
+      "description": "攸县香干、五花肉、杭椒/湖南椒、红尖椒/红美人椒、蒜苗等食材制作的家常菜",
+      "cuisine": "湘菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "攸县香干",
+        "五花肉",
+        "杭椒/湖南椒",
+        "红尖椒/红美人椒",
+        "蒜苗",
+        "姜末",
+        "蒜末",
+        "郫县豆瓣酱",
+        "甜面酱",
+        "生抽"
+      ],
+      "cook_time": "30分钟",
+      "difficulty": "中等",
+      "rating": 7.7,
+      "recipe_url": "https://www.xiachufang.com/recipe/105828672/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0035",
+      "name": "野性十足的湘西名菜【土匪猪肝】，吃它一定要备足米饭！",
+      "description": "猪肝、二荆条、红椒、蒜苗、芹菜等食材制作的家常菜",
+      "cuisine": "湘菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "猪肝",
+        "二荆条",
+        "红椒",
+        "蒜苗",
+        "芹菜",
+        "啤酒",
+        "大蒜",
+        "生姜",
+        "花椒",
+        "红泡椒"
+      ],
+      "cook_time": "30分钟",
+      "difficulty": "中等",
+      "rating": 8.3,
+      "recipe_url": "https://www.xiachufang.com/recipe/106388453/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0036",
+      "name": "湘味小炒排骨",
+      "description": "排骨、豆豉、红辣椒、绿辣椒、啤酒等食材制作的家常菜",
+      "cuisine": "湘菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "排骨",
+        "豆豉",
+        "红辣椒",
+        "绿辣椒",
+        "啤酒",
+        "蒜",
+        "葱",
+        "姜"
+      ],
+      "cook_time": "30分钟",
+      "difficulty": "中等",
+      "rating": 7.6,
+      "recipe_url": "https://www.xiachufang.com/recipe/105864601/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0037",
+      "name": "湘菜馆-金钱蛋",
+      "description": "鸡蛋、蒜、生抽、糖、线椒等食材制作的家常菜",
+      "cuisine": "湘菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "鸡蛋",
+        "蒜",
+        "生抽",
+        "糖",
+        "线椒",
+        "小米辣",
+        "豆豉",
+        "葱",
+        "辣椒油",
+        "玉米淀粉"
+      ],
+      "cook_time": "30分钟",
+      "difficulty": "中等",
+      "rating": 8.2,
+      "recipe_url": "https://www.xiachufang.com/recipe/107161729/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0038",
+      "name": "湖南菜农家一碗香🤗",
+      "description": "猪肉、鸡蛋、青椒、小米椒、蒜等食材制作的家常菜",
+      "cuisine": "湘菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "猪肉",
+        "鸡蛋",
+        "青椒",
+        "小米椒",
+        "蒜",
+        "姜"
+      ],
+      "cook_time": "30分钟",
+      "difficulty": "中等",
+      "rating": 8.8,
+      "recipe_url": "https://www.xiachufang.com/recipe/105871011/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0039",
+      "name": "小炒鸡【一鸡两吃湘菜做法】",
+      "description": "青椒、小米椒、生抽、老抽、蚝油等食材制作的家常菜",
+      "cuisine": "湘菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "青椒",
+        "小米椒",
+        "生抽",
+        "老抽",
+        "蚝油",
+        "姜",
+        "蒜",
+        "盐",
+        "鸡精",
+        "味精"
+      ],
+      "cook_time": "30分钟",
+      "difficulty": "中等",
+      "rating": 8.2,
+      "recipe_url": "https://www.xiachufang.com/recipe/106752340/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0040",
+      "name": "正宗湘菜的干锅花菜",
+      "description": "花菜、五花肉、小米辣、大蒜、线椒等食材制作的家常菜",
+      "cuisine": "湘菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "花菜",
+        "五花肉",
+        "小米辣",
+        "大蒜",
+        "线椒",
+        "青蒜苗",
+        "油",
+        "生抽",
+        "蚝油",
+        "盐"
+      ],
+      "cook_time": "30分钟",
+      "difficulty": "中等",
+      "rating": 7.4,
+      "recipe_url": "https://www.xiachufang.com/recipe/106991132/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0041",
+      "name": "油爆醋炒蛋(长沙下饭菜)",
+      "description": "鸡蛋、葱姜蒜、剁辣椒等食材制作的家常菜",
+      "cuisine": "湘菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "鸡蛋",
+        "葱姜蒜",
+        "剁辣椒"
+      ],
+      "cook_time": "30分钟",
+      "difficulty": "简单",
+      "rating": 8.6,
+      "recipe_url": "https://www.xiachufang.com/recipe/107286494/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0042",
+      "name": "酸萝卜炒牛肚，做出了长沙味道，好吃到哭",
+      "description": "牛肚、葱、姜、蒜、小米辣等食材制作的家常菜",
+      "cuisine": "湘菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "牛肚",
+        "葱",
+        "姜",
+        "蒜",
+        "小米辣",
+        "酸萝卜",
+        "青红泡椒",
+        "八角桂皮香叶",
+        "草果白芷花椒",
+        "干辣椒"
+      ],
+      "cook_time": "30分钟",
+      "difficulty": "中等",
+      "rating": 8.7,
+      "recipe_url": "https://www.xiachufang.com/recipe/106936224/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0043",
+      "name": "湖南小炒肉",
+      "description": "带皮五花肉🥩、瘦肉、螺丝椒、红椒、蒜🧄等食材制作的家常菜",
+      "cuisine": "湘菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "带皮五花肉🥩",
+        "瘦肉",
+        "螺丝椒",
+        "红椒",
+        "蒜🧄",
+        "豆豉",
+        "耗油",
+        "老抽",
+        "生抽",
+        "盐🧂"
+      ],
+      "cook_time": "30分钟",
+      "difficulty": "中等",
+      "rating": 8.1,
+      "recipe_url": "https://www.xiachufang.com/recipe/107650276/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0044",
+      "name": "湖南香酥炸鱼块",
+      "description": "姜、盐、料酒、生抽、草鱼等食材制作的家常菜",
+      "cuisine": "湘菜",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "姜",
+        "盐",
+        "料酒",
+        "生抽",
+        "草鱼",
+        "豆豉",
+        "干辣椒"
+      ],
+      "cook_time": "30分钟",
+      "difficulty": "中等",
+      "rating": 8.5,
+      "recipe_url": "https://www.xiachufang.com/recipe/103565681/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0045",
+      "name": "去湘菜馆一定要点的辣椒擂皮蛋‼️炒鸡快手下饭💖",
+      "description": "螺丝椒、皮蛋、大蒜、小米辣等食材制作的家常菜",
+      "cuisine": "湘菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "螺丝椒",
+        "皮蛋",
+        "大蒜",
+        "小米辣"
+      ],
+      "cook_time": "30分钟",
+      "difficulty": "简单",
+      "rating": 3.0,
+      "recipe_url": "https://www.xiachufang.com/recipe/107689476/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0046",
+      "name": "湖南名菜-糯米笋小炒肉",
+      "description": "五花肉、青椒、老抽、蒜、料酒等食材制作的家常菜",
+      "cuisine": "湘菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "五花肉",
+        "青椒",
+        "老抽",
+        "蒜",
+        "料酒",
+        "酱油",
+        "盐",
+        "蚝油",
+        "大蒜",
+        "湖南辣椒酱"
+      ],
+      "cook_time": "30分钟",
+      "difficulty": "中等",
+      "rating": 8.5,
+      "recipe_url": "https://www.xiachufang.com/recipe/106794023/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0047",
+      "name": "湘菜🌶辣椒炒肉",
+      "description": "螺丝椒、猪肉、大蒜、生抽、老抽或者酱油等食材制作的家常菜",
+      "cuisine": "湘菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "螺丝椒",
+        "猪肉",
+        "大蒜",
+        "生抽",
+        "老抽或者酱油",
+        "蚝油",
+        "盐"
+      ],
+      "cook_time": "30分钟",
+      "difficulty": "中等",
+      "rating": 7.8,
+      "recipe_url": "https://www.xiachufang.com/recipe/103722082/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0048",
+      "name": "湘湘菜谱",
+      "description": "等食材制作的家常菜",
+      "cuisine": "湘菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [],
+      "cook_time": "30分钟",
+      "difficulty": "简单",
+      "recipe_url": "https://www.xiachufang.com/recipe_list/272929773951389696/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0049",
+      "name": "9款家常菜",
+      "description": "如图、油、豆腐、五花肉、大葱等食材制作的家常菜",
+      "cuisine": "家常菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "如图",
+        "油",
+        "豆腐",
+        "五花肉",
+        "大葱",
+        "生抽",
+        "老抽",
+        "白糖",
+        "盐",
+        "清水"
+      ],
+      "cook_time": "30分钟",
+      "difficulty": "中等",
+      "recipe_url": "https://www.xiachufang.com/recipe/107751361/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0050",
+      "name": "葱烧豆腐，豆腐最好吃的封神做法，完胜麻婆豆腐，附入味儿秘诀，无敌下饭神器",
+      "description": "油、豆腐、五花肉、大葱、生抽等食材制作的家常菜",
+      "cuisine": "家常菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "油",
+        "豆腐",
+        "五花肉",
+        "大葱",
+        "生抽",
+        "老抽",
+        "白糖",
+        "盐",
+        "清水"
+      ],
+      "cook_time": "30分钟",
+      "difficulty": "中等",
+      "rating": 8.6,
+      "recipe_url": "https://www.xiachufang.com/recipe/107592721/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0051",
+      "name": "巨好吃的下饭菜",
+      "description": "嫩豆腐一块、瘦肉、郫县豆瓣等食材制作的家常菜",
+      "cuisine": "家常菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "嫩豆腐一块",
+        "瘦肉",
+        "郫县豆瓣"
+      ],
+      "cook_time": "30分钟",
+      "difficulty": "简单",
+      "rating": 7.7,
+      "recipe_url": "https://www.xiachufang.com/recipe/107578876/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0052",
+      "name": "家常菜合集",
+      "description": "肉、鸡蛋、肉、鸡蛋等食材制作的家常菜",
+      "cuisine": "家常菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "肉、鸡蛋",
+        "肉",
+        "鸡蛋"
+      ],
+      "cook_time": "30分钟",
+      "difficulty": "简单",
+      "rating": 7.0,
+      "recipe_url": "https://www.xiachufang.com/recipe/107689354/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0053",
+      "name": "立春炒合菜",
+      "description": "豆芽、胡萝卜、土豆、韭菜、粉丝等食材制作的家常菜",
+      "cuisine": "家常菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "豆芽",
+        "胡萝卜",
+        "土豆",
+        "韭菜",
+        "粉丝",
+        "鸡蛋",
+        "老抽",
+        "葱姜蒜",
+        "生抽",
+        "蚝油"
+      ],
+      "cook_time": "30分钟",
+      "difficulty": "中等",
+      "rating": 6.0,
+      "recipe_url": "https://www.xiachufang.com/recipe/107703573/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0054",
+      "name": "酸甜下饭༄「鱼香肉丝」༄🫰🫰🫰",
+      "description": "猪瘦肉、胡萝卜、青尖椒、木耳、葱等食材制作的家常菜",
+      "cuisine": "家常菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "猪瘦肉",
+        "胡萝卜",
+        "青尖椒",
+        "木耳",
+        "葱",
+        "姜",
+        "蒜",
+        "食用油",
+        "郫县豆瓣酱",
+        "腌肉料：盐"
+      ],
+      "cook_time": "30分钟",
+      "difficulty": "中等",
+      "rating": 7.7,
+      "recipe_url": "https://www.xiachufang.com/recipe/107578797/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0055",
+      "name": "红烧日本豆腐",
+      "description": "日本豆腐、胡萝卜、青椒、红椒、蒜等食材制作的家常菜",
+      "cuisine": "家常菜",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "日本豆腐",
+        "胡萝卜",
+        "青椒",
+        "红椒",
+        "蒜"
+      ],
+      "cook_time": "30分钟",
+      "difficulty": "简单",
+      "rating": 6.9,
+      "recipe_url": "https://www.xiachufang.com/recipe/107646801/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0056",
+      "name": "酸辣土豆丝｜脆爽开胃！百吃不厌的家常快手菜！",
+      "description": "白糖、生抽、蚝油、油、盐等食材制作的家常菜",
+      "cuisine": "家常菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "白糖",
+        "生抽",
+        "蚝油",
+        "油",
+        "盐",
+        "青椒",
+        "大蒜",
+        "醋",
+        "白醋"
+      ],
+      "cook_time": "30分钟",
+      "difficulty": "中等",
+      "rating": 2.0,
+      "recipe_url": "https://www.xiachufang.com/recipe/107722352/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0057",
+      "name": "快手下饭的家常菜系列之包菜粉丝",
+      "description": "粉丝、包菜、肉丝、鸡蛋等食材制作的家常菜",
+      "cuisine": "家常菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "粉丝",
+        "包菜",
+        "肉丝",
+        "鸡蛋"
+      ],
+      "cook_time": "30分钟",
+      "difficulty": "简单",
+      "recipe_url": "https://www.xiachufang.com/recipe/107748328/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0058",
+      "name": "云南风味干锅土豆片｜焦香下饭，零失败",
+      "description": "土豆、调料：干辣椒、葱花少许、盐1小勺、生抽等食材制作的家常菜",
+      "cuisine": "家常菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "土豆",
+        "调料：干辣椒",
+        "葱花少许",
+        "盐1小勺",
+        "生抽",
+        "辣椒粉1小勺",
+        "孜然粉少许",
+        "食用油适量"
+      ],
+      "cook_time": "30分钟",
+      "difficulty": "中等",
+      "rating": 2.0,
+      "recipe_url": "https://www.xiachufang.com/recipe/107725831/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0059",
+      "name": "西葫芦这样炒， 脆嫩不出汤！鲜香入味，营养又下饭",
+      "description": "西葫芦、鸡蛋、肉末、蒜头、小米辣等食材制作的家常菜",
+      "cuisine": "家常菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "西葫芦",
+        "鸡蛋",
+        "肉末",
+        "蒜头",
+        "小米辣",
+        "米酒",
+        "生抽",
+        "蚝油",
+        "盐",
+        "胡椒粉"
+      ],
+      "cook_time": "30分钟",
+      "difficulty": "中等",
+      "rating": 8.0,
+      "recipe_url": "https://www.xiachufang.com/recipe/107740065/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0060",
+      "name": "6款家常菜",
+      "description": "如图等食材制作的家常菜",
+      "cuisine": "家常菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "如图"
+      ],
+      "cook_time": "30分钟",
+      "difficulty": "简单",
+      "recipe_url": "https://www.xiachufang.com/recipe/107751364/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0061",
+      "name": "巨香巨下饭的把子肉！",
+      "description": "五花肉、青椒、水煮蛋、啤酒、生抽等食材制作的家常菜",
+      "cuisine": "家常菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "五花肉",
+        "青椒",
+        "水煮蛋",
+        "啤酒",
+        "生抽",
+        "老抽",
+        "蚝油",
+        "甜面酱",
+        "香料：",
+        "八角"
+      ],
+      "cook_time": "30分钟",
+      "difficulty": "中等",
+      "rating": 8.0,
+      "recipe_url": "https://www.xiachufang.com/recipe/107592805/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0062",
+      "name": "荔枝虾球＆全家人的最爱",
+      "description": "蓝尾虾、荔枝、嫩芹菜、蒜片、花雕酒等食材制作的家常菜",
+      "cuisine": "家常菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "蓝尾虾",
+        "荔枝",
+        "嫩芹菜",
+        "蒜片",
+        "花雕酒",
+        "盐",
+        "味素",
+        "水淀粉",
+        "食用油"
+      ],
+      "cook_time": "30分钟",
+      "difficulty": "中等",
+      "rating": 2.0,
+      "recipe_url": "https://www.xiachufang.com/recipe/107751902/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0063",
+      "name": "十道家常菜",
+      "description": "等食材制作的家常菜",
+      "cuisine": "家常菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [],
+      "cook_time": "30分钟",
+      "difficulty": "简单",
+      "rating": 1.0,
+      "recipe_url": "https://www.xiachufang.com/recipe/107675665/?recipe_type=1&page_scene=6",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0064",
+      "name": "家常菜",
+      "description": "等食材制作的家常菜",
+      "cuisine": "家常菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [],
+      "cook_time": "30分钟",
+      "difficulty": "简单",
+      "recipe_url": "https://www.xiachufang.com/recipe_list/221342861520539648/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0065",
+      "name": "低卡蒸菜",
+      "description": "食材如下、鲜虫草花、牛肉、鸡蛋清、蚝油等食材制作的家常菜",
+      "cuisine": "蒸菜",
+      "health_tag": "🟢轻食",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "食材如下",
+        "鲜虫草花",
+        "牛肉",
+        "鸡蛋清",
+        "蚝油",
+        "生抽",
+        "白糖",
+        "胡椒粉",
+        "生粉",
+        "料酒"
+      ],
+      "cook_time": "40分钟",
+      "difficulty": "中等",
+      "rating": 4.0,
+      "recipe_url": "https://www.xiachufang.com/recipe/107344668/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0066",
+      "name": "适合懒人的健康蒸菜，虫草花蒸牛肉",
+      "description": "鲜虫草花、牛肉、鸡蛋清、蚝油、生抽等食材制作的家常菜",
+      "cuisine": "蒸菜",
+      "health_tag": "🟢轻食",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "鲜虫草花",
+        "牛肉",
+        "鸡蛋清",
+        "蚝油",
+        "生抽",
+        "白糖",
+        "胡椒粉",
+        "生粉",
+        "料酒",
+        "盐"
+      ],
+      "cook_time": "40分钟",
+      "difficulty": "中等",
+      "rating": 8.3,
+      "recipe_url": "https://www.xiachufang.com/recipe/104760758/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0067",
+      "name": "蒸菜更健康--香菇蒸鸡翅",
+      "description": "鸡翅中、香菇、土豆、生抽、蚝油等食材制作的家常菜",
+      "cuisine": "蒸菜",
+      "health_tag": "🟢轻食",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "鸡翅中",
+        "香菇",
+        "土豆",
+        "生抽",
+        "蚝油",
+        "料酒",
+        "葱蒜末",
+        "小米椒",
+        "盐",
+        "淀粉"
+      ],
+      "cook_time": "40分钟",
+      "difficulty": "中等",
+      "rating": 8.2,
+      "recipe_url": "https://www.xiachufang.com/recipe/105871313/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0068",
+      "name": "一看就会——春季蒸菜",
+      "description": "茼蒿菜、盐、鸡精、生抽、食用油等食材制作的家常菜",
+      "cuisine": "蒸菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "茼蒿菜",
+        "盐",
+        "鸡精",
+        "生抽",
+        "食用油",
+        "面粉",
+        "胡萝卜"
+      ],
+      "cook_time": "40分钟",
+      "difficulty": "中等",
+      "rating": 7.9,
+      "recipe_url": "https://www.xiachufang.com/recipe/106704604/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0069",
+      "name": "超好吃蒸菜「蒜蓉娃娃菜」",
+      "description": "娃娃菜、大蒜、生抽、油、盐等食材制作的家常菜",
+      "cuisine": "蒸菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "娃娃菜",
+        "大蒜",
+        "生抽",
+        "油",
+        "盐",
+        "香菜/葱",
+        "清水"
+      ],
+      "cook_time": "40分钟",
+      "difficulty": "中等",
+      "rating": 8.0,
+      "recipe_url": "https://www.xiachufang.com/recipe/104547856/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0070",
+      "name": "家常蒸菜简单易做",
+      "description": "面条菜、面粉、面条菜、面粉等食材制作的家常菜",
+      "cuisine": "蒸菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "面条菜、面粉",
+        "面条菜",
+        "面粉"
+      ],
+      "cook_time": "40分钟",
+      "difficulty": "简单",
+      "rating": 8.2,
+      "recipe_url": "https://www.xiachufang.com/recipe/104424155/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0071",
+      "name": "减脂蒸菜决决子",
+      "description": "等食材制作的家常菜",
+      "cuisine": "蒸菜",
+      "health_tag": "🟢轻食",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [],
+      "cook_time": "40分钟",
+      "difficulty": "简单",
+      "rating": 6.4,
+      "recipe_url": "https://www.xiachufang.com/recipe/107200136/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0072",
+      "name": "蒸菜也可以很下饭-豆豉肉沫蒸豆腐",
+      "description": "绢、冻好的五花肉块、蒜头、豆豉、生抽等食材制作的家常菜",
+      "cuisine": "蒸菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "绢",
+        "冻好的五花肉块",
+        "蒜头",
+        "豆豉",
+        "生抽",
+        "盐",
+        "糖",
+        "油",
+        "小米椒切圈",
+        "绿色线椒切圈"
+      ],
+      "cook_time": "40分钟",
+      "difficulty": "中等",
+      "rating": 8.0,
+      "recipe_url": "https://www.xiachufang.com/recipe/103726937/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0073",
+      "name": "营养还是蒸的好啊！宝宝蒸菜，好吃不开火🔥",
+      "description": "胡萝卜等食材制作的家常菜",
+      "cuisine": "蒸菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "胡萝卜"
+      ],
+      "cook_time": "40分钟",
+      "difficulty": "简单",
+      "rating": 4.0,
+      "recipe_url": "https://www.xiachufang.com/recipe/107134385/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0074",
+      "name": "营养蒸菜，简单快手零失败！",
+      "description": "甜玉米、地瓜、胡萝卜、南瓜、芋头等食材制作的家常菜",
+      "cuisine": "蒸菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "甜玉米",
+        "地瓜",
+        "胡萝卜",
+        "南瓜",
+        "芋头",
+        "西蓝花",
+        "芦笋",
+        "甜豆",
+        "菌菇",
+        "黑胡椒盐"
+      ],
+      "cook_time": "40分钟",
+      "difficulty": "中等",
+      "rating": 8.7,
+      "recipe_url": "https://www.xiachufang.com/recipe/104401220/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0075",
+      "name": "河南蒸菜",
+      "description": "胡萝卜、芹菜、豆角、食用油、面粉等食材制作的家常菜",
+      "cuisine": "蒸菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "胡萝卜",
+        "芹菜",
+        "豆角",
+        "食用油",
+        "面粉",
+        "玉米面粉"
+      ],
+      "cook_time": "40分钟",
+      "difficulty": "中等",
+      "rating": 7.2,
+      "recipe_url": "https://www.xiachufang.com/recipe/107538385/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0076",
+      "name": "电饭锅蒸菜 （记录贴）",
+      "description": "肉馅、腊肠、盐、鸡蛋等食材制作的家常菜",
+      "cuisine": "蒸菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "肉馅",
+        "腊肠",
+        "盐",
+        "鸡蛋"
+      ],
+      "cook_time": "40分钟",
+      "difficulty": "简单",
+      "recipe_url": "https://www.xiachufang.com/recipe/107738022/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0077",
+      "name": "顺德桑拿鸡🐔好吃不上火的蒸菜",
+      "description": "鸡、海鲜：白贝、基围虾、蛏子、鲍鱼等食材制作的家常菜",
+      "cuisine": "蒸菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "鸡",
+        "海鲜：白贝",
+        "基围虾",
+        "蛏子",
+        "鲍鱼",
+        "胜瓜",
+        "汤底：鸡骨架",
+        "红萝卜",
+        "玉米",
+        "红枣"
+      ],
+      "cook_time": "40分钟",
+      "difficulty": "中等",
+      "rating": 8.6,
+      "recipe_url": "https://www.xiachufang.com/recipe/106908167/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0078",
+      "name": "蒸菜1",
+      "description": "蛤蜊、粉丝、鸡蛋、蒸鱼豉油等食材制作的家常菜",
+      "cuisine": "蒸菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "蛤蜊",
+        "粉丝",
+        "鸡蛋",
+        "蒸鱼豉油"
+      ],
+      "cook_time": "40分钟",
+      "difficulty": "简单",
+      "recipe_url": "https://www.xiachufang.com/recipe/107110282/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0079",
+      "name": "蒸锅一锅出：一汤一菜一饭\n炖汤、蒸菜、米饭。快速简单。隔水炖鸡汤-清蒸鸡-藜麦饭",
+      "description": "鸡、藜麦米、鸡、藜麦米等食材制作的家常菜",
+      "cuisine": "蒸菜",
+      "health_tag": "🔵滋补养生",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "鸡、藜麦米",
+        "鸡",
+        "藜麦米"
+      ],
+      "cook_time": "40分钟",
+      "difficulty": "简单",
+      "recipe_url": "https://www.xiachufang.com/recipe/107600739/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0080",
+      "name": "蒸菜",
+      "description": "等食材制作的家常菜",
+      "cuisine": "蒸菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [],
+      "cook_time": "40分钟",
+      "difficulty": "简单",
+      "recipe_url": "https://www.xiachufang.com/recipe_list/177134355850731520/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0081",
+      "name": "夏日地摊卖得超火爆的解暑糖水，今天一次性教你四种口味！",
+      "description": "白凉粉、水、开水、红糖、冰粉粉等食材制作的家常菜",
+      "cuisine": "糖水",
+      "health_tag": "🟢轻食",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "白凉粉",
+        "水",
+        "开水",
+        "红糖",
+        "冰粉粉",
+        "各种坚果，水果",
+        "椰果，马蹄爆爆珠",
+        "芒果果肉",
+        "澳芒",
+        "大金煌芒)"
+      ],
+      "cook_time": "60分钟",
+      "difficulty": "中等",
+      "rating": 7.8,
+      "recipe_url": "https://www.xiachufang.com/recipe/104714384/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0082",
+      "name": "有手就会！夏天来碗红糖冰粉凉爽一夏吧！",
+      "description": "开水、红糖、冰粉粉、各种坚果，水果、椰果，马蹄爆爆珠等食材制作的家常菜",
+      "cuisine": "糖水",
+      "health_tag": "🟢轻食",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "开水",
+        "红糖",
+        "冰粉粉",
+        "各种坚果，水果",
+        "椰果，马蹄爆爆珠"
+      ],
+      "cook_time": "60分钟",
+      "difficulty": "简单",
+      "rating": 7.7,
+      "recipe_url": "https://www.xiachufang.com/recipe/107556518/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0083",
+      "name": "港式甜品——杨枝甘露(芒果西米露)附芒果花切法",
+      "description": "芒果果肉、澳芒、大金煌芒)、西米、椰浆等食材制作的家常菜",
+      "cuisine": "糖水",
+      "health_tag": "🟢轻食",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "芒果果肉",
+        "澳芒",
+        "大金煌芒)",
+        "西米",
+        "椰浆",
+        "炼乳",
+        "牛奶",
+        "西柚"
+      ],
+      "cook_time": "60分钟",
+      "difficulty": "中等",
+      "rating": 8.3,
+      "recipe_url": "https://www.xiachufang.com/recipe/104114409/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0084",
+      "name": "西米露糖水",
+      "description": "如图等食材制作的家常菜",
+      "cuisine": "糖水",
+      "health_tag": "🟢轻食",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "如图"
+      ],
+      "cook_time": "60分钟",
+      "difficulty": "简单",
+      "rating": 3.0,
+      "recipe_url": "https://www.xiachufang.com/recipe/107519229/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0085",
+      "name": "手工芋圆糖水",
+      "description": "紫薯、木薯粉、红薯、芋头、白糖等食材制作的家常菜",
+      "cuisine": "糖水",
+      "health_tag": "🟢轻食",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "紫薯",
+        "木薯粉",
+        "红薯",
+        "芋头",
+        "白糖"
+      ],
+      "cook_time": "60分钟",
+      "difficulty": "简单",
+      "rating": 8.1,
+      "recipe_url": "https://www.xiachufang.com/recipe/107356021/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0086",
+      "name": "清凉解暑绿豆糖水",
+      "description": "如图等食材制作的家常菜",
+      "cuisine": "糖水",
+      "health_tag": "🟢轻食",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "如图"
+      ],
+      "cook_time": "60分钟",
+      "difficulty": "简单",
+      "recipe_url": "https://www.xiachufang.com/recipe/107509066/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0087",
+      "name": "必收藏｜巨好吃！港方陈皮红豆沙秘方！㊙️",
+      "description": "红豆、陈皮、水、红豆、陈皮、水等食材制作的家常菜",
+      "cuisine": "糖水",
+      "health_tag": "🟢轻食",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "红豆、陈皮、水",
+        "红豆",
+        "陈皮",
+        "水"
+      ],
+      "cook_time": "60分钟",
+      "difficulty": "简单",
+      "rating": 8.6,
+      "recipe_url": "https://www.xiachufang.com/recipe/106088310/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0088",
+      "name": "巨好吃的陈皮红豆沙，压力锅轻松做！",
+      "description": "红豆、冰糖、水、新会陈皮10年陈等食材制作的家常菜",
+      "cuisine": "糖水",
+      "health_tag": "🟢轻食",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "红豆",
+        "冰糖",
+        "水",
+        "新会陈皮10年陈"
+      ],
+      "cook_time": "60分钟",
+      "difficulty": "简单",
+      "rating": 7.8,
+      "recipe_url": "https://www.xiachufang.com/recipe/107119920/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0089",
+      "name": "喝了后不想再去店里喝的杨枝甘露（红柚替代版）",
+      "description": "芒果、椰浆、牛奶、糖、红柚等食材制作的家常菜",
+      "cuisine": "糖水",
+      "health_tag": "🟢轻食",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "芒果",
+        "椰浆",
+        "牛奶",
+        "糖",
+        "红柚",
+        "西米"
+      ],
+      "cook_time": "60分钟",
+      "difficulty": "中等",
+      "rating": 8.0,
+      "recipe_url": "https://www.xiachufang.com/recipe/106543278/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0090",
+      "name": "广式糖水",
+      "description": "如图等食材制作的家常菜",
+      "cuisine": "糖水",
+      "health_tag": "🟢轻食",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "如图"
+      ],
+      "cook_time": "60分钟",
+      "difficulty": "简单",
+      "recipe_url": "https://www.xiachufang.com/recipe/107510099/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0091",
+      "name": "木薯糖水",
+      "description": "木薯、黄冰糖、木薯、黄冰糖等食材制作的家常菜",
+      "cuisine": "糖水",
+      "health_tag": "🟢轻食",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "木薯、黄冰糖",
+        "木薯",
+        "黄冰糖"
+      ],
+      "cook_time": "60分钟",
+      "difficulty": "简单",
+      "recipe_url": "https://www.xiachufang.com/recipe/107657935/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0092",
+      "name": "女孩子多喝养生糖水",
+      "description": "红枣、红豆、红糖、西米、花生等食材制作的家常菜",
+      "cuisine": "糖水",
+      "health_tag": "🔵滋补养生",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "红枣",
+        "红豆",
+        "红糖",
+        "西米",
+        "花生",
+        "银耳",
+        "牛奶"
+      ],
+      "cook_time": "60分钟",
+      "difficulty": "中等",
+      "rating": 7.6,
+      "recipe_url": "https://www.xiachufang.com/recipe/106965571/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0093",
+      "name": "夏日消暑饮品、广东传统经典马蹄爽糖水",
+      "description": "洲星马蹄粉、马蹄、黄片糖等食材制作的家常菜",
+      "cuisine": "糖水",
+      "health_tag": "🟢轻食",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "洲星马蹄粉",
+        "马蹄",
+        "黄片糖"
+      ],
+      "cook_time": "60分钟",
+      "difficulty": "简单",
+      "recipe_url": "https://www.xiachufang.com/recipe/107743259/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0094",
+      "name": "新中式糖水",
+      "description": "如图等食材制作的家常菜",
+      "cuisine": "糖水",
+      "health_tag": "🟢轻食",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "如图"
+      ],
+      "cook_time": "60分钟",
+      "difficulty": "简单",
+      "rating": 1.0,
+      "recipe_url": "https://www.xiachufang.com/recipe/107522733/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0095",
+      "name": "红糖糯米小圆子",
+      "description": "糯米粉、热水、古方红糖、清水、熟白芝麻等食材制作的家常菜",
+      "cuisine": "糖水",
+      "health_tag": "🟢轻食",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "糯米粉",
+        "热水",
+        "古方红糖",
+        "清水",
+        "熟白芝麻"
+      ],
+      "cook_time": "60分钟",
+      "difficulty": "简单",
+      "rating": 7.4,
+      "recipe_url": "https://www.xiachufang.com/recipe/104072817/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0096",
+      "name": "糖水",
+      "description": "等食材制作的家常菜",
+      "cuisine": "糖水",
+      "health_tag": "🟢轻食",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [],
+      "cook_time": "60分钟",
+      "difficulty": "简单",
+      "recipe_url": "https://www.xiachufang.com/recipe_list/313261577006514176/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0097",
+      "name": "柠檬巴巴露亚🍋超火小甜品复刻",
+      "description": "芒果肉、牛奶、椰浆、炼乳、西柚果肉等食材制作的家常菜",
+      "cuisine": "甜品",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "芒果肉",
+        "牛奶",
+        "椰浆",
+        "炼乳",
+        "西柚果肉",
+        "西米",
+        "芒果",
+        "糖",
+        "白凉粉",
+        "鸡蛋黄"
+      ],
+      "cook_time": "40分钟",
+      "difficulty": "中等",
+      "rating": 8.6,
+      "recipe_url": "https://www.xiachufang.com/recipe/107164541/?recipe_type=1&page_scene=6",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0098",
+      "name": "夏日饮品【杨枝甘露】好喝到原地开店",
+      "description": "芒果肉、牛奶、椰浆、炼乳、西柚果肉等食材制作的家常菜",
+      "cuisine": "甜品",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "芒果肉",
+        "牛奶",
+        "椰浆",
+        "炼乳",
+        "西柚果肉",
+        "西米"
+      ],
+      "cook_time": "40分钟",
+      "difficulty": "中等",
+      "rating": 8.6,
+      "recipe_url": "https://www.xiachufang.com/recipe/107140349/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0099",
+      "name": "夏日必备小甜品🥭芒果布丁🍮超简单「学不会你来打我」",
+      "description": "芒果、牛奶、糖、白凉粉等食材制作的家常菜",
+      "cuisine": "甜品",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "芒果",
+        "牛奶",
+        "糖",
+        "白凉粉"
+      ],
+      "cook_time": "40分钟",
+      "difficulty": "简单",
+      "rating": 7.6,
+      "recipe_url": "https://www.xiachufang.com/recipe/106428065/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0100",
+      "name": "巧克力冰山熔岩（牛奶版本🥛）",
+      "description": "鸡蛋黄、糖、黑巧克力、牛奶🥛等食材制作的家常菜",
+      "cuisine": "甜品",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "鸡蛋黄",
+        "糖",
+        "黑巧克力",
+        "牛奶🥛"
+      ],
+      "cook_time": "40分钟",
+      "difficulty": "简单",
+      "rating": 8.4,
+      "recipe_url": "https://www.xiachufang.com/recipe/106720210/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0101",
+      "name": "锁死这个配方，超级好吃的德式布丁塔‼",
+      "description": "黄油、糖粉、鸡蛋、低筋面粉、淡奶油等食材制作的家常菜",
+      "cuisine": "甜品",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "黄油",
+        "糖粉",
+        "鸡蛋",
+        "低筋面粉",
+        "淡奶油",
+        "蛋黄",
+        "炼乳"
+      ],
+      "cook_time": "40分钟",
+      "difficulty": "中等",
+      "rating": 7.9,
+      "recipe_url": "https://www.xiachufang.com/recipe/107475817/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0102",
+      "name": "夏日小甜品，多芒丸子西米露冰镇更好吃",
+      "description": "芒果、西米、牛奶、糯米粉等食材制作的家常菜",
+      "cuisine": "甜品",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "芒果",
+        "西米",
+        "牛奶",
+        "糯米粉"
+      ],
+      "cook_time": "40分钟",
+      "difficulty": "简单",
+      "rating": 8.3,
+      "recipe_url": "https://www.xiachufang.com/recipe/107130354/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0103",
+      "name": "古法酸梅汤｜夏日必备！酸酸甜甜超好喝",
+      "description": "乌梅、山楂、陈皮、甘草、桑葚等食材制作的家常菜",
+      "cuisine": "甜品",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "乌梅",
+        "山楂",
+        "陈皮",
+        "甘草",
+        "桑葚",
+        "洛神花",
+        "薄荷",
+        "桂花",
+        "水",
+        "冰糖"
+      ],
+      "cook_time": "40分钟",
+      "difficulty": "中等",
+      "rating": 8.8,
+      "recipe_url": "https://www.xiachufang.com/recipe/107355208/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0104",
+      "name": "雪媚娘(售卖6年自用配方)",
+      "description": "糯米粉①、糯米粉②、粟粉、白砂糖、牛奶等食材制作的家常菜",
+      "cuisine": "甜品",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "糯米粉①",
+        "糯米粉②",
+        "粟粉",
+        "白砂糖",
+        "牛奶",
+        "黄油",
+        "淡奶油"
+      ],
+      "cook_time": "40分钟",
+      "difficulty": "中等",
+      "rating": 9.0,
+      "recipe_url": "https://www.xiachufang.com/recipe/104268757/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0105",
+      "name": "简单易做空气炸锅烤牛奶甜品",
+      "description": "牛奶、鸡蛋、糖、芝士、玉米淀粉等食材制作的家常菜",
+      "cuisine": "甜品",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "牛奶",
+        "鸡蛋",
+        "糖",
+        "芝士",
+        "玉米淀粉"
+      ],
+      "cook_time": "40分钟",
+      "difficulty": "简单",
+      "rating": 7.6,
+      "recipe_url": "https://www.xiachufang.com/recipe/107095859/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0106",
+      "name": "低卡甜品‼️巨清新的🍋酸奶柠檬巴巴露亚",
+      "description": "牛奶、自制无糖酸奶、常温蛋黄、柠檬皮、吉利丁片等食材制作的家常菜",
+      "cuisine": "甜品",
+      "health_tag": "🟢轻食",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "牛奶",
+        "自制无糖酸奶",
+        "常温蛋黄",
+        "柠檬皮",
+        "吉利丁片",
+        "细砂糖"
+      ],
+      "cook_time": "40分钟",
+      "difficulty": "中等",
+      "rating": 9.0,
+      "recipe_url": "https://www.xiachufang.com/recipe/107449101/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0107",
+      "name": "青柠红茶巴斯克",
+      "description": "奶油奶酪、淡奶油、细砂糖、鸡蛋、低筋面粉等食材制作的家常菜",
+      "cuisine": "甜品",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "奶油奶酪",
+        "淡奶油",
+        "细砂糖",
+        "鸡蛋",
+        "低筋面粉",
+        "红茶包",
+        "吉利丁片",
+        "牛奶",
+        "柠檬汁+柠檬碎屑"
+      ],
+      "cook_time": "40分钟",
+      "difficulty": "中等",
+      "rating": 8.7,
+      "recipe_url": "https://www.xiachufang.com/recipe/107106680/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0108",
+      "name": "快手早餐*甜松饼",
+      "description": "低筋面粉、鸡蛋、牛奶或水、糖等食材制作的家常菜",
+      "cuisine": "甜品",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "低筋面粉",
+        "鸡蛋",
+        "牛奶或水",
+        "糖"
+      ],
+      "cook_time": "40分钟",
+      "difficulty": "简单",
+      "rating": 8.0,
+      "recipe_url": "https://www.xiachufang.com/recipe/107520608/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0109",
+      "name": "🧨快手小甜品｜草莓奶冻，酸甜又解腻！",
+      "description": "❤️奶冻食材❤️、牛奶、细砂糖、淡奶油、吉利丁等食材制作的家常菜",
+      "cuisine": "甜品",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "❤️奶冻食材❤️",
+        "牛奶",
+        "细砂糖",
+        "淡奶油",
+        "吉利丁",
+        "柠檬汁",
+        "❤️草莓酱❤️",
+        "草莓",
+        "白砂糖",
+        "柠檬汁适量"
+      ],
+      "cook_time": "40分钟",
+      "difficulty": "中等",
+      "rating": 8.8,
+      "recipe_url": "https://www.xiachufang.com/recipe/107301919/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0110",
+      "name": "像云朵一样柔软的牛奶软蛋糕",
+      "description": "蛋黄、牛奶、淡奶油、低筋面粉、食盐等食材制作的家常菜",
+      "cuisine": "甜品",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "蛋黄",
+        "牛奶",
+        "淡奶油",
+        "低筋面粉",
+        "食盐",
+        "蛋白",
+        "细砂糖",
+        "玉米淀粉",
+        "柠檬汁"
+      ],
+      "cook_time": "40分钟",
+      "difficulty": "中等",
+      "rating": 8.5,
+      "recipe_url": "https://www.xiachufang.com/recipe/107353730/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0111",
+      "name": "【紫米芋泥奶砖】会煮饭就能做的小甜品！",
+      "description": "紫糯米、水、椰子粉、炼乳、芋头等食材制作的家常菜",
+      "cuisine": "甜品",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "紫糯米",
+        "水",
+        "椰子粉",
+        "炼乳",
+        "芋头",
+        "紫薯",
+        "砂糖",
+        "椰浆",
+        "奶油奶酪"
+      ],
+      "cook_time": "40分钟",
+      "difficulty": "中等",
+      "rating": 8.5,
+      "recipe_url": "https://www.xiachufang.com/recipe/107003992/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0112",
+      "name": "【甜品！甜品！甜品！甜品！甜品！】",
+      "description": "等食材制作的家常菜",
+      "cuisine": "甜品",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [],
+      "cook_time": "40分钟",
+      "difficulty": "简单",
+      "recipe_url": "https://www.xiachufang.com/recipe_list/181764/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0113",
+      "name": "明明是素汤 却鲜得像鸡汤一样的「口蘑汤」",
+      "description": "口蘑、葱、香菜、盐、生抽等食材制作的家常菜",
+      "cuisine": "汤",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "口蘑",
+        "葱",
+        "香菜",
+        "盐",
+        "生抽",
+        "西红柿",
+        "嫩豆腐",
+        "香菇",
+        "肉丝",
+        "木耳"
+      ],
+      "cook_time": "90分钟",
+      "difficulty": "中等",
+      "rating": 7.9,
+      "recipe_url": "https://www.xiachufang.com/recipe/106432832/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0114",
+      "name": "无敌开胃•酸辣汤",
+      "description": "西红柿、嫩豆腐、香菇、肉丝、木耳等食材制作的家常菜",
+      "cuisine": "汤",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "西红柿",
+        "嫩豆腐",
+        "香菇",
+        "肉丝",
+        "木耳",
+        "金针菇",
+        "鸡蛋",
+        "香菜",
+        "水淀粉",
+        "盐"
+      ],
+      "cook_time": "90分钟",
+      "difficulty": "中等",
+      "rating": 8.1,
+      "recipe_url": "https://www.xiachufang.com/recipe/104405483/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0115",
+      "name": "【跟我做不会错】简单又好喝的西红柿鸡蛋汤，家常又营养哦",
+      "description": "西红柿、鸡蛋、香油、生抽、小葱等食材制作的家常菜",
+      "cuisine": "汤",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "西红柿",
+        "鸡蛋",
+        "香油",
+        "生抽",
+        "小葱",
+        "淀粉",
+        "盐"
+      ],
+      "cook_time": "90分钟",
+      "difficulty": "中等",
+      "rating": 8.2,
+      "recipe_url": "https://www.xiachufang.com/recipe/106087260/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0116",
+      "name": "三鲜菌菇汤",
+      "description": "鲜虾、鸡蛋、嫩豆腐、海鲜菇、香菇等食材制作的家常菜",
+      "cuisine": "汤",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "鲜虾",
+        "鸡蛋",
+        "嫩豆腐",
+        "海鲜菇",
+        "香菇",
+        "葱花",
+        "盐",
+        "胡椒粉",
+        "植物油"
+      ],
+      "cook_time": "90分钟",
+      "difficulty": "中等",
+      "rating": 8.0,
+      "recipe_url": "https://www.xiachufang.com/recipe/107188030/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0117",
+      "name": "夏天清爽解腻的黄瓜滑肉汤！太鲜美了！",
+      "description": "黄瓜、瘦肉、葱姜、红薯粉等食材制作的家常菜",
+      "cuisine": "汤",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "黄瓜",
+        "瘦肉",
+        "葱姜",
+        "红薯粉"
+      ],
+      "cook_time": "90分钟",
+      "difficulty": "简单",
+      "rating": 7.8,
+      "recipe_url": "https://www.xiachufang.com/recipe/107372613/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0118",
+      "name": "山药瘦肉汤",
+      "description": "山药、鲜猪肉、山药切片泡盐水、油/葱白等食材制作的家常菜",
+      "cuisine": "汤",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "山药",
+        "鲜猪肉",
+        "山药切片泡盐水",
+        "油/葱白"
+      ],
+      "cook_time": "90分钟",
+      "difficulty": "简单",
+      "rating": 8.6,
+      "recipe_url": "https://www.xiachufang.com/recipe/107512164/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0119",
+      "name": "玉米排骨汤",
+      "description": "排骨、甜玉米、胡萝卜、料酒、姜等食材制作的家常菜",
+      "cuisine": "汤",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "排骨",
+        "甜玉米",
+        "胡萝卜",
+        "料酒",
+        "姜",
+        "盐",
+        "白胡椒粉",
+        "小葱"
+      ],
+      "cook_time": "90分钟",
+      "difficulty": "中等",
+      "rating": 8.2,
+      "recipe_url": "https://www.xiachufang.com/recipe/106405041/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0120",
+      "name": "鲜掉眉毛的丝瓜炒花蛤，汤汁拌饭也是超级无敌！！",
+      "description": "丝瓜、花蛤、蒜沫、姜片、盐巴等食材制作的家常菜",
+      "cuisine": "汤",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "丝瓜",
+        "花蛤",
+        "蒜沫",
+        "姜片",
+        "盐巴",
+        "味精"
+      ],
+      "cook_time": "90分钟",
+      "difficulty": "中等",
+      "rating": 8.5,
+      "recipe_url": "https://www.xiachufang.com/recipe/107349332/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0121",
+      "name": "鲜香味美！巨好喝的山药排骨汤！！",
+      "description": "排骨、山药、胡萝卜、玉米、盐等食材制作的家常菜",
+      "cuisine": "汤",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "排骨",
+        "山药",
+        "胡萝卜",
+        "玉米",
+        "盐"
+      ],
+      "cook_time": "90分钟",
+      "difficulty": "简单",
+      "rating": 7.8,
+      "recipe_url": "https://www.xiachufang.com/recipe/107407712/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0122",
+      "name": "潮汕牛肉汤",
+      "description": "牛肉等食材制作的家常菜",
+      "cuisine": "汤",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "牛肉"
+      ],
+      "cook_time": "90分钟",
+      "difficulty": "简单",
+      "rating": 8.2,
+      "recipe_url": "https://www.xiachufang.com/recipe/107095716/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0123",
+      "name": "汤：皮蛋三鲜汤",
+      "description": "等食材制作的家常菜",
+      "cuisine": "汤",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [],
+      "cook_time": "90分钟",
+      "difficulty": "简单",
+      "rating": 7.7,
+      "recipe_url": "https://www.xiachufang.com/recipe/107412476/?recipe_type=1&page_scene=6",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0124",
+      "name": "菠菜鸡蛋汤",
+      "description": "菠菜、鸡蛋、菠菜、鸡蛋等食材制作的家常菜",
+      "cuisine": "汤",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "菠菜、鸡蛋",
+        "菠菜",
+        "鸡蛋"
+      ],
+      "cook_time": "90分钟",
+      "difficulty": "简单",
+      "rating": 7.6,
+      "recipe_url": "https://www.xiachufang.com/recipe/107347686/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0125",
+      "name": "汤鲜味美！适合天热喝的刮油神汤～丝瓜蘑菇汤",
+      "description": "丝瓜、白蘑菇、盐、胡椒粉、鸡精等食材制作的家常菜",
+      "cuisine": "汤",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "丝瓜",
+        "白蘑菇",
+        "盐",
+        "胡椒粉",
+        "鸡精"
+      ],
+      "cook_time": "90分钟",
+      "difficulty": "简单",
+      "rating": 7.4,
+      "recipe_url": "https://www.xiachufang.com/recipe/106491134/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0126",
+      "name": "虾滑菌菇汤",
+      "description": "鸡蛋、蘑菇、豆腐、虾滑等食材制作的家常菜",
+      "cuisine": "汤",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "鸡蛋",
+        "蘑菇",
+        "豆腐",
+        "虾滑"
+      ],
+      "cook_time": "90分钟",
+      "difficulty": "简单",
+      "rating": 8.7,
+      "recipe_url": "https://www.xiachufang.com/recipe/107488137/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0127",
+      "name": "巨鲜美的冬瓜丸子汤",
+      "description": "冬瓜、猪肉馅、冬瓜、猪肉馅、姜末、鸡蛋等食材制作的家常菜",
+      "cuisine": "汤",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "冬瓜、猪肉馅",
+        "冬瓜",
+        "猪肉馅",
+        "姜末",
+        "鸡蛋",
+        "生抽",
+        "蚝油",
+        "盐"
+      ],
+      "cook_time": "90分钟",
+      "difficulty": "中等",
+      "rating": 8.3,
+      "recipe_url": "https://www.xiachufang.com/recipe/106889995/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0128",
+      "name": "汤汤汤汤汤～～",
+      "description": "等食材制作的家常菜",
+      "cuisine": "汤",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [],
+      "cook_time": "90分钟",
+      "difficulty": "简单",
+      "recipe_url": "https://www.xiachufang.com/recipe_list/242837012929847296/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0129",
+      "name": "巨下饭的鱼香鸡蛋",
+      "description": "鸡蛋、大木耳、胡萝卜、蒜、蟹柳等食材制作的家常菜",
+      "cuisine": "快手菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "鸡蛋",
+        "大木耳",
+        "胡萝卜",
+        "蒜",
+        "蟹柳",
+        "咸蛋",
+        "内脂豆腐",
+        "开水",
+        "水淀粉",
+        "葱花"
+      ],
+      "cook_time": "15分钟",
+      "difficulty": "中等",
+      "rating": 7.6,
+      "recipe_url": "https://www.xiachufang.com/recipe/107607648/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0130",
+      "name": "蟹柳豆腐煲｜会开火就会做系列",
+      "description": "蟹柳、咸蛋、内脂豆腐、开水、水淀粉等食材制作的家常菜",
+      "cuisine": "快手菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "蟹柳",
+        "咸蛋",
+        "内脂豆腐",
+        "开水",
+        "水淀粉",
+        "葱花"
+      ],
+      "cook_time": "15分钟",
+      "difficulty": "中等",
+      "rating": 8.8,
+      "recipe_url": "https://www.xiachufang.com/recipe/107613730/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0131",
+      "name": "鸡米花版菠萝咕咾肉",
+      "description": "鸡米花、菠萝、彩椒、青椒、番茄酱等食材制作的家常菜",
+      "cuisine": "快手菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "鸡米花",
+        "菠萝",
+        "彩椒",
+        "青椒",
+        "番茄酱",
+        "生抽",
+        "白醋",
+        "糖",
+        "盐",
+        "淀粉"
+      ],
+      "cook_time": "15分钟",
+      "difficulty": "中等",
+      "rating": 3.0,
+      "recipe_url": "https://www.xiachufang.com/recipe/107731483/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0132",
+      "name": "不用揉面不用擀皮，南方人也能超简单复刻！",
+      "description": "中筋面粉、温水、酵母、白糖、猪油等食材制作的家常菜",
+      "cuisine": "快手菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "中筋面粉",
+        "温水",
+        "酵母",
+        "白糖",
+        "猪油"
+      ],
+      "cook_time": "15分钟",
+      "difficulty": "简单",
+      "rating": 8.4,
+      "recipe_url": "https://www.xiachufang.com/recipe/107578854/?recipe_type=1&page_scene=6",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0133",
+      "name": "家庭版～鱼香肉丝",
+      "description": "胡萝卜、木耳、姜、葱、里脊肉等食材制作的家常菜",
+      "cuisine": "快手菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "胡萝卜",
+        "木耳",
+        "姜",
+        "葱",
+        "里脊肉"
+      ],
+      "cook_time": "15分钟",
+      "difficulty": "简单",
+      "rating": 6.9,
+      "recipe_url": "https://www.xiachufang.com/recipe/107691482/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0134",
+      "name": "脆嫩爆炒绿豆芽｜不出水不软烂 快手家常菜",
+      "description": "绿豆芽、葱蒜、干辣椒、花椒、香菜等食材制作的家常菜",
+      "cuisine": "快手菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "绿豆芽",
+        "葱蒜",
+        "干辣椒",
+        "花椒",
+        "香菜",
+        "生抽",
+        "香醋"
+      ],
+      "cook_time": "15分钟",
+      "difficulty": "中等",
+      "rating": 2.0,
+      "recipe_url": "https://www.xiachufang.com/recipe/107746839/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0135",
+      "name": "白灼葱油蛏子",
+      "description": "蛏子、小葱、胡椒粉、醋、白糖等食材制作的家常菜",
+      "cuisine": "快手菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "蛏子",
+        "小葱",
+        "胡椒粉",
+        "醋",
+        "白糖",
+        "生抽",
+        "清水"
+      ],
+      "cook_time": "15分钟",
+      "difficulty": "中等",
+      "rating": 7.3,
+      "recipe_url": "https://www.xiachufang.com/recipe/107718941/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0136",
+      "name": "林大厨的肉沫土豆（超级下饭）",
+      "description": "土豆、猪肉沫、洋葱碎、红彩椒粒、蒜末等食材制作的家常菜",
+      "cuisine": "快手菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "土豆",
+        "猪肉沫",
+        "洋葱碎",
+        "红彩椒粒",
+        "蒜末",
+        "葱花",
+        "生抽",
+        "料酒",
+        "耗油",
+        "老抽"
+      ],
+      "cook_time": "15分钟",
+      "difficulty": "中等",
+      "rating": 3.0,
+      "recipe_url": "https://www.xiachufang.com/recipe/107727464/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0137",
+      "name": "✅挑战365天晚餐不重样第212天:盐葱猪排‼️",
+      "description": "梅花肉、小葱、大蒜等食材制作的家常菜",
+      "cuisine": "快手菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "梅花肉",
+        "小葱",
+        "大蒜"
+      ],
+      "cook_time": "15分钟",
+      "difficulty": "简单",
+      "rating": 7.0,
+      "recipe_url": "https://www.xiachufang.com/recipe/107591985/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0138",
+      "name": "木须肉（快手菜）",
+      "description": "木耳、黄瓜、胡萝卜、五花肉、鸡蛋等食材制作的家常菜",
+      "cuisine": "快手菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "木耳",
+        "黄瓜",
+        "胡萝卜",
+        "五花肉",
+        "鸡蛋",
+        "葱",
+        "姜"
+      ],
+      "cook_time": "15分钟",
+      "difficulty": "中等",
+      "rating": 1.0,
+      "recipe_url": "https://www.xiachufang.com/recipe/107733844/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0139",
+      "name": "杏鲍菇烧鸡腿",
+      "description": "鸡腿、杏鲍菇、大蒜、盐、胡椒粉等食材制作的家常菜",
+      "cuisine": "快手菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "鸡腿",
+        "杏鲍菇",
+        "大蒜",
+        "盐",
+        "胡椒粉",
+        "淀粉",
+        "食用油",
+        "料酒",
+        "生抽",
+        "蚝油"
+      ],
+      "cook_time": "15分钟",
+      "difficulty": "中等",
+      "rating": 5.0,
+      "recipe_url": "https://www.xiachufang.com/recipe/107690028/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0140",
+      "name": "鸡丁炒洋葱，超级简单下饭的家常菜，2个大鸡腿不够吃，大人孩子都爱吃每次都光盘！",
+      "description": "主料：手枪腿、洋葱、腌肉：生抽、土豆淀粉、奥尔良腌料等食材制作的家常菜",
+      "cuisine": "快手菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "主料：手枪腿",
+        "洋葱",
+        "腌肉：生抽",
+        "土豆淀粉",
+        "奥尔良腌料",
+        "小苏打",
+        "碗汁：生抽",
+        "蚝油",
+        "白糖",
+        "盐"
+      ],
+      "cook_time": "15分钟",
+      "difficulty": "中等",
+      "rating": 8.0,
+      "recipe_url": "https://www.xiachufang.com/recipe/107631920/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0141",
+      "name": "快手菜",
+      "description": "等食材制作的家常菜",
+      "cuisine": "快手菜",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [],
+      "cook_time": "15分钟",
+      "difficulty": "简单",
+      "recipe_url": "https://www.xiachufang.com/recipe_list/184937912549249024/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0142",
+      "name": "30天成功减重8斤，自己搭配的减脂餐（一）",
+      "description": "橄榄油、虾、紫菜、白玉菇、料酒等食材制作的家常菜",
+      "cuisine": "减脂餐",
+      "health_tag": "🟢轻食",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "橄榄油",
+        "虾",
+        "紫菜",
+        "白玉菇",
+        "料酒",
+        "盐",
+        "蛋清",
+        "胡椒粉",
+        "淀粉",
+        "香油"
+      ],
+      "cook_time": "20分钟",
+      "difficulty": "中等",
+      "rating": 7.8,
+      "recipe_url": "https://www.xiachufang.com/recipe/106463192/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0143",
+      "name": "减脂餐～低卡低脂的紫菜菌菇虾滑汤！鲜美好喝",
+      "description": "虾、紫菜、白玉菇、料酒、盐等食材制作的家常菜",
+      "cuisine": "减脂餐",
+      "health_tag": "🟢轻食",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "虾",
+        "紫菜",
+        "白玉菇",
+        "料酒",
+        "盐",
+        "蛋清",
+        "胡椒粉",
+        "淀粉",
+        "香油",
+        "葱"
+      ],
+      "cook_time": "20分钟",
+      "difficulty": "中等",
+      "rating": 8.4,
+      "recipe_url": "https://www.xiachufang.com/recipe/106965896/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0144",
+      "name": "低卡饱腹的减脂餐——无米豆腐炒蛋",
+      "description": "豆腐、鸡蛋、香肠、生菜等食材制作的家常菜",
+      "cuisine": "减脂餐",
+      "health_tag": "🟢轻食",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "豆腐",
+        "鸡蛋",
+        "香肠",
+        "生菜"
+      ],
+      "cook_time": "20分钟",
+      "difficulty": "简单",
+      "rating": 7.8,
+      "recipe_url": "https://www.xiachufang.com/recipe/107467325/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0145",
+      "name": "减脂餐--虾仁鸡蛋西蓝花",
+      "description": "西兰花、虾仁、胡萝卜、水煮鸡蛋、玉米粒等食材制作的家常菜",
+      "cuisine": "减脂餐",
+      "health_tag": "🟢轻食",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "西兰花",
+        "虾仁",
+        "胡萝卜",
+        "水煮鸡蛋",
+        "玉米粒",
+        "豌豆粒",
+        "生抽",
+        "醋",
+        "耗油",
+        "盐"
+      ],
+      "cook_time": "20分钟",
+      "difficulty": "中等",
+      "rating": 7.9,
+      "recipe_url": "https://www.xiachufang.com/recipe/106712670/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0146",
+      "name": "挑战一星期不重样减脂餐",
+      "description": "等食材制作的家常菜",
+      "cuisine": "减脂餐",
+      "health_tag": "🟢轻食",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [],
+      "cook_time": "20分钟",
+      "difficulty": "简单",
+      "rating": 7.4,
+      "recipe_url": "https://www.xiachufang.com/recipe/107635686/?recipe_type=1&page_scene=6",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0147",
+      "name": "解馋减脂餐！酸辣开胃又下饭的菠菜拌金针菇",
+      "description": "金针菇、菠菜、生抽、蒜末、醋等食材制作的家常菜",
+      "cuisine": "减脂餐",
+      "health_tag": "🟢轻食",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "金针菇",
+        "菠菜",
+        "生抽",
+        "蒜末",
+        "醋",
+        "蚝油",
+        "盐和糖",
+        "辣椒粉",
+        "小米辣",
+        "芝麻"
+      ],
+      "cook_time": "20分钟",
+      "difficulty": "中等",
+      "rating": 8.4,
+      "recipe_url": "https://www.xiachufang.com/recipe/106552737/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0148",
+      "name": "我要向全世界安利这个减脂餐！！！",
+      "description": "材料：、鸡胸肉、洋葱、玉米粒、腌制料：等食材制作的家常菜",
+      "cuisine": "减脂餐",
+      "health_tag": "🟢轻食",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "材料：",
+        "鸡胸肉",
+        "洋葱",
+        "玉米粒",
+        "腌制料：",
+        "料酒",
+        "生抽",
+        "耗油",
+        "老抽",
+        "黑胡椒粉"
+      ],
+      "cook_time": "20分钟",
+      "difficulty": "中等",
+      "rating": 7.7,
+      "recipe_url": "https://www.xiachufang.com/recipe/106568319/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0149",
+      "name": "低卡美味减脂餐 ｜ 青椒肉丝（鸡胸肉版）",
+      "description": "杂粮饭、鸡胸肉、青椒、蒜等食材制作的家常菜",
+      "cuisine": "减脂餐",
+      "health_tag": "🟢轻食",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "杂粮饭",
+        "鸡胸肉",
+        "青椒",
+        "蒜"
+      ],
+      "cook_time": "20分钟",
+      "difficulty": "简单",
+      "rating": 7.7,
+      "recipe_url": "https://www.xiachufang.com/recipe/106887580/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0150",
+      "name": "快手减脂餐❗️爆好吃的凉拌鸡丝荞麦面",
+      "description": "荞麦面、鸡胸肉、鸡蛋、黄瓜、葱花蒜末等食材制作的家常菜",
+      "cuisine": "减脂餐",
+      "health_tag": "🟢轻食",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "荞麦面",
+        "鸡胸肉",
+        "鸡蛋",
+        "黄瓜",
+        "葱花蒜末",
+        "小米椒"
+      ],
+      "cook_time": "20分钟",
+      "difficulty": "中等",
+      "rating": 8.5,
+      "recipe_url": "https://www.xiachufang.com/recipe/104095253/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0151",
+      "name": "一周高效刷脂餐不重样❗️六款低脂糙米波奇饭",
+      "description": "等食材制作的家常菜",
+      "cuisine": "减脂餐",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [],
+      "cook_time": "20分钟",
+      "difficulty": "简单",
+      "rating": 8.4,
+      "recipe_url": "https://www.xiachufang.com/recipe/107054388/?recipe_type=1&page_scene=6",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0152",
+      "name": "减脂餐～真的绝绝子！西蓝花口蘑炒鸡胸肉",
+      "description": "口蘑、西兰花、鸡胸肉、料酒、生抽等食材制作的家常菜",
+      "cuisine": "减脂餐",
+      "health_tag": "🟢轻食",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "口蘑",
+        "西兰花",
+        "鸡胸肉",
+        "料酒",
+        "生抽",
+        "淀粉",
+        "黑胡椒",
+        "蚝油",
+        "蒜",
+        "老抽"
+      ],
+      "cook_time": "20分钟",
+      "difficulty": "中等",
+      "rating": 7.6,
+      "recipe_url": "https://www.xiachufang.com/recipe/107706870/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0153",
+      "name": "减脂餐---茄子鸡蛋饼，被惊艳到了！！",
+      "description": "茄子、鸡蛋、葱花、面粉等食材制作的家常菜",
+      "cuisine": "减脂餐",
+      "health_tag": "🟢轻食",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "茄子",
+        "鸡蛋",
+        "葱花",
+        "面粉"
+      ],
+      "cook_time": "20分钟",
+      "difficulty": "简单",
+      "rating": 7.6,
+      "recipe_url": "https://www.xiachufang.com/recipe/107446345/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0154",
+      "name": "一周减脂餐•一人食•早中晚（含每餐大概卡路里）",
+      "description": "鸡蛋、玉米、甜椒、口蘑、秋葵等食材制作的家常菜",
+      "cuisine": "减脂餐",
+      "health_tag": "🟢轻食",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "鸡蛋",
+        "玉米",
+        "甜椒",
+        "口蘑",
+        "秋葵",
+        "鸡胸肉",
+        "西兰花",
+        "紫薯",
+        "胡萝卜",
+        "南瓜"
+      ],
+      "cook_time": "20分钟",
+      "difficulty": "中等",
+      "rating": 7.6,
+      "recipe_url": "https://www.xiachufang.com/recipe/106679746/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0155",
+      "name": "减脂餐-低脂无糖但香甜好吃的胡萝卜煎蛋",
+      "description": "鸡蛋、胡萝卜、盐、油等食材制作的家常菜",
+      "cuisine": "减脂餐",
+      "health_tag": "🟢轻食",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "鸡蛋",
+        "胡萝卜",
+        "盐",
+        "油"
+      ],
+      "cook_time": "20分钟",
+      "difficulty": "简单",
+      "rating": 8.0,
+      "recipe_url": "https://www.xiachufang.com/recipe/106405599/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    },
+    {
+      "id": "xc_0156",
+      "name": "减脂餐",
+      "description": "等食材制作的家常菜",
+      "cuisine": "减脂餐",
+      "health_tag": "🟢轻食",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [],
+      "cook_time": "20分钟",
+      "difficulty": "简单",
+      "recipe_url": "https://www.xiachufang.com/recipe_list/540817403475406849/",
+      "first_seen": "2026-07-05",
+      "updated_at": "2026-07-05"
+    }
+  ]
+};
+</script>
+<script src="food-data.js" onerror="console.log('food-data.js not found, using embedded data')"></script>
+<script>
+// ==================== Safe Storage ====================
+var _hist = [], _fav = [], _dis = [];
+try {
+  _hist = JSON.parse(localStorage.getItem('food_history') || '[]') || [];
+  _fav = JSON.parse(localStorage.getItem('food_favorites') || '[]') || [];
+  _dis = JSON.parse(localStorage.getItem('food_dislikes') || '[]') || [];
+} catch(e) {
+  console.log('localStorage unavailable, using memory-only storage');
+}
+
+// Sanitize stored records: remove null/undefined/invalid entries
+if (!Array.isArray(_hist)) _hist = [];
+if (!Array.isArray(_fav)) _fav = [];
+if (!Array.isArray(_dis)) _dis = [];
+_hist = _hist.filter(function(h) { return h && typeof h === 'object' && h.name; });
+_fav = _fav.filter(function(f) { return f && typeof f === 'string'; });
+_dis = _dis.filter(function(d) { return d && typeof d === 'string'; });
+
+var _storageOK = true;
+try { localStorage.setItem('_test','1'); localStorage.removeItem('_test'); } catch(e) { _storageOK = false; }
+
+function _save(key, val) {
+  try { if (_storageOK) localStorage.setItem(key, JSON.stringify(val)); } catch(e) {}
+}
+
+// Persist sanitized data to clean up corrupted entries from older versions
+_save('food_history', _hist);
+_save('food_favorites', _fav);
+_save('food_dislikes', _dis);
+
+// ==================== State ====================
+var state = {
+  currentTab: 'takeout',
+  excluded: new Set(),
+  mode: 'single',
+  rollCount: 0,
+  lastResult: null,
+};
+
+var foodHistory = _hist;
+var favorites = _fav;
+var dislikes = _dis;
+
+// ==================== Tab Config (FIXED) ====================
+var TAB_CONFIG = {
+  takeout: {
+    types: ['外卖', '下午茶'],
+    cuisines: ['快餐', '粉面', '茶点', '烧腊', '卤味', '糖水', '奶茶', '甜品'],
+    label: '🍜 点外卖',
+    rollText: '🎲 来一单',
+    placeholder: '饿了？来 roll 一个外卖！',
+    emoji: '🍜',
+  },
+  dineout: {
+    types: ['堂食'],
+    cuisines: ['火锅', '烤肉', '粤菜', '日料', '西餐', '自助', '川湘菜', '东南亚'],
+    label: '🍽️ 出去吃大餐',
+    rollText: '🎲 来一顿',
+    placeholder: '出去吃好的？来 roll 一个！',
+    emoji: '🍽️',
+  },
+  cook: {
+    types: ['自己做'],
+    cuisines: [],
+    label: '👩‍🍳 自己做',
+    rollText: '🎲 来做一个',
+    placeholder: '今天自己动手？来 roll 一个菜谱！',
+    emoji: '👩‍🍳',
+  },
+};
+
+// ==================== Init ====================
+function init() {
+  var hour = new Date().getHours();
+  if (hour >= 11 && hour < 14) {
+    switchTab('takeout');
+  } else if (hour >= 17 && hour < 20) {
+    switchTab('dineout');
+  } else {
+    switchTab('takeout');
+  }
+  updateUpdateTime();
+}
+
+function updateUpdateTime() {
+  var el = document.getElementById('updateTime');
+  if (foodData.generated_at) {
+    el.textContent = '最近更新: ' + foodData.generated_at;
+  }
+}
+
+// ==================== Filter ====================
+function toggleExclude(el) {
+  var cuisine = el.dataset.cuisine;
+  if (state.excluded.has(cuisine)) {
+    state.excluded.delete(cuisine);
+    el.classList.remove('exclude-active');
+  } else {
+    state.excluded.add(cuisine);
+    el.classList.add('exclude-active');
+  }
+}
+
+function selectMode(el) {
+  document.querySelectorAll('.mode-btn').forEach(function(b) { b.classList.remove('active'); });
+  el.classList.add('active');
+  state.mode = el.dataset.mode;
+}
+
+// ==================== Tab Switch ====================
+function switchTab(tab) {
+  state.currentTab = tab;
+  document.querySelectorAll('.tab-item').forEach(function(t) { t.classList.remove('active'); });
+  var tabEl = document.querySelector('[data-tab="' + tab + '"]');
+  if (tabEl) tabEl.classList.add('active');
+
+  var config = TAB_CONFIG[tab];
+  var area = document.getElementById('resultArea');
+  area.innerHTML = '<div class="result-placeholder">' +
+    '<span class="emoji">' + config.emoji + '</span>' +
+    '<p>' + config.placeholder + '</p>' +
+    '<button class="btn btn-roll" onclick="roll()">' + config.rollText + '</button>' +
+    '</div>';
+}
+
+// ==================== Data Filtering (FIXED) ====================
+function getFilteredItems(tab) {
+  var config = TAB_CONFIG[tab];
+  if (!config) return [];
+  var items = foodData.items || [];
+
+  return items.filter(function(item) {
+    // Exclude dislikes
+    if (dislikes.indexOf(item.name) !== -1) return false;
+    // Exclude checked cuisines
+    if (state.excluded.has(item.cuisine)) return false;
+    // Filter by type - MUST match
+    if (config.types.length > 0) {
+      if (config.types.indexOf(item.type) === -1) return false;
+    }
+    // Filter by cuisine (cook tab has empty cuisines = accept all)
+    if (config.cuisines.length > 0) {
+      if (config.cuisines.indexOf(item.cuisine) === -1) return false;
+    }
+    return true;
+  });
+}
+
+function getRandomItems(items, count) {
+  if (items.length === 0) return [];
+  if (items.length <= count) return items.slice();
+
+  var weights = items.map(function(item) {
+    var w = 1;
+    // Favorites get higher weight
+    if (favorites.indexOf(item.name) !== -1) w *= 2;
+    return w;
+  });
+
+  var selected = [];
+  var pool = items.slice();
+  var poolWeights = weights.slice();
+
+  for (var i = 0; i < count && pool.length > 0; i++) {
+    var totalWeight = poolWeights.reduce(function(a, b) { return a + b; }, 0);
+    var r = Math.random() * totalWeight;
+    var cumWeight = 0;
+    var pickedIndex = 0;
+    for (var j = 0; j < pool.length; j++) {
+      cumWeight += poolWeights[j];
+      if (r <= cumWeight) { pickedIndex = j; break; }
+    }
+    selected.push(pool[pickedIndex]);
+    pool.splice(pickedIndex, 1);
+    poolWeights.splice(pickedIndex, 1);
+  }
+  return selected;
+}
+
+// ==================== Roll ====================
+function roll() {
+  var filtered = getFilteredItems(state.currentTab);
+  if (filtered.length === 0) {
+    showToast('该分类下暂无数据，试试其他分类吧！');
+    return;
+  }
+  var count = state.mode === 'triple' ? 3 : 1;
+  var selected = getRandomItems(filtered, count);
+  if (selected.length === 0) {
+    showToast('没有更多选择了，试试调整筛选条件');
+    return;
+  }
+  state.lastResult = selected;
+  state.rollCount++;
+  if (state.rollCount >= 5) {
+    showToast('要不今天就吃这个吧！😆');
+    state.rollCount = 0;
+  }
+  renderResult(selected);
+}
+
+// ==================== Render ====================
+function renderResult(items) {
+  var area = document.getElementById('resultArea');
+  var html = '';
+  if (state.mode === 'triple' && items.length > 1) {
+    html = '<div class="triple-result">';
+    for (var i = 0; i < items.length; i++) html += renderCard(items[i]);
+    html += '</div>';
+  } else {
+    html = renderCard(items[0]);
+  }
+  // Big roll button
+  html += '<button class="btn btn-roll" style="margin-top:12px" onclick="roll()">🎲 再roll一次</button>';
+  // Action buttons
+  if (items.length === 1) {
+    html += '<div class="action-row" style="margin-top:8px">';
+    html += '<button class="btn btn-ok" onclick="markOk()">✅ 就它了</button>';
+    html += '<button class="btn btn-fav" onclick="toggleFav()">❤️ 收藏</button>';
+    html += '<button class="btn btn-no" onclick="markDislike()">🚫 不感兴趣</button>';
+    html += '</div>';
+  } else {
+    html += '<div class="action-row" style="margin-top:8px">';
+    for (var j = 0; j < items.length; j++) {
+      html += '<button class="btn btn-ok" onclick="markOkIndex(' + j + ')">✅ ' + escapeHtml(items[j].name.substring(0, 6)) + '</button>';
+    }
+    html += '</div>';
+  }
+  area.innerHTML = html;
+}
+
+function renderCard(item) {
+  var html = '<div class="result-card">';
+  html += '<div class="card-header">';
+  html += '<div class="card-name">' + escapeHtml(item.name) + '</div>';
+  html += '<div class="card-source">📌 ' + escapeHtml(item.source || '') + '</div>';
+  html += '</div>';
+  html += '<div class="card-desc">' + escapeHtml(item.description || '') + '</div>';
+  html += '<div class="card-tags">';
+  html += '<span class="tag tag-cuisine">🏷️ ' + escapeHtml(item.cuisine || '') + '</span>';
+  var healthClass = 'yellow';
+  if (item.health_tag) {
+    if (item.health_tag.indexOf('轻食') !== -1) healthClass = '';
+    else if (item.health_tag.indexOf('热量') !== -1) healthClass = 'orange';
+    else if (item.health_tag.indexOf('滋补') !== -1) healthClass = 'blue';
+    else if (item.health_tag.indexOf('适中') !== -1) healthClass = 'yellow';
+  }
+  html += '<span class="tag tag-health ' + healthClass + '">' + escapeHtml(item.health_tag || '🟡适中') + '</span>';
+  html += '<span class="tag tag-price">' + escapeHtml(item.price_level || '💰💰') + '</span>';
+  html += '<span class="tag tag-type">' + escapeHtml(item.type || '') + '</span>';
+  html += '</div>';
+
+  // Extra info
+  var hasExtra = item.rating || item.avg_price || item.tag || item.type === '自己做';
+  if (hasExtra) {
+    html += '<div class="card-extra">';
+    html += '<div class="card-extra-row">';
+    if (item.rating) html += '<span class="card-extra-item">⭐ ' + item.rating + '</span>';
+    if (item.avg_price) html += '<span class="card-extra-item">💰 ¥' + item.avg_price + '/人</span>';
+    if (item.tag) html += '<span class="card-extra-item">🍽️ ' + escapeHtml(item.tag) + '</span>';
+    html += '</div>';
+    if (item.type === '自己做') {
+      var cookInfo = '';
+      if (item.cook_time) cookInfo += '⏱️ ' + escapeHtml(item.cook_time);
+      if (item.difficulty) cookInfo += (cookInfo ? '  ' : '') + '📊 ' + escapeHtml(item.difficulty);
+      if (cookInfo) html += '<div style="margin-top:6px;font-size:13px">' + cookInfo + '</div>';
+      if (item.ingredients && item.ingredients.length > 0) {
+        html += '<div style="margin-top:6px;font-size:13px">🥘 食材: ' + escapeHtml(item.ingredients.join('、')) + '</div>';
+      }
+      if (item.recipe_url) {
+        html += '<a href="' + escapeHtml(item.recipe_url) + '" target="_blank" class="card-recipe-link">📖 查看菜谱详情 →</a>';
+      }
+    }
+    html += '</div>';
+  }
+  html += '</div>';
+  return html;
+}
+
+// ==================== Actions ====================
+function markOk() {
+  if (!state.lastResult || state.lastResult.length === 0) return;
+  addToHistory(state.lastResult[0]);
+  showToast('就它了！' + state.lastResult[0].name + ' 🎉');
+}
+
+function markOkIndex(index) {
+  if (!state.lastResult || !state.lastResult[index]) return;
+  addToHistory(state.lastResult[index]);
+  showToast('就它了！' + state.lastResult[index].name + ' 🎉');
+}
+
+function toggleFav() {
+  if (!state.lastResult || state.lastResult.length === 0) return;
+  var item = state.lastResult[0];
+  var idx = favorites.indexOf(item.name);
+  if (idx === -1) {
+    favorites.push(item.name);
+    showToast('已收藏 ' + item.name + ' ❤️');
+  } else {
+    favorites.splice(idx, 1);
+    showToast('已取消收藏');
+  }
+  _save('food_favorites', favorites);
+}
+
+function markDislike() {
+  if (!state.lastResult || state.lastResult.length === 0) return;
+  var item = state.lastResult[0];
+  dislikes.push(item.name);
+  _save('food_dislikes', dislikes);
+  showToast('已加入不感兴趣，不再推荐 🚫');
+  roll();
+}
+
+// ==================== Record Overlay ====================
+function openRecord() {
+  try {
+    renderHistory();
+    renderFavorites();
+    renderDislikes();
+    var overlay = document.getElementById('recordOverlay');
+    overlay.style.display = 'block';
+    overlay.classList.add('show');
+  } catch(e) {
+    console.error('openRecord error:', e);
+    alert('打开记录失败: ' + e.message);
+  }
+}
+
+function closeRecord() {
+  var overlay = document.getElementById('recordOverlay');
+  overlay.classList.remove('show');
+  overlay.style.display = 'none';
+}
+
+function addToHistory(item) {
+  if (!item || !item.name) return;
+  var existing = foodHistory.filter(function(h) { return h && h.name === item.name; });
+  if (existing.length > 0) {
+    showToast('这个之前选过啦！' + item.name + ' 🔄');
+    return;
+  }
+  foodHistory.unshift({
+    name: item.name,
+    cuisine: item.cuisine,
+    source: item.source,
+    time: new Date().toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }),
+  });
+  if (foodHistory.length > 5) foodHistory = foodHistory.slice(0, 5);
+  _save('food_history', foodHistory);
+}
+
+function renderHistory() {
+  var el = document.getElementById('historyList');
+  if (!el) return;
+  // Defensive: drop any corrupted entries
+  foodHistory = foodHistory.filter(function(h) { return h && typeof h === 'object' && h.name; });
+  if (foodHistory.length === 0) {
+    el.innerHTML = '<div style="color:var(--brown-light);font-size:14px;padding:12px;text-align:center">暂无记录，选一个就它了！</div>';
+    return;
+  }
+  var html = '';
+  for (var i = 0; i < foodHistory.length; i++) {
+    var h = foodHistory[i];
+    if (!h || !h.name) continue;
+    html += '<div class="record-item">';
+    html += '<div style="flex:1;min-width:0">';
+    html += '<div class="name">' + escapeHtml(h.name) + '</div>';
+    html += '<div class="meta">' + escapeHtml(h.cuisine || '') + ' · ' + escapeHtml(h.source || '') + ' · ' + escapeHtml(h.time || '') + '</div>';
+    html += '</div>';
+    html += '<button class="del-btn" data-action="del-history" data-index="' + i + '">✕</button>';
+    html += '</div>';
+  }
+  el.innerHTML = html;
+}
+
+function renderFavorites() {
+  var el = document.getElementById('favList');
+  if (!el) return;
+  if (favorites.length === 0) {
+    el.innerHTML = '<div style="color:var(--brown-light);font-size:14px;padding:12px;text-align:center">暂无收藏，遇到喜欢的点❤️收藏</div>';
+    return;
+  }
+  var html = '';
+  for (var i = 0; i < favorites.length; i++) {
+    var name = favorites[i];
+    var item = (foodData.items || []).find(function(it) { return it.name === name; });
+    var meta = item ? (item.cuisine + ' · ' + item.source) : '';
+    html += '<div class="record-item">';
+    html += '<div style="flex:1;min-width:0">';
+    html += '<div class="name">' + escapeHtml(name) + '</div>';
+    if (meta) html += '<div class="meta">' + escapeHtml(meta) + '</div>';
+    html += '</div>';
+    html += '<button class="del-btn" data-action="del-fav" data-index="' + i + '">✕</button>';
+    html += '</div>';
+  }
+  el.innerHTML = html;
+}
+
+function renderDislikes() {
+  var el = document.getElementById('dislikeList');
+  if (!el) return;
+  if (dislikes.length === 0) {
+    el.innerHTML = '<div style="color:var(--brown-light);font-size:14px;padding:12px;text-align:center">暂无不感兴趣的项目</div>';
+    return;
+  }
+  var html = '';
+  for (var i = 0; i < dislikes.length; i++) {
+    var name = dislikes[i];
+    html += '<div class="record-item">';
+    html += '<div style="flex:1;min-width:0">';
+    html += '<div class="name">' + escapeHtml(name) + '</div>';
+    html += '</div>';
+    html += '<button class="del-btn" data-action="del-dislike" data-index="' + i + '">✕</button>';
+    html += '</div>';
+  }
+  el.innerHTML = html;
+}
+
+// Event delegation for delete buttons (avoids inline onclick escaping issues)
+document.addEventListener('click', function(e) {
+  var el = e.target;
+  while (el && el !== document) {
+    if (el.getAttribute && el.getAttribute('data-action')) { break; }
+    el = el.parentNode;
+  }
+  if (!el || el === document) return;
+  var action = el.getAttribute('data-action');
+  var idx = parseInt(el.getAttribute('data-index'), 10);
+  if (isNaN(idx)) return;
+  
+  if (action === 'del-history') {
+    foodHistory.splice(idx, 1);
+    _save('food_history', foodHistory);
+    renderHistory();
+    showToast('已删除记录');
+  } else if (action === 'del-fav') {
+    var favName = favorites[idx];
+    favorites.splice(idx, 1);
+    _save('food_favorites', favorites);
+    renderFavorites();
+    showToast('已取消收藏' + (favName ? ' ' + favName : ''));
+  } else if (action === 'del-dislike') {
+    var dName = dislikes[idx];
+    dislikes.splice(idx, 1);
+    _save('food_dislikes', dislikes);
+    renderDislikes();
+    showToast('已恢复推荐' + (dName ? ' ' + dName : ''));
+  }
+});
+
+// ==================== Toast ====================
+function showToast(msg) {
+  var toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(function() { toast.classList.remove('show'); }, 2500);
+}
+
+// ==================== Refresh ====================
+function refreshData() {
+  var ts = Date.now();
+  var oldScript = document.querySelector('script[src^="food-data.js"]');
+  if (oldScript) oldScript.remove();
+  var script = document.createElement('script');
+  script.src = 'food-data.js?t=' + ts;
+  script.onload = function() {
+    updateUpdateTime();
+    showToast('数据已刷新！共 ' + (foodData.items || []).length + ' 条 🎉');
+  };
+  script.onerror = function() {
+    showToast('刷新失败，使用当前数据');
+  };
+  document.head.appendChild(script);
+}
+
+// ==================== Utils ====================
+function escapeHtml(text) {
+  if (!text) return '';
+  var div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+try {
+  init();
+} catch(e) {
+  console.error('Init error:', e);
+}</script>
+</body>
+</html>
