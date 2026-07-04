@@ -49,7 +49,8 @@ jobs:
         git config --local user.name "GitHub Action"
         git add data/newsData.json data/meta.json
         git commit -m "自动更新AI资讯 - $(date +'%Y-%m-%d %H:%M')"
-        git push
+        git pull --rebase origin main
+        git push origin main
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     
