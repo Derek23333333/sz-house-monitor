@@ -1590,10 +1590,10 @@ function filterInsp(cat,btn){
 // Build News Cards
 function buildNews(){
   var grid=document.getElementById('newsGrid');
-  // Sort by date descending
+  grid.innerHTML='';
   newsData.sort(function(a,b){return new Date(b.date)-new Date(a.date);});
   newsData.forEach(function(n,i){
-    var audLabel=n.audience==='beginner'?'\u2728 \u5c0f\u767d':n.audience==='expert'?'\ud83d\ude80 \u5927\u4f6c':'\ud83c\udf10 \u6240\u6709\u4eba';
+    var audLabel=n.audience==='beginner'?'✨ 小白':n.audience==='expert'?'🚀 大佬':'🌐 所有人';
     var audClass=n.audience==='beginner'?'badge-beginner':n.audience==='expert'?'badge-expert':'badge-all';
     var card=document.createElement('div');
     card.className='news-card';
@@ -1601,11 +1601,12 @@ function buildNews(){
     card.innerHTML=
       '<div class="news-header"><h4>'+n.title+'</h4><span class="news-badge '+audClass+'">'+audLabel+'</span></div>'+
       '<div class="news-summary">'+n.summary+'</div>'+
-      '<div class="news-meta"><span>\ud83d\udcc5 '+n.date+'</span><span class="news-tag">'+n.category+'</span><span>\ud83d\udcf0 '+n.source+'</span></div>';
+      '<div class="news-meta"><span>📅 '+n.date+'</span><span class="news-tag">'+n.category+'</span><span>📰 '+n.source+'</span></div>';
     card.onclick=function(){ openModal(i); };
     grid.appendChild(card);
   });
 }
+
 
 // News Modal
 function openModal(i){
