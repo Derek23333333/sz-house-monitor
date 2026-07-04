@@ -1591,7 +1591,8 @@ function filterInsp(cat,btn){
 function buildNews(){
   var grid=document.getElementById('newsGrid');
   grid.innerHTML='';
-  newsData.sort(function(a,b){return new Date(b.date)-new Date(a.date);});
+  // Sort by date descending (ISO: YYYY-MM-DD, string comparison works perfectly)
+  newsData.sort(function(a,b){return a.date>b.date?-1:a.date<b.date?1:0;});
   newsData.forEach(function(n,i){
     var audLabel=n.audience==='beginner'?'✨ 小白':n.audience==='expert'?'🚀 大佬':'🌐 所有人';
     var audClass=n.audience==='beginner'?'badge-beginner':n.audience==='expert'?'badge-expert':'badge-all';
