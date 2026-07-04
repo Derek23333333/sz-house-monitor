@@ -1590,6 +1590,8 @@ function filterInsp(cat,btn){
 // Build News Cards
 function buildNews(){
   var grid=document.getElementById('newsGrid');
+  // Sort by date descending
+  newsData.sort(function(a,b){return new Date(b.date)-new Date(a.date);});
   newsData.forEach(function(n,i){
     var audLabel=n.audience==='beginner'?'\u2728 \u5c0f\u767d':n.audience==='expert'?'\ud83d\ude80 \u5927\u4f6c':'\ud83c\udf10 \u6240\u6709\u4eba';
     var audClass=n.audience==='beginner'?'badge-beginner':n.audience==='expert'?'badge-expert':'badge-all';
