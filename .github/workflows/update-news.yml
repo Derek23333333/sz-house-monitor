@@ -1,0 +1,60 @@
+name: 更新AI资讯数据
+
+on:
+  schedule:
+    # 每小时的第0分钟运行
+    - cron: '0 * * * *'
+  
+  # 允许手动触发
+  workflow_dispatch:
+
+jobs:
+  update-news:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: 设置Python环境
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: 安装依赖
+      run: |
+        pip install -r requirements.txt
+    
+    - name: 爬取最新AI资讯
+      id: crawl
+      continue-on-error: true  # 如果爬取失败，继续运行
+      run: |
+        python .github/scripts/update_news.py
+      timeout-minutes: 5  # 设置超时时间
+    
+    - name: 检查是否有更新
+      id: check
+      run: |
+        git diff --quiet data/newsData.json data/meta.json || echo "updated=true" >> $GITHUB_OUTPUT
+    
+    - name: 提交并推送更新
+      if: steps.check.outputs.updated == 'true'
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add data/newsData.json data/meta.json
+        git commit -m "自动更新AI资讯 - $(date +'%Y-%m-%d %H:%M')"
+        git push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: 如果没有更新，输出日志
+      if: steps.check.outputs.updated != 'true'
+      run: |
+        echo "没有新的AI资讯，保持现有数据"
+        echo "现有数据条数: $(cat data/newsData.json | python -c 'import json,sys; print(len(json.load(sys.stdin)))')"
