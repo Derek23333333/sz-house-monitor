@@ -1,0 +1,12 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2026-07-04",
+  "description": "AI场景经管部 - 数据文件",
+  "files": {
+    "inspData": "灵感池数据 (25个场景)",
+    "newsData": "今日动态数据 (15条AI资讯)",
+    "timelineData": "知识库-时间线 (18个节点)",
+    "dictData": "知识库-概念词典 (15个概念)",
+    "dailyTipsData": "每日AI锦囊 (30条)"
+  }
+}
