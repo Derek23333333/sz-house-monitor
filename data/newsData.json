@@ -1,0 +1,162 @@
+[
+  {
+    "category": "大模型",
+    "audience": "expert",
+    "date": "7月4日",
+    "source": "钛媒体",
+    "sourceUrl": "https://www.tmtpost.com/8052685.html",
+    "title": "英伟达开源双塔扩散语言模型，大模型进入「并行生成」时代",
+    "summary": "Nemotron-Labs-TwoTower采用60B双塔架构，生成吞吐量提升2.42倍，打破逐Token自回归范式。保留98.7%质量的同时实现架构层面的范式切换。",
+    "detail": "英伟达于2026年7月开源Nemotron-Labs-TwoTower双塔扩散语言模型，采用60B参数双塔架构（上下文塔+去噪塔），通过并行生成机制突破传统自回归模型逐Token生成的限制。\n\n在保留98.7%原版生成质量的前提下，将文本生成吞吐量提升2.42倍。综合基准测试中MMLU从78.56降至78.24，ARC-Challenge从91.72升至92.66，代码和数学任务有小幅下滑但常识推理表现稳定。\n\n该模型采用NVIDIA Nemotron Open Model License协议允许商用，推理服务提供商可大幅降低单位生成成本，边缘设备厂商有望获得更好的AI交互体验，可能推动未来大模型从纯自回归转向混合架构。"
+  },
+  {
+    "category": "大模型",
+    "audience": "all",
+    "date": "7月1日",
+    "source": "腾讯新闻",
+    "sourceUrl": "https://new.qq.com/rain/a/20260701A01RY800",
+    "title": "Anthropic发布Claude Sonnet 5：低价版「小Opus」登场",
+    "summary": "能力接近Opus 4.8但价格更低，API首发窗口至8月31日。强化Agent能力，支持浏览器和终端工具调用。",
+    "detail": "7月1日，Anthropic推出Claude Sonnet 5，定位为「便宜版Opus」。能力接近Opus 4.8但价格更低，API首发窗口期至8月31日。\n\n新模型强化Agent能力，支持浏览器和终端工具调用。同时发布面向科研场景的Claude Science平台，集成60+科研数据库和工具包，诺奖得主Jumper加盟。\n\n此举标志着AI巨头在模型能力「民主化」方向上的重要一步——不再只有最高端模型才具备强Agent能力，中杯模型也能胜任复杂任务。"
+  },
+  {
+    "category": "大模型",
+    "audience": "expert",
+    "date": "7月1日",
+    "source": "腾讯新闻",
+    "sourceUrl": "https://new.qq.com/rain/a/20260701A01RY800",
+    "title": "美团LongCat-2.0调用量跻身全球前三",
+    "summary": "1.6万亿参数MoE架构，原生1M超长上下文。OpenRouter平台调用量仅次于Claude Opus 4.8，缓存免费策略成效显著。",
+    "detail": "6月30日，美团正式发布采用MoE架构的LongCat-2.0大模型，总参数1.6万亿，原生支持1M超长上下文。\n\nPreview版本在OpenRouter平台调用量跻身全球前三，在Claude Code场景月调用量仅次于Claude Opus 4.8。凭借缓存免费策略和高性价比，迅速获得开发者青睐。\n\n这表明中国大模型在全球开发者生态中的影响力持续上升，从「追赶」进入「并跑」阶段。"
+  },
+  {
+    "category": "大模型",
+    "audience": "expert",
+    "date": "6月30日",
+    "source": "IT时代网",
+    "sourceUrl": "https://new.qq.com/rain/a/20260701A01RY800",
+    "title": "DeepSeek联合北大发布DSpark推理加速框架",
+    "summary": "半自回归推测解码新方法，DeepSeek-V4推理速度提升60%-85%。创始人梁文锋亲自参与，框架已开源并适配Qwen3等主流模型。",
+    "detail": "6月30日，DeepSeek团队联合北京大学发布DSpark论文，提出半自回归推测解码新方法。在DeepSeek-V4线上系统中推理速度提升60%至85%。创始人梁文锋亲自参与研发，框架已开源并适配阿里Qwen3等主流模型。推理加速是大模型落地的核心瓶颈之一。DSpark通过推测解码大幅降低首Token延迟和整体生成时间，对实时交互场景意义重大。"
+  },
+  {
+    "category": "新工具",
+    "audience": "expert",
+    "date": "7月3日",
+    "source": "猴岛",
+    "sourceUrl": "https://www.houdao.com/d/15404",
+    "title": "Anthropic发布Claude Science：诺奖得主加盟的科研工作台",
+    "summary": "集成60+科研数据库和工具包，覆盖基因组学、蛋白质结构、化学信息学等前沿领域。输出附带完整执行代码，支持可追溯与可复现。",
+    "detail": "2026年7月3日，Anthropic正式发布Claude Science，定位为面向科学家的集成工作台。核心创新在于构建了集成环境，将超过60个科研领域常用数据库和工具包预装进统一对话界面，涵盖基因组学、蛋白质结构分析、单细胞分析、化学信息学等领域。研究人员可通过自然语言指令让AI代理执行数据查询、分析、图表绘制乃至论文草稿撰写等复杂任务。"
+  },
+  {
+    "category": "新工具",
+    "audience": "all",
+    "date": "7月4日",
+    "source": "钛媒体",
+    "sourceUrl": "https://www.tmtpost.com/8052685.html",
+    "title": "微软Project Aion曝光：Copilot就是整个操作系统",
+    "summary": "AI原生操作系统实验项目，无传统开始菜单和桌面图标，完全依赖Copilot作为交互核心。标志着文件+应用范式向AI+上下文转变。",
+    "detail": "微软Project Aion是2024年启动的AI原生操作系统实验项目，基于Edge浏览器和轻量化Web代码库构建，完全依赖Copilot作为交互核心，无传统开始菜单和桌面图标。该系统不兼容传统Win32程序，仅支持Web应用。这标志着操作系统从文件加应用向AI加上下文的范式转变。"
+  },
+  {
+    "category": "新工具",
+    "audience": "beginner",
+    "date": "7月1日",
+    "source": "AI科技日报",
+    "sourceUrl": "https://new.qq.com/rain/a/20260702A01OWM00",
+    "title": "BNB Agent Studio上线主网：一键创建AI Agent",
+    "summary": "AI Agent开发平台正式上线，降低智能体开发门槛。任何人都能创建和部署自己的AI智能体。",
+    "detail": "2026年7月1日，BNB Chain宣布AI Agent开发平台BNB Agent Studio正式上线主网。该平台大幅降低AI Agent开发门槛，用户无需深厚的技术背景即可创建、配置和部署自己的AI智能体。这标志着Agent开发从少数人的特权走向大众化。"
+  },
+  {
+    "category": "行业应用",
+    "audience": "beginner",
+    "date": "7月4日",
+    "source": "广州日报",
+    "sourceUrl": "https://new.qq.com/rain/a/20260704A04ZM600",
+    "title": "广州发布政务AI中枢「穗智政」，总投资40亿元",
+    "summary": "全栈式政务AI体系，639实践路径推动数字政府智能化转型。百信广州整机智能制造基地同步落地。",
+    "detail": "7月4日，广州市政务服务和数据管理局正式发布穗智政政务人工智能中枢。实行639实践路径，总投资40亿元，百信广州整机智能制造基地项目同步落地签约。这是继深圳之后，大湾区又一城市全面推进政务AI化。"
+  },
+  {
+    "category": "行业应用",
+    "audience": "all",
+    "date": "7月4日",
+    "source": "财联社",
+    "sourceUrl": "https://www.toutiao.com/article/7658475579783660082",
+    "title": "工信部等八部门：工业互联网+AI融合，2030年核心产业破2.5万亿",
+    "summary": "深化AI与工业互联网融合应用，工业智能体、创成式设计等加速落地。算力设施成关键底座。",
+    "detail": "工信部等八部门印发《关于推动工业互联网高质量发展的实施意见》，提出深化人工智能与工业互联网融合应用，到2030年推动核心产业增加值突破2.5万亿元。文件明确支持发展平台+大模型、平台+数字孪生等新业态。"
+  },
+  {
+    "category": "行业应用",
+    "audience": "expert",
+    "date": "7月2日",
+    "source": "36氪/量子位",
+    "sourceUrl": "https://blog.csdn.net/aibridge/article/details/162531753",
+    "title": "具身智能赛道资本涌入：自变量估值突破200亿元",
+    "summary": "两月连融四轮，30余家机构参与。Etched完成8亿美元融资，Physical AI成资本最大热点。",
+    "detail": "具身智能正在成为2026年AI领域最大的资本集聚方向。自变量在两个月内连续完成B+、B++、C三轮融资，投后估值突破200亿元。AI芯片领域，Etched完成8亿美元融资，Karpathy、李飞飞、Hinton均为投资方。"
+  },
+  {
+    "category": "政策",
+    "audience": "all",
+    "date": "7月1日",
+    "source": "中国商界",
+    "sourceUrl": "https://www.163.com/dy/article/L0TUM89U0512F5G0.html",
+    "title": "国常会部署AI高质量发展：四大政策要点落地",
+    "summary": "开放政企场景、新建万卡智算中心、芯片研发补贴加码、强化高质量数据供给。从审议到执行仅两天。",
+    "detail": "6月29日国常会定调、7月1日政策正式落地，从审议到执行仅用两天。四大政策要点直接利好制造业AI商业化：首次在国常会层级明确要求开放政企场景，政府和国企将成为AI应用的大规模采购方。"
+  },
+  {
+    "category": "政策",
+    "audience": "expert",
+    "date": "7月3日",
+    "source": "腾讯新闻",
+    "sourceUrl": "https://new.qq.com/rain/a/20260704A057MG00",
+    "title": "智能体互联「国标」正式发布：Agent时代的TCP/IP",
+    "summary": "7项国家标准规范智能体跨系统、跨平台、跨场景互联协作。MCP/A2A等通信协议趋于标准化。",
+    "detail": "7月3日，《人工智能 智能体互联》7项国家标准正式发布，规范智能体跨系统、跨平台、跨场景互联协作。这标志着Agent通信协议从各自为战走向标准化，类似于互联网时代的TCP/IP协议统一。"
+  },
+  {
+    "category": "政策",
+    "audience": "beginner",
+    "date": "7月3日",
+    "source": "参考消息",
+    "sourceUrl": "https://new.qq.com/rain/a/20260704A04ZM600",
+    "title": "国务院「十五五」规划：推进AI全学段教育",
+    "summary": "从小学到大学全面普及AI教育，人工智能+教育行动深入实施，提升全民AI素养。",
+    "detail": "7月3日，国务院发布《教育发展十五五规划》，提出推进人工智能全学段教育，提升学生AI素养。深入实施国家教育数字化战略，开展人工智能+教育行动。"
+  },
+  {
+    "category": "新概念",
+    "audience": "expert",
+    "date": "智源2026十大趋势",
+    "source": "新华网",
+    "sourceUrl": "https://www.news.cn/tech/20260108/b99127c88a4640bbab49e5c6294264d2/c.html",
+    "title": "世界模型成为AGI共识方向：从预测词到预测世界状态",
+    "summary": "AI核心范式从Next-Token Prediction转向Next-State Prediction（NSP），学习物理规律、时空连续性与因果关系。",
+    "detail": "智源研究院发布《2026十大AI技术趋势》指出：AI的演进核心正发生关键转移——从追求参数规模的语言学习，迈向对物理世界底层秩序的深刻理解与建模。从预测下一个词跨越到预测世界的下一个状态。"
+  },
+  {
+    "category": "新概念",
+    "audience": "all",
+    "date": "7月4日",
+    "source": "钛媒体",
+    "sourceUrl": "https://www.tmtpost.com/8052685.html",
+    "title": "Meta年烧1350亿美元，扎克伯格承认超级智能「卡壳」",
+    "summary": "资本支出预计达1250-1450亿美元，但AI智能体技术进展慢于预期，预计3-6个月后才能显现成果。",
+    "detail": "Meta 2026年资本支出预计达1250亿至1450亿美元。与CoreWeave的算力租赁协议累计超350亿美元。但扎克伯格承认AI智能体技术进展慢于预期，预计成果需3至6个月才能显现。"
+  },
+  {
+    "category": "新概念",
+    "audience": "expert",
+    "date": "7月3日",
+    "source": "盐城市互联网协会",
+    "sourceUrl": "https://new.qq.com/rain/a/20260704A057MG00",
+    "title": "北京发布AI赋能科研方案：2028年建成科学智能创新中枢",
+    "summary": "AI Scientist从辅助工具升级为自主研究主体。结合自动化实验室加速新材料与药物研发。",
+    "detail": "7月3日，北京印发《北京市加快推进人工智能赋能科学研究实施方案》，提出到2028年建成辐射全球的科学智能创新中枢。AI在科研中的角色正从辅助工具升级为自主研究的AI科学家。"
+  }
+]
