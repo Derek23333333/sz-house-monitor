@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 自动爬取最新AI资讯并更新 newsData.json
-支持多个数据源，带错误处理和去重
+v2: 扩大回溯范围、提高保留上限、智能排序去重
 """
 
 import json
@@ -32,7 +32,6 @@ def parse_date(date_str):
     if not date_str:
         return datetime.now().strftime('%Y-%m-%d')
     
-    # 尝试多种日期格式
     formats = [
         '%Y-%m-%d',
         '%Y年%m月%d日',
@@ -43,7 +42,7 @@ def parse_date(date_str):
     for fmt in formats:
         try:
             parsed = datetime.strptime(date_str.strip(), fmt)
-            if parsed.year == 1900:  # 只有月日的情况
+            if parsed.year == 1900:
                 parsed = parsed.replace(year=datetime.now().year)
             return parsed.strftime('%Y-%m-%d')
         except:
@@ -51,20 +50,19 @@ def parse_date(date_str):
     
     return datetime.now().strftime('%Y-%m-%d')
 
-def scrape_aitop100():
-    """爬取 AITOP100 的AI日报"""
+def scrape_aitop100(days_back=30):
+    """爬取 AITOP100 的AI日报，可配置回溯天数"""
     news_list = []
     
     try:
-        # 获取最近3天的日报
         base_url = "https://www.aitop100.cn/ai-daily"
         
-        for days_ago in range(3):
+        for days_ago in range(days_back):
             date = datetime.now() - timedelta(days=days_ago)
             date_str = date.strftime('%Y-%m-%d')
             url = f"{base_url}-{date_str}"
             
-            print(f"  爬取 AITOP100: {url}")
+            print(f"  爬取 AITOP100 [{days_ago+1}/{days_back}]: {url}")
             html = fetch_url(url)
             
             if not html:
@@ -72,37 +70,30 @@ def scrape_aitop100():
             
             soup = BeautifulSoup(html, 'lxml')
             
-            # 查找新闻条目（根据实际页面结构调整）
             articles = soup.select('.news-item, .article-item, .post-item')
             
             if not articles:
-                # 尝试其他选择器
                 articles = soup.find_all(['article', 'div'], class_=re.compile('news|article|post'))
             
-            for article in articles[:10]:  # 每天最多10条
+            for article in articles[:10]:
                 try:
-                    # 提取标题
                     title_elem = article.find(['h2', 'h3', 'h4']) or article.find('a')
                     title = title_elem.get_text(strip=True) if title_elem else ""
                     
                     if not title or len(title) < 5:
                         continue
                     
-                    # 提取链接
                     link_elem = article.find('a', href=True)
                     link = link_elem['href'] if link_elem else ""
                     if link and not link.startswith('http'):
                         link = "https://www.aitop100.cn" + link
                     
-                    # 提取摘要
                     summary_elem = article.find(['p', 'div'], class_=re.compile('summary|excerpt|desc'))
                     summary = summary_elem.get_text(strip=True)[:150] if summary_elem else title
                     
-                    # 提取来源
                     source_elem = article.find(['span', 'div'], class_=re.compile('source|author'))
                     source = source_elem.get_text(strip=True) if source_elem else "AITOP100"
                     
-                    # 分类
                     category = "AI资讯"
                     if any(kw in title + summary for kw in ['大模型', 'GPT', 'Claude', 'Gemini']):
                         category = "大模型"
@@ -124,7 +115,7 @@ def scrape_aitop100():
                     print(f"    ✗ 解析文章失败: {e}")
                     continue
             
-            time.sleep(1)  # 礼貌爬取
+            time.sleep(0.5)
         
     except Exception as e:
         print(f"✗ 爬取 AITOP100 失败: {e}")
@@ -145,7 +136,6 @@ def scrape_36kr_ai():
         
         soup = BeautifulSoup(html, 'lxml')
         
-        # 查找快讯条目
         items = soup.select('.newsflash-item, .article-item')
         
         for item in items[:15]:
@@ -156,7 +146,6 @@ def scrape_36kr_ai():
                 if not title or len(title) < 5:
                     continue
                 
-                # 检查是否是AI相关
                 if not any(kw in title for kw in ['AI', '人工智能', '大模型', 'GPT', '智能']):
                     continue
                 
@@ -231,9 +220,9 @@ def fetch_ai_news():
     
     all_news = []
     
-    # 数据源1: AITOP100
-    print("\n[1/3] 爬取 AITOP100...")
-    news1 = scrape_aitop100()
+    # 数据源1: AITOP100（回溯30天）
+    print("\n[1/3] 爬取 AITOP100（回溯30天）...")
+    news1 = scrape_aitop100(days_back=30)
     print(f"  ✓ 获取到 {len(news1)} 条")
     all_news.extend(news1)
     
@@ -271,6 +260,25 @@ def load_existing_news():
         print(f"✗ 加载现有数据失败: {e}")
         return []
 
+def get_sortable_date(item):
+    """从新闻条目中提取可排序的日期键"""
+    date_val = item.get('date', '')
+    # 标准化日期格式用于排序
+    try:
+        if re.match(r'\d{4}-\d{2}-\d{2}', date_val):
+            return date_val
+        elif re.match(r'\d{1,2}月\d{1,2}日', date_val):
+            # "7月4日" → "2026-07-04"
+            m = re.match(r'(\d{1,2})月(\d{1,2})日', date_val)
+            if m:
+                return f"2026-{int(m.group(1)):02d}-{int(m.group(2)):02d}"
+        elif re.match(r'\d{4}/\d{2}/\d{2}', date_val):
+            return date_val.replace('/', '-')
+        # 特殊日期描述（如 "智源2026十大趋势"）
+        return '2026-01-01'
+    except:
+        return '2026-01-01'
+
 def save_news(news_list):
     """保存新闻数据"""
     try:
@@ -301,23 +309,19 @@ def save_news(news_list):
 def main():
     """主函数"""
     print("=" * 60)
-    print("AI资讯自动更新脚本")
+    print("AI资讯自动更新脚本 v2")
     print("=" * 60)
     
     # 爬取最新资讯
     print("\n▶ 开始爬取最新AI资讯...")
     new_news = fetch_ai_news()
     
-    if not new_news:
-        print("\n✗ 没有获取到新资讯，保持现有数据")
-        return
-    
     # 加载现有数据
     print("\n▶ 加载现有数据...")
     existing_news = load_existing_news()
     print(f"  现有 {len(existing_news)} 条资讯")
     
-    # 合并数据（去重）
+    # 合并数据（去重，基于标题）
     print("\n▶ 合并数据...")
     existing_titles = {n.get('title', '') for n in existing_news}
     
@@ -331,15 +335,38 @@ def main():
     
     print(f"  添加了 {added_count} 条新资讯")
     
-    # 只保留最新30条
-    existing_news = existing_news[:30]
+    # 按日期降序排序，确保保留最新内容
+    print("\n▶ 排序与裁剪...")
+    existing_news.sort(key=get_sortable_date, reverse=True)
+    
+    # 提高保留上限至 200 条（覆盖约半年到全年的资讯量）
+    max_keep = 200
+    if len(existing_news) > max_keep:
+        removed = len(existing_news) - max_keep
+        existing_news = existing_news[:max_keep]
+        print(f"  裁剪了 {removed} 条最旧资讯（保留上限 {max_keep}）")
+    
+    print(f"  最终保留 {len(existing_news)} 条资讯")
     
     # 保存
     print("\n▶ 保存数据...")
     save_news(existing_news)
     
+    # 统计
     print("\n" + "=" * 60)
     print("✓ 更新完成!")
+    print(f"  总计: {len(existing_news)} 条")
+    
+    # 日期范围
+    dates = []
+    for item in existing_news:
+        d = get_sortable_date(item)
+        if d and d != '2026-01-01':
+            dates.append(d)
+    if dates:
+        dates.sort()
+        print(f"  覆盖: {dates[0]} ~ {dates[-1]}")
+    
     print("=" * 60)
 
 if __name__ == '__main__':
