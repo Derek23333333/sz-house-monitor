@@ -1613,9 +1613,9 @@ function buildNews(){
 function openModal(i){
   var n=newsData[i];
   document.getElementById('modalTitle').textContent=n.title;
-  document.getElementById('modalMeta').innerHTML='<span>\ud83d\udcc5 '+n.date+'</span><span>\ud83c\udff7\ufe0f '+n.category+'</span><span>\ud83d\udcf0 '+n.source+'</span>';
-  document.getElementById('modalBody').innerHTML=n.detail.replace(/\n/g,'<br>');
-  document.getElementById('modalLink').href=n.sourceUrl;
+  document.getElementById('modalMeta').innerHTML='<span>📅 '+n.date+'</span><span>🏷️ '+n.category+'</span><span>📰 '+n.source+'</span>';
+  document.getElementById('modalBody').innerHTML=(n.detail||n.summary).replace(/\n/g,'<br>');
+  document.getElementById('modalLink').href=n.sourceUrl||n.link||'#';
   document.getElementById('newsModal').classList.add('show');
 }
 function closeModal(){ document.getElementById('newsModal').classList.remove('show'); }
