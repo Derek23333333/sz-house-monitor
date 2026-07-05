@@ -513,6 +513,67 @@ body {
     text-align: center;
   }
 
+  /* ===== News Pagination ===== */
+  .news-info-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .news-count {
+    font-size: .82rem;
+    color: var(--accent-light);
+    font-weight: 500;
+  }
+  .news-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 20px;
+    padding: 12px 0;
+  }
+  .page-btn {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    padding: 7px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: .8rem;
+    font-weight: 500;
+    transition: all .2s;
+    min-width: 38px;
+    text-align: center;
+  }
+  .page-btn:hover:not(:disabled) {
+    background: var(--card-hover);
+    border-color: var(--accent-light);
+    color: var(--text);
+  }
+  .page-btn:disabled {
+    opacity: .35;
+    cursor: not-allowed;
+  }
+  .page-btn.page-num {
+    min-width: 36px;
+    padding: 7px 10px;
+  }
+  .page-btn.page-num.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    font-weight: 700;
+  }
+  .page-ellipsis {
+    color: var(--text-secondary);
+    font-size: .8rem;
+    padding: 0 2px;
+    user-select: none;
+  }
+
   </style>
 </head>
 <body>
@@ -1444,258 +1505,394 @@ var timelineData = [
 ];
 
 // ============================================================
-//  知识库 - 概念词典数据（与原版一致）
+//  渲染逻辑
+// ============================================================
+
+// 安全调用包装
+function safeCall(fn, name) {
+  try { fn(); } catch(e) { console.error('Error in ' + name + ':', e); }
+}
+
+// Tab 切换
+function switchPage(page, btn) {
+  document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+  document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+  document.getElementById('page-' + page).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ============================================================
+//  资讯翻页状态
+// ============================================================
+var newsPageState = {
+  currentPage: 1,
+  pageSize: 20,
+  currentFilter: 'all'
+};
+
+// ============================================================
+//  过滤资讯（切换分类时重置到第一页）
+// ============================================================
+function filterNews(cat, btn) {
+  document.querySelectorAll('#page-news .filter-pill').forEach(function(p) { p.classList.remove('active'); });
+  btn.classList.add('active');
+  newsPageState.currentFilter = cat;
+  newsPageState.currentPage = 1;
+  buildNews();
+}
+
+// ============================================================
+//  构建资讯卡片（带翻页）
+// ============================================================
+var _newsModalIndex = -1;
+
+function buildNews() {
+  var filtered = newsData;
+  if (newsPageState.currentFilter !== 'all') {
+    filtered = newsData.filter(function(item) { return item.category === newsPageState.currentFilter; });
+  }
+
+  var totalItems = filtered.length;
+  var totalPages = Math.ceil(totalItems / newsPageState.pageSize);
+
+  if (newsPageState.currentPage > totalPages) newsPageState.currentPage = totalPages || 1;
+  if (newsPageState.currentPage < 1) newsPageState.currentPage = 1;
+
+  var start = (newsPageState.currentPage - 1) * newsPageState.pageSize;
+  var end = Math.min(start + newsPageState.pageSize, totalItems);
+  var pageItems = filtered.slice(start, end);
+
+  var grid = document.getElementById('newsGrid');
+  var html = '';
+
+  for (var i = 0; i < pageItems.length; i++) {
+    var item = pageItems[i];
+    var globalIdx = newsData.indexOf(item);
+    var badgeClass = item.audience === 'beginner' ? 'badge-beginner' : (item.audience === 'expert' ? 'badge-expert' : 'badge-all');
+    var badgeText = item.audience === 'beginner' ? '入门' : (item.audience === 'expert' ? '进阶' : '通用');
+
+    html += '<div class="news-card" onclick="openNewsModal(' + globalIdx + ')">' +
+      '<div class="news-header">' +
+        '<h4>' + escapeHtml(item.title) + '</h4>' +
+        '<span class="news-badge ' + badgeClass + '">' + badgeText + '</span>' +
+      '</div>' +
+      '<div class="news-summary">' + escapeHtml(item.summary) + '</div>' +
+      '<div class="news-meta">' +
+        '<span class="news-tag">' + escapeHtml(item.category) + '</span>' +
+        '<span>' + escapeHtml(item.date) + '</span>' +
+        '<span>' + escapeHtml(item.source) + '</span>' +
+      '</div>' +
+    '</div>';
+  }
+
+  grid.innerHTML = html;
+  updateNewsPagination(totalItems, totalPages);
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// ============================================================
+//  更新翻页栏和计数
+// ============================================================
+function updateNewsPagination(totalItems, totalPages) {
+  // 更新计数
+  var countEl = document.getElementById('newsCount');
+  if (!countEl) {
+    countEl = document.createElement('span');
+    countEl.id = 'newsCount';
+    countEl.className = 'news-count';
+    var filterBar = document.querySelector('#page-news .filter-bar');
+    if (filterBar) filterBar.appendChild(countEl);
+  }
+  countEl.textContent = '共 ' + totalItems + ' 条，第 ' + newsPageState.currentPage + '/' + totalPages + ' 页';
+
+  // 翻页按钮
+  var pagerId = 'newsPagination';
+  var oldPager = document.getElementById(pagerId);
+  if (oldPager) oldPager.remove();
+  if (totalPages <= 1) return;
+
+  var pager = document.createElement('div');
+  pager.id = pagerId;
+  pager.className = 'news-pagination';
+
+  var html = '';
+  html += '<button class="page-btn" onclick="goToPage(' + (newsPageState.currentPage - 1) + ')"' + (newsPageState.currentPage <= 1 ? ' disabled' : '') + '>◀ 上一页</button>';
+
+  var startPage = Math.max(1, newsPageState.currentPage - 2);
+  var endPage = Math.min(totalPages, newsPageState.currentPage + 2);
+
+  if (startPage > 1) {
+    html += '<button class="page-btn page-num" onclick="goToPage(1)">1</button>';
+    if (startPage > 2) html += '<span class="page-ellipsis">...</span>';
+  }
+
+  for (var i = startPage; i <= endPage; i++) {
+    html += '<button class="page-btn page-num' + (i === newsPageState.currentPage ? ' active' : '') + '" onclick="goToPage(' + i + ')">' + i + '</button>';
+  }
+
+  if (endPage < totalPages) {
+    if (endPage < totalPages - 1) html += '<span class="page-ellipsis">...</span>';
+    html += '<button class="page-btn page-num" onclick="goToPage(' + totalPages + ')">' + totalPages + '</button>';
+  }
+
+  html += '<button class="page-btn" onclick="goToPage(' + (newsPageState.currentPage + 1) + ')"' + (newsPageState.currentPage >= totalPages ? ' disabled' : '') + '>下一页 ▶</button>';
+
+  pager.innerHTML = html;
+  var grid = document.getElementById('newsGrid');
+  grid.parentNode.insertBefore(pager, grid.nextSibling);
+}
+
+function goToPage(page) {
+  var filtered = newsPageState.currentFilter === 'all' ? newsData : newsData.filter(function(item) { return item.category === newsPageState.currentFilter; });
+  var totalPages = Math.ceil(filtered.length / newsPageState.pageSize);
+  if (page < 1 || page > totalPages) return;
+  newsPageState.currentPage = page;
+  buildNews();
+  document.getElementById('page-news').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ============================================================
+//  资讯弹窗
+// ============================================================
+function openNewsModal(idx) {
+  var item = newsData[idx];
+  if (!item) return;
+  document.getElementById('modalTitle').textContent = item.title;
+  document.getElementById('modalMeta').innerHTML = '<span>' + escapeHtml(item.date) + '</span><span>' + escapeHtml(item.source) + '</span><span class="news-tag">' + escapeHtml(item.category) + '</span>';
+  document.getElementById('modalBody').textContent = item.detail || item.summary;
+  var link = document.getElementById('modalLink');
+  if (item.link || item.sourceUrl) {
+    link.href = item.link || item.sourceUrl;
+    link.style.display = 'inline-flex';
+  } else {
+    link.style.display = 'none';
+  }
+  document.getElementById('newsModal').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('newsModal').classList.remove('show');
+}
+
+document.getElementById('newsModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// ============================================================
+//  灵感池渲染
+// ============================================================
+var inspActiveFilter = 'all';
+var inspActiveLevel = {};
+
+function filterInsp(cat, btn) {
+  document.querySelectorAll('#page-inspiration .filter-pill').forEach(function(p) { p.classList.remove('active'); });
+  btn.classList.add('active');
+  inspActiveFilter = cat;
+  buildInspCards();
+}
+
+function buildInspCards() {
+  var filtered = inspData;
+  if (inspActiveFilter !== 'all') {
+    if (inspActiveFilter === 'daily') {
+      var picks = getDailyPicks();
+      filtered = inspData.filter(function(item) { return picks.indexOf(item.id) !== -1; });
+    } else {
+      filtered = inspData.filter(function(item) { return item.cat === inspActiveFilter; });
+    }
+  }
+
+  var grid = document.getElementById('inspGrid');
+  var html = '';
+
+  for (var i = 0; i < filtered.length; i++) {
+    var card = filtered[i];
+    if (!inspActiveLevel[card.id]) inspActiveLevel[card.id] = 'l1';
+
+    html += '<div class="insp-card" data-id="' + card.id + '">' +
+      '<div class="insp-card-body">' +
+        '<div class="category">' + card.icon + ' ' + card.cat + '</div>' +
+        '<h4>' + card.title + '</h4>' +
+        '<div class="desc">' + card.desc + '</div>' +
+        '<div class="tool-row">' +
+          card.tools.map(function(t) { return '<span class="tool-tag">' + t + '</span>'; }).join('') +
+        '</div>' +
+      '</div>' +
+      '<div class="level-tabs">' +
+        '<button class="level-tab' + (inspActiveLevel[card.id] === 'l1' ? ' active' : '') + '" onclick="switchLevel(\'' + card.id + '\',\'l1\')">✨ 初级</button>' +
+        '<button class="level-tab lv2' + (inspActiveLevel[card.id] === 'l2' ? ' active' : '') + '" onclick="switchLevel(\'' + card.id + '\',\'l2\')">🌟 进阶</button>' +
+        '<button class="level-tab lv3' + (inspActiveLevel[card.id] === 'l3' ? ' active' : '') + '" onclick="switchLevel(\'' + card.id + '\',\'l3\')">💎 高级</button>' +
+      '</div>' +
+      '<div class="prompt-panel active" id="panel-' + card.id + '">' +
+        renderPromptPanel(card, inspActiveLevel[card.id]) +
+      '</div>' +
+    '</div>';
+  }
+
+  grid.innerHTML = html;
+  markDailyPicks();
+}
+
+function switchLevel(cardId, level) {
+  inspActiveLevel[cardId] = level;
+  var card = inspData.find(function(c) { return c.id === cardId; });
+  if (!card) return;
+
+  var panel = document.getElementById('panel-' + cardId);
+  if (!panel) return;
+  panel.innerHTML = renderPromptPanel(card, level);
+
+  var cardEl = document.querySelector('.insp-card[data-id="' + cardId + '"]');
+  if (cardEl) {
+    cardEl.querySelectorAll('.level-tab').forEach(function(t) { t.classList.remove('active'); });
+    var tab = cardEl.querySelector('.level-tab' + (level === 'l1' ? '' : (level === 'l2' ? '.lv2' : '.lv3')));
+    if (tab) tab.classList.add('active');
+  }
+}
+
+function renderPromptPanel(card, level) {
+  var data = card[level];
+  var dotClass = level === 'l1' ? 'dot-beginner' : (level === 'l2' ? 'dot-intermediate' : 'dot-advanced');
+  return '<div class="prompt-label"><span class="dot ' + dotClass + '"></span>' + data.label + '</div>' +
+    '<div class="prompt-box">' +
+      '<button class="copy-btn" onclick="copyPrompt(event,\'' + card.id + '\',\'' + level + '\')">📋 复制</button>' +
+      escapeHtml(data.prompt) +
+    '</div>';
+}
+
+function copyPrompt(e, cardId, level) {
+  e.stopPropagation();
+  var card = inspData.find(function(c) { return c.id === cardId; });
+  if (!card || !card[level]) return;
+  navigator.clipboard.writeText(card[level].prompt).then(function() {
+    showToast('已复制 Prompt');
+  });
+}
+
+function showToast(msg) {
+  var toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(function() { toast.classList.remove('show'); }, 2000);
+}
+
+// ============================================================
+//  知识库 - 时间线渲染
+// ============================================================
+function buildTimeline(filterText) {
+  var list = document.getElementById('timelineList');
+  var data = timelineData;
+  if (filterText) {
+    var lower = filterText.toLowerCase();
+    data = data.filter(function(item) {
+      return item.t.toLowerCase().indexOf(lower) !== -1 || item.e.toLowerCase().indexOf(lower) !== -1 ||
+        item.tech.some(function(t) { return t.toLowerCase().indexOf(lower) !== -1; });
+    });
+  }
+
+  var html = '';
+  for (var i = 0; i < data.length; i++) {
+    var item = data[i];
+    html += '<div class="timeline-item-c">' +
+      '<div class="timeline-year">' + item.y + '</div>' +
+      '<div class="timeline-content">' +
+        '<h5>' + item.t + '</h5>' +
+        '<div class="tc-explain">' + item.e + '</div>' +
+        '<div class="timeline-tech">' +
+          item.tech.map(function(t) { return '<span>' + t + '</span>'; }).join('') +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }
+  list.innerHTML = html || '<div style="padding:20px;color:var(--text-secondary);text-align:center">无匹配结果</div>';
+}
+
+function filterTimeline(text) {
+  buildTimeline(text);
+}
+
+// ============================================================
+//  知识库 - 概念词典渲染
+// ============================================================
+function buildDict(filterText) {
+  var list = document.getElementById('dictList');
+  var data = dictData;
+  if (filterText) {
+    var lower = filterText.toLowerCase();
+    data = data.filter(function(item) {
+      return item.n.toLowerCase().indexOf(lower) !== -1 || item.plain.toLowerCase().indexOf(lower) !== -1 ||
+        (item.tech && item.tech.toLowerCase().indexOf(lower) !== -1);
+    });
+  }
+
+  var html = '';
+  for (var i = 0; i < data.length; i++) {
+    var item = data[i];
+    html += '<div class="dict-item-c" onclick="toggleDict(this)">' +
+      '<h5>' + item.n + '</h5>' +
+      '<div class="dc-plain">' + item.plain + '</div>' +
+      (item.tech ? '<div class="dc-tech">' + item.tech + '</div>' : '') +
+      (item.related ? '<div class="dc-related">' + item.related.map(function(r) { return '<span>' + r + '</span>'; }).join('') + '</div>' : '') +
+    '</div>';
+  }
+  list.innerHTML = html || '<div style="padding:20px;color:var(--text-secondary);text-align:center">无匹配结果</div>';
+}
+
+function toggleDict(el) {
+  el.classList.toggle('expanded');
+}
+
+function filterDict(text) {
+  buildDict(text);
+}
+
+// ============================================================
+//  概念词典数据
 // ============================================================
 var dictData = [
-  {n:'机器学习 Machine Learning',p:'让计算机通过看数据自己学会规律，而不是人工写死规则。就像教小孩认识猫：不是背定义，而是给他看100张猫的图片。',t:'通过算法从数据中自动学习模式的计算方法。分监督学习、无监督学习、强化学习。核心是构建映射函数f(x)->y，通过优化损失函数逼近真实分布。',r:['深度学习','监督学习','特征工程']},
-  {n:'深度学习 Deep Learning',p:'机器学习的进阶版，用很多层神经网络像千层饼堆叠，每一层提取更抽象的特征——从像素到边缘到眼睛到猫脸。',t:'基于多层人工神经网络的ML子集。通过反向传播和梯度下降端到端训练。关键架构：CNN（图像）、RNN/Transformer（序列）、GAN（生成）。',r:['神经网络','反向传播','CNN','Transformer']},
-  {n:'神经网络 Neural Network',p:'模仿人脑神经元连接方式的计算模型。每个神经元接收输入做简单计算，输出给下一层——大量简单计算组合出强大智能。',t:'由多层节点和加权连接构成的计算图。每层做线性变换Wx+b经激活函数（ReLU/GELU）非线性映射。深层网络通过残差连接和层归一化稳定训练。',r:['深度学习','激活函数','反向传播']},
-  {n:'大语言模型 LLM',p:'一个读了整个互联网的超级读书人。通过预测下一个词来学习语言规律，最终能对话、写作、编程、翻译，无所不能。',t:'基于Transformer Decoder的自回归语言模型（>10B参数）。通过Next-Token Prediction预训练，经SFT和RLHF对齐。涌现上下文学习、思维链推理等能力。',r:['Transformer','预训练','Scaling Law','RLHF']},
-  {n:'Transformer架构',p:'2017年的革命性模型结构，核心是注意力机制——处理每个词时都能看到整句话所有其他词，理解上下文关系。',t:'基于自注意力的编码器-解码器架构。公式：Attention(Q,K,V)=softmax(QK^T/sqrt(dk))V。多头注意力并行捕获不同子空间特征。完全并行化训练，替代RNN成为NLP基础设施。',r:['自注意力','位置编码','BERT','GPT']},
-  {n:'多模态 Multimodal',p:'AI同时理解文字、图片、声音、视频——就像人类用眼睛+耳朵+大脑一起感知世界，而不是只用一种感官。',t:'统一建模多种数据模态的AI架构。视觉-语言模型通过视觉编码器+LLM桥接实现图文理解。早期融合（训练时统一编码）比晚期融合性能更优。代表：GPT-4V、Gemini。',r:['VLM','CLIP','跨模态对齐']},
-  {n:'RAG 检索增强生成',p:'给大模型配一个实时查阅资料的能力。回答问题前先去知识库翻找相关资料，用找到的内容来回答，减少胡编乱造。',t:'结合信息检索与文本生成的混合架构。流程：Query->向量化->向量库检索Top-K->拼接进Prompt->LLM生成。核心组件：Embedding模型、向量数据库、分块策略。',r:['向量数据库','Embedding','幻觉缓解']},
-  {n:'Prompt Engineering',p:'学会怎么跟AI说话才能得到好答案。就像问不同的问题得到不同的答案——写好提示词是一门技巧。',t:'设计和优化输入提示以引导LLM产出目标输出的方法论。核心技术：Few-shot、Chain-of-Thought、Tree-of-Thoughts、ReAct。是当前人机交互的核心接口范式。',r:['Few-shot','CoT思维链','ReAct']},
-  {n:'微调 Fine-tuning',p:'在大模型基础上，用特定领域数据再教一教，让它更擅长某个专业领域，比如医疗问诊、法律咨询。',t:'在预训练模型上用领域数据做二次训练。全量微调更新所有参数；高效微调（LoRA/QLoRA）仅更新少量低秩适配器参数。SFT后通常配合RLHF对齐。',r:['LoRA','SFT','迁移学习']},
-  {n:'AI Agent 智能体',p:'一个能自己动手干活的AI。不只是聊天，它能自主规划步骤、调用工具、执行任务——就像雇了一个会思考的虚拟助理。',t:'具备自主感知、规划、决策、执行能力的AI系统。LLM作为大脑推理规划，通过Function Call调用外部工具。高级Agent具备记忆模块、反思机制和多步推理。MCP/A2A协议正在标准化。',r:['Agentic Workflow','Tool Use','MCP','Multi-Agent']},
-  {n:'世界模型 World Model',p:'AI不再是文字接龙高手，而是开始理解真实世界规律——知道杯子掉下去会碎、足球踢出去会抛物线飞行。',t:'学习物理世界底层规律的生成式模型。核心范式从Next-Token Prediction转向Next-State Prediction（NSP），学习时空连续性与因果逻辑。应用：自动驾驶仿真、机器人训练、视频生成。',r:['NSP','具身智能','Physical AI','Sora']},
-  {n:'具身智能 Embodied AI',p:'给AI一个身体——让它在真实世界中感知、移动、操作物体。就像给一个聪明的大脑装上机器人的身体。',t:'具备物理实体的AI系统，将感知、认知与运动控制深度耦合。技术栈：多模态感知+世界模型+运动规划与控制。2026年人形机器人进入真实生产场景，从Demo转向规模化落地。',r:['世界模型','Physical AI','人形机器人']},
-  {n:'Physical AI 物理AI',p:'AI的下一个形态：不仅理解语言，更理解物理世界。它知道一个物体有多重、摸起来什么感觉、移动它需要多少力。',t:'NVIDIA提出的概念，指能理解物理世界并与之交互的AI系统。需要三项核心能力：世界模型、具身智能、高精度物理仿真引擎（Omniverse/Isaac Sim）。',r:['世界模型','具身智能','Omniverse']},
-  {n:'Agentic AI 智能体化AI',p:'比普通AI Agent更进一步——不仅能完成你交代的任务，还能主动发现问题、设定目标、协调多个Agent协作完成复杂项目。',t:'下一代AI范式，从被动响应转向主动代理。核心特征：目标驱动、自主规划、工具编排、多Agent协同。Agentic Workflow包含Plan->Execute->Reflect->Iterate闭环。',r:['AI Agent','Multi-Agent','MCP','A2A']}
+  {n:'LLM（大语言模型）', plain:'能像人一样理解并生成文字的超大型AI，ChatGPT、文心一言都是LLM。', tech:'基于Transformer架构，通过海量文本预训练获得语言理解和生成能力。参数规模从数十亿到数万亿不等。核心能力包括：上下文理解、逻辑推理、代码生成、多语言翻译等。', related:['GPT','Transformer','预训练','Scaling Law']},
+  {n:'Transformer', plain:'现代大模型的底层架构，让AI学会并行处理文字，一次性理解整句话。', tech:'2017年由Google提出，"Attention Is All You Need"。核心创新是自注意力机制，让模型能同时关注输入序列中所有位置的信息，突破RNN串行处理的限制。多头注意力允许模型从不同子空间学习表示。', related:['自注意力','多头注意力','位置编码']},
+  {n:'MoE（混合专家模型）', plain:'大模型里的"专家团队"——每次只激活最相关的一部分专家，效率翻倍。', tech:'Mixture of Experts，将模型拆分为多个专家子网络，通过门控网络为每个输入动态选择激活的专家。实现"大模型能力，小模型成本"。GPT-4、Gemini、LongCat-2.0均采用MoE架构。', related:['门控网络','稀疏激活','专家负载均衡']},
+  {n:'RAG（检索增强生成）', plain:'先查资料再回答——让AI回答前先翻你的知识库，减少胡编乱造。', tech:'Retrieval-Augmented Generation，将信息检索与文本生成结合。流程：用户提问→从知识库检索相关文档→将文档与问题一起送入LLM→生成基于事实的回答。有效缓解幻觉问题，支持私有数据。', related:['向量数据库','嵌入模型','语义检索','幻觉缓解']},
+  {n:'Agent（智能体）', plain:'能自主规划步骤、调用工具、完成复杂任务的AI助手。不是聊天而是干活。', tech:'具备自主决策能力的AI系统。核心组件：感知（理解环境）、规划（分解目标为步骤）、执行（调用API/工具/代码）、记忆（短期/长期信息存储）。MCP/A2A是Agent间通信协议。', related:['Tool Use','MCP','A2A','Multi-Agent']},
+  {n:'提示词工程', plain:'掌握和AI对话的艺术——写好指令，让AI给出你真正需要的结果。', tech:'Prompt Engineering，设计和优化LLM输入以引导产生期望输出的技术。包括：Few-shot（给示例）、Chain-of-Thought（分步推理）、角色扮演、结构化输出等策略。', related:['Few-shot','CoT','角色设定','结构化提示']},
+  {n:'RLHF（人类反馈强化学习）', plain:'人类当裁判——让AI学习"人类更喜欢哪种回答"，回答越来越贴心。', tech:'Reinforcement Learning from Human Feedback。流程：收集人类偏好数据→训练奖励模型→用PPO算法微调LLM使其输出更符合人类偏好。ChatGPT的成功关键之一，大幅提升回答的有用性和安全性。', related:['PPO算法','奖励模型','对齐','偏好学习']},
+  {n:'扩散模型', plain:'AI画图的底层技术——先学怎么"加噪"，再学怎么"去噪"，最终从随机噪声中生成精美图像。', tech:'Diffusion Models，通过逐步向数据添加噪声（前向过程）然后学习逆转去噪（反向过程）来生成数据。Stable Diffusion、DALL-E、Midjourney均基于此。2026年英伟达TwoTower将扩散用于文本生成，突破自回归范式。', related:['DDPM','Stable Diffusion','去噪','并行生成']},
+  {n:'微调（Fine-tuning）', plain:'给大模型"开小灶"——用你的专属数据让通用AI变成领域专家。', tech:'在预训练模型基础上，使用特定领域数据继续训练。方法包括：全量微调、LoRA（低秩适配）、Adapter、Prefix Tuning等。LoRA因参数高效（仅训练1%-2%参数）成为主流。', related:['LoRA','Adapter','参数高效','领域适配']},
+  {n:'Token（词元）', plain:'AI阅读文字的最小单位——一个汉字或单词的一部分。按Token计费，理解它等于理解AI成本。', tech:'文本被分割成的最小处理单元。英文约1个Token=0.75个单词，中文约1个Token=1.5个汉字。模型按输入+输出的Token总数计费。上下文窗口（Context Window）以Token为单位。', related:['分词器','上下文窗口','计费模型']},
+  {n:'多模态', plain:'AI不再只看文字——它能同时理解图片、音频、视频，就像人类用多种感官认知世界。', tech:'Multi-modal AI，能处理和理解多种数据类型的AI系统。典型能力：图像描述、视觉问答、视频理解、语音识别与合成。GPT-4V、Gemini、Claude 3.5均支持多模态输入。', related:['视觉-语言模型','CLIP','图文对齐','跨模态检索']},
+  {n:'AI对齐（Alignment）', plain:'确保AI的价值观和行为与人类意图一致——别让AI好心办坏事。', tech:'AI Alignment，研究如何使AI系统的目标、价值观和行为与人类期望一致。核心技术：RLHF、宪法AI（Constitutional AI）、红队测试。OpenAI、Anthropic、DeepMind均投入大量资源。', related:['RLHF','宪法AI','红队测试','超级对齐']},
+  {n:'世界模型', plain:'让AI理解物理世界的运行规律——重力、因果、空间关系，而不只是预测下一个词。', tech:'World Model，从"预测下一个Token"（NTP）转向"预测下一个世界状态"（NSP）。学习物理规律、时空连续性与因果关系。被视为通向AGI的关键路径，Sora/Genie等视频生成模型是早期实践。', related:['NSP','物理规律','因果推理','具身智能']},
+  {n:'Scaling Law（规模定律）', plain:'发现的规律——AI模型越大、数据越多、算力越强，表现就越聪明。', tech:'由OpenAI在2020年提出，模型性能随参数量、数据量、计算量呈幂律提升。推动了"大力出奇迹"的大模型军备竞赛。近期研究关注Scaling Law的瓶颈和边际递减效应。', related:['参数规模','计算最优','边际递减','Chinchilla定律']}
 ];
 
 // ============================================================
-//  交互函数
+//  页面初始化
 // ============================================================
-
-// Date
-(function(){
-  var n=new Date();
-  var d=['日','一','二','三','四','五','六'];
-  document.getElementById('todayDate').textContent=n.getFullYear()+'年'+(n.getMonth()+1)+'月'+n.getDate()+'日 星期'+d[n.getDay()];
-})();
-
-// Page Switch
-function switchPage(name, btn){
-  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
-  document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
-  document.getElementById('page-'+name).classList.add('active');
-  btn.classList.add('active');
+function initPage() {
+  safeCall(buildInspCards, 'buildInspCards');
+  safeCall(buildNews, 'buildNews');
+  safeCall(buildTimeline, 'buildTimeline');
+  safeCall(buildDict, 'buildDict');
+  safeCall(renderDailyTip, 'renderDailyTip');
+  safeCall(renderUpdateStamp, 'renderUpdateStamp');
 }
 
-// Toast
-function showToast(m){
-  var t=document.getElementById('toast');
-  t.textContent=m; t.classList.add('show');
-  setTimeout(function(){t.classList.remove('show');},1800);
-}
+window.addEventListener('DOMContentLoaded', function() {
+  // 设置日期
+  var d = new Date();
+  var weekdays = ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
+  document.getElementById('todayDate').innerHTML = d.getFullYear() + '年' + (d.getMonth()+1) + '月' + d.getDate() + '日 ' + weekdays[d.getDay()] + '<span class="update-stamp" id="updateStamp"><span class="dot-pulse"></span><span id="updateText">数据加载中...</span></span>';
 
-// Build Inspiration Cards
-function buildInspCards(){
-  var grid=document.getElementById('inspGrid');
-  inspData.forEach(function(item){
-    var card=document.createElement('div');
-    card.className='insp-card';
-    card.setAttribute('data-cat',item.cat);
-    card.setAttribute('data-id',item.id);
-    card.innerHTML=
-      '<button class="fav-btn" onclick="toggleFav(\''+item.id+'\',this)">\u2661</button>'+
-      '<div class="insp-card-body">'+
-        '<div class="category">'+item.icon+' '+item.cat+'</div>'+
-        '<h4>'+item.title+'</h4>'+
-        '<div class="desc">'+item.desc+'</div>'+
-        '<div class="tool-row">'+item.tools.map(function(t){return '<span class="tool-tag">'+t+'</span>';}).join('')+'</div>'+
-      '</div>'+
-      '<div class="level-tabs">'+
-        '<button class="level-tab active" onclick="switchLevel(this,\''+item.id+'-l1\')">\u2728 \u521d\u7ea7</button>'+
-        '<button class="level-tab lv2" onclick="switchLevel(this,\''+item.id+'-l2\')">\ud83c\udf1f \u8fdb\u9636</button>'+
-        '<button class="level-tab lv3" onclick="switchLevel(this,\''+item.id+'-l3\')">\ud83d\udc8e \u9ad8\u7ea7</button>'+
-      '</div>'+
-      '<div class="prompt-panel active" id="'+item.id+'-l1">'+
-        '<div class="prompt-label"><span class="dot dot-beginner"></span>'+item.l1.label+'</div>'+
-        '<div class="prompt-box"><button class="copy-btn" onclick="copyPromptText(this,\''+item.id+'\',1)">\u590d\u5236</button>'+escapeHtml(item.l1.prompt)+'</div>'+
-      '</div>'+
-      '<div class="prompt-panel" id="'+item.id+'-l2">'+
-        '<div class="prompt-label"><span class="dot dot-intermediate"></span>'+item.l2.label+'</div>'+
-        '<div class="prompt-box"><button class="copy-btn" onclick="copyPromptText(this,\''+item.id+'\',2)">\u590d\u5236</button>'+escapeHtml(item.l2.prompt)+'</div>'+
-      '</div>'+
-      '<div class="prompt-panel" id="'+item.id+'-l3">'+
-        '<div class="prompt-label"><span class="dot dot-advanced"></span>'+item.l3.label+'</div>'+
-        '<div class="prompt-box"><button class="copy-btn" onclick="copyPromptText(this,\''+item.id+'\',3)">\u590d\u5236</button>'+escapeHtml(item.l3.prompt)+'</div>'+
-      '</div>';
-    grid.appendChild(card);
-  });
-}
+  initPage();
 
-// Escape HTML to prevent XSS in prompt text
-function escapeHtml(text){
-  var div=document.createElement('div');
-  div.textContent=text;
-  return div.innerHTML;
-}
-
-// Copy Prompt (data-driven)
-function copyPromptText(btn, id, level){
-  var item=inspData.find(function(i){return i.id===id;});
-  if(!item) return;
-  var prompt=item['l'+level].prompt;
-  navigator.clipboard.writeText(prompt).then(function(){
-    btn.textContent='\u5df2\u590d\u5236!';
-    showToast('Prompt \u5df2\u590d\u5236\u5230\u526a\u8d34\u677f');
-    setTimeout(function(){btn.textContent='\u590d\u5236';},1500);
-  });
-}
-
-// Level Switch inside card
-function switchLevel(btn, panelId){
-  var card=btn.closest('.insp-card');
-  card.querySelectorAll('.level-tab').forEach(function(t){t.classList.remove('active');});
-  card.querySelectorAll('.prompt-panel').forEach(function(p){p.classList.remove('active');});
-  btn.classList.add('active');
-  document.getElementById(panelId).classList.add('active');
-}
-
-// Favorites
-function getFavs(){ try{return JSON.parse(localStorage.getItem('ai_daily_favs')||'[]');}catch(e){return[];} }
-function saveFavs(f){ localStorage.setItem('ai_daily_favs',JSON.stringify(f)); }
-function toggleFav(id,btn){
-  var f=getFavs();
-  if(f.includes(id)){ f=f.filter(function(x){return x!==id;}); btn.textContent='\u2661'; btn.classList.remove('faved'); showToast('\u5df2\u53d6\u6d88\u6536\u85cf'); }
-  else{ f.push(id); btn.textContent='\u2665'; btn.classList.add('faved'); showToast('\u5df2\u6536\u85cf'); }
-  saveFavs(f);
-}
-function restoreFavs(){
-  var f=getFavs();
-  document.querySelectorAll('.fav-btn').forEach(function(b){
-    var c=b.closest('.insp-card');
-    if(c&&f.includes(c.dataset.id)){ b.textContent='\u2665'; b.classList.add('faved'); }
-  });
-}
-
-// Filter: Inspiration (supports 'daily' for today's picks)
-function filterInsp(cat,btn){
-  var picks=getDailyPicks();
-  document.querySelectorAll('#inspGrid .insp-card').forEach(function(c){
-    if(cat==='all'){
-      c.style.display='';
-    }else if(cat==='daily'){
-      c.style.display=picks.indexOf(c.dataset.id)!==-1?'':'none';
-    }else{
-      c.style.display=c.dataset.cat===cat?'':'none';
-    }
-  });
-  document.querySelectorAll('#page-inspiration .filter-pill').forEach(function(b){b.classList.remove('active');});
-  btn.classList.add('active');
-}
-
-// Build News Cards
-function buildNews(){
-  var grid=document.getElementById('newsGrid');
-  grid.innerHTML='';
-  // Sort by date descending (ISO: YYYY-MM-DD, string comparison works perfectly)
-  newsData.sort(function(a,b){return a.date>b.date?-1:a.date<b.date?1:0;});
-  newsData.forEach(function(n,i){
-    var audLabel=n.audience==='beginner'?'✨ 小白':n.audience==='expert'?'🚀 大佬':'🌐 所有人';
-    var audClass=n.audience==='beginner'?'badge-beginner':n.audience==='expert'?'badge-expert':'badge-all';
-    var card=document.createElement('div');
-    card.className='news-card';
-    card.setAttribute('data-cat',n.category);
-    card.innerHTML=
-      '<div class="news-header"><h4>'+n.title+'</h4><span class="news-badge '+audClass+'">'+audLabel+'</span></div>'+
-      '<div class="news-summary">'+n.summary+'</div>'+
-      '<div class="news-meta"><span>📅 '+n.date+'</span><span class="news-tag">'+n.category+'</span><span>📰 '+n.source+'</span></div>';
-    card.onclick=function(){ openModal(i); };
-    grid.appendChild(card);
-  });
-}
-
-
-// News Modal
-function openModal(i){
-  var n=newsData[i];
-  document.getElementById('modalTitle').textContent=n.title;
-  document.getElementById('modalMeta').innerHTML='<span>📅 '+n.date+'</span><span>🏷️ '+n.category+'</span><span>📰 '+n.source+'</span>';
-  document.getElementById('modalBody').innerHTML=(n.detail||n.summary).replace(/\n/g,'<br>');
-  document.getElementById('modalLink').href=n.sourceUrl||n.link||'#';
-  document.getElementById('newsModal').classList.add('show');
-}
-function closeModal(){ document.getElementById('newsModal').classList.remove('show'); }
-document.getElementById('newsModal').addEventListener('click',function(e){ if(e.target===this) closeModal(); });
-document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeModal(); });
-
-// Filter: News
-function filterNews(cat,btn){
-  document.querySelectorAll('#newsGrid .news-card').forEach(function(c){
-    c.style.display=(cat==='all'||c.dataset.cat===cat)?'':'none';
-  });
-  document.querySelectorAll('#page-news .filter-pill').forEach(function(b){b.classList.remove('active');});
-  btn.classList.add('active');
-}
-
-// Build Timeline
-function buildTimeline(){
-  var list=document.getElementById('timelineList');
-  timelineData.forEach(function(item){
-    var div=document.createElement('div');
-    div.className='timeline-item-c';
-    div.setAttribute('data-search',item.t+item.e+item.tech.join(' '));
-    div.innerHTML=
-      '<div class="timeline-year">'+item.y+'</div>'+
-      '<div class="timeline-content">'+
-        '<h5>'+item.t+'</h5>'+
-        '<div class="tc-explain">'+item.e+'</div>'+
-        '<div class="timeline-tech">'+item.tech.map(function(x){return '<span>'+x+'</span>';}).join('')+'</div>'+
-      '</div>';
-    list.appendChild(div);
-  });
-}
-
-function filterTimeline(q){
-  var ql=q.toLowerCase();
-  document.querySelectorAll('#timelineList .timeline-item-c').forEach(function(item){
-    item.style.display=ql===''||item.getAttribute('data-search').toLowerCase().includes(ql)?'':'none';
-  });
-}
-
-// Build Dictionary
-function buildDict(){
-  var list=document.getElementById('dictList');
-  dictData.forEach(function(item){
-    var div=document.createElement('div');
-    div.className='dict-item-c';
-    div.setAttribute('data-search',item.n+item.p+item.t+item.r.join(' '));
-    div.innerHTML=
-      '<h5>'+item.n+'</h5>'+
-      '<div class="dc-plain">\u2728 '+item.p+'</div>'+
-      '<div class="dc-tech">\ud83d\ude80 '+item.t+'</div>'+
-      '<div class="dc-related">'+item.r.map(function(x){return '<span>'+x+'</span>';}).join('')+'</div>';
-    div.onclick=function(){ this.classList.toggle('expanded'); };
-    list.appendChild(div);
-  });
-}
-
-function filterDict(q){
-  var ql=q.toLowerCase();
-  document.querySelectorAll('#dictList .dict-item-c').forEach(function(item){
-    item.style.display=ql===''||item.getAttribute('data-search').toLowerCase().includes(ql)?'':'none';
-  });
-}
-
-// ============================================================
-//  初始化
-// ============================================================
-function safeCall(fn, name) {
-  try { fn(); console.log('✓ ' + name + ' 完成'); }
-  catch(e) { console.error('✗ ' + name + ' 错误:', e.message); }
-}
-safeCall(buildInspCards, 'buildInspCards');
-safeCall(markDailyPicks, 'markDailyPicks');
-safeCall(restoreFavs, 'restoreFavs');
-safeCall(renderDailyTip, 'renderDailyTip');
-safeCall(renderUpdateStamp, 'renderUpdateStamp');
-safeCall(buildNews, 'buildNews');
-safeCall(buildTimeline, 'buildTimeline');
-safeCall(buildDict, 'buildDict');
-console.log('初始化结束');
+  // 延迟刷新远程数据
+  setTimeout(function() { fetchData(); }, 2000);
+});
 
 </script>
 </body>
