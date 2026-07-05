@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>B端思维·进阶工作台</title>
+<style>
+:root{--bg:#1a0b2e;--card:#2d1b4e;--text:#e4d7f5;--text-secondary:#b8a5d4;--accent:#c084fc;--accent-bright:#a855f7;--gold:#d4a574;--card-border:rgba(196,132,252,0.15);--gradient-btn:linear-gradient(135deg,#7c3aed,#a855f7);--radius:16px;--font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6;overflow-x:hidden}
+body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:radial-gradient(ellipse at 50% 0%,rgba(124,58,237,0.15) 0%,transparent 60%),radial-gradient(ellipse at 20% 80%,rgba(168,85,247,0.08) 0%,transparent 50%);pointer-events:none;z-index:0}
+.container{max-width:800px;margin:0 auto;padding:0 16px;position:relative;z-index:1}
+.header{text-align:center;padding:32px 0 8px}
+.header h1{font-size:28px;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--accent-bright),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:0.5px}
+.header .subtitle{font-size:13px;color:var(--text-secondary);margin-top:4px}
+.header .update-time{font-size:11px;color:var(--text-secondary);margin-top:8px;opacity:0.7}
+.header .stale-warning{display:none;background:rgba(212,165,116,0.12);border:1px solid rgba(212,165,116,0.3);border-radius:10px;padding:8px 14px;margin-top:10px;font-size:12px;color:var(--gold)}
+.stale-warning.show{display:inline-block}
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:18px 20px;margin-bottom:14px;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);transition:transform 0.2s,box-shadow 0.2s}
+.card:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(124,58,237,0.15)}
+.section-title{font-size:17px;font-weight:600;color:var(--accent);margin:28px 0 14px;padding-left:12px;border-left:3px solid var(--accent-bright);display:flex;align-items:center;gap:8px}
+.tab-bar{display:flex;gap:6px;margin:20px 0;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:0 2px}
+.tab-btn{flex:1;min-width:90px;background:rgba(45,27,78,0.5);border:1px solid var(--card-border);color:var(--text-secondary);padding:10px 12px;border-radius:10px;font-size:13px;cursor:pointer;transition:all 0.2s;white-space:nowrap;text-align:center}
+.tab-btn:hover{border-color:var(--accent);color:var(--accent)}
+.tab-btn.active{background:linear-gradient(135deg,rgba(124,58,237,0.3),rgba(168,85,247,0.2));border-color:var(--accent);color:var(--accent-bright);font-weight:600}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+.scene-tag{display:inline-block;font-size:11px;background:rgba(212,165,116,0.15);color:var(--gold);padding:2px 8px;border-radius:6px;margin-bottom:6px}
+.scene-text{font-size:12px;color:var(--gold);margin-bottom:8px;padding:8px 12px;background:rgba(212,165,116,0.06);border-radius:8px;border-left:2px solid rgba(212,165,116,0.3);line-height:1.5}
+.section-icon{font-size:20px}
+.news-card{position:relative}
+.news-source{display:inline-block;font-size:10px;background:rgba(168,85,247,0.2);color:var(--accent);padding:2px 8px;border-radius:6px;margin-bottom:6px}
+.news-title{font-size:15px;font-weight:600;margin-bottom:6px;line-height:1.4}
+.news-summary{font-size:13px;color:var(--text-secondary);margin-bottom:10px;line-height:1.5}
+.news-insight{background:rgba(124,58,237,0.1);border-left:3px solid var(--accent-bright);padding:10px 14px;border-radius:0 10px 10px 0;margin-bottom:10px;font-size:13px;color:var(--accent)}
+.news-feedback{display:flex;gap:12px}
+.news-feedback button{background:transparent;border:1px solid var(--card-border);color:var(--text-secondary);padding:5px 14px;border-radius:8px;font-size:13px;cursor:pointer;transition:all 0.2s}
+.news-feedback button:hover{border-color:var(--accent);color:var(--accent)}
+.news-feedback button.active{background:rgba(168,85,247,0.2);border-color:var(--accent);color:var(--accent-bright)}
+.loading-state{text-align:center;padding:40px 0;color:var(--text-secondary);font-size:14px}
+.spinner{width:28px;height:28px;border:2px solid var(--card-border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.arsenal-category{display:inline-block;font-size:10px;padding:2px 8px;border-radius:6px;margin-bottom:6px}
+.arsenal-category.comm{background:rgba(124,58,237,0.25);color:var(--accent)}
+.arsenal-category.frame{background:rgba(168,85,247,0.25);color:#c084fc}
+.arsenal-category.list{background:rgba(212,165,116,0.2);color:var(--gold)}
+.arsenal-category.anti{background:rgba(239,68,68,0.2);color:#f87171}
+.arsenal-title{font-size:15px;font-weight:600;margin-bottom:6px}
+.arsenal-content{font-size:13px;color:var(--text-secondary);line-height:1.5}
+.arsenal-actions{display:flex;gap:10px;margin-top:8px}
+.btn-refresh{background:transparent;border:1px solid var(--card-border);color:var(--accent);padding:7px 18px;border-radius:8px;font-size:13px;cursor:pointer;transition:all 0.2s}
+.btn-refresh:hover{background:rgba(168,85,247,0.15);border-color:var(--accent)}
+.btn-add{background:transparent;border:1px dashed var(--card-border);color:var(--text-secondary);padding:7px 18px;border-radius:8px;font-size:13px;cursor:pointer;transition:all 0.2s}
+.btn-add:hover{border-color:var(--gold);color:var(--gold)}
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(26,11,46,0.85);z-index:100;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;max-width:500px;width:90%;backdrop-filter:blur(20px)}
+.modal h3{color:var(--accent);margin-bottom:14px;font-size:16px}
+.modal label{display:block;font-size:13px;color:var(--text-secondary);margin-bottom:4px;margin-top:10px}
+.modal select,.modal textarea,.modal input{width:100%;background:rgba(26,11,46,0.5);border:1px solid var(--card-border);border-radius:8px;color:var(--text);padding:10px;font-size:13px;font-family:var(--font)}
+.modal textarea{min-height:80px;resize:vertical}
+.modal select option{background:var(--card);color:var(--text)}
+.modal-actions{display:flex;gap:10px;margin-top:16px;justify-content:flex-end}
+.modal-actions button{padding:8px 20px;border-radius:8px;font-size:13px;cursor:pointer;border:none;transition:all 0.2s}
+.btn-cancel{background:rgba(255,255,255,0.08);color:var(--text-secondary)}
+.btn-cancel:hover{background:rgba(255,255,255,0.15)}
+.btn-submit{background:var(--gradient-btn);color:white}
+.btn-submit:hover{opacity:0.9}
+.lesson-label{display:inline-block;font-size:11px;background:rgba(212,165,116,0.2);color:var(--gold);padding:2px 10px;border-radius:10px;margin-bottom:8px}
+.lesson-title{font-size:16px;font-weight:600;margin-bottom:8px;color:#e4d7f5}
+.lesson-definition{font-size:13px;color:var(--text-secondary);margin-bottom:8px;line-height:1.6}
+.lesson-extra{font-size:13px;color:var(--accent);background:rgba(124,58,237,0.08);padding:10px 14px;border-radius:10px;margin-bottom:8px;border:1px solid rgba(196,132,252,0.1)}
+.lesson-action{font-size:13px;color:var(--gold);font-weight:500;display:flex;align-items:center;gap:6px}
+.lesson-done{margin-top:10px}
+.lesson-done button{background:var(--gradient-btn);color:white;border:none;padding:8px 24px;border-radius:10px;font-size:14px;cursor:pointer;transition:opacity 0.2s}
+.lesson-done button:hover{opacity:0.9}
+.lesson-done button.done{background:rgba(34,197,94,0.2);border:1px solid rgba(34,197,94,0.4);color:#4ade80;cursor:default}
+.done-text{display:inline-block;margin-left:10px;font-size:13px;color:#4ade80}
+.spark-bar{position:fixed;bottom:0;left:0;right:0;text-align:center;padding:8px 12px 10px;z-index:50;pointer-events:none}
+.spark-btn{background:linear-gradient(135deg,rgba(212,165,116,0.2),rgba(196,132,252,0.15));border:1px solid var(--gold);color:var(--gold);padding:6px 16px;border-radius:20px;font-size:13px;cursor:pointer;transition:all 0.3s;backdrop-filter:blur(8px);pointer-events:auto;white-space:nowrap}
+.spark-btn:hover{background:linear-gradient(135deg,rgba(212,165,116,0.35),rgba(196,132,252,0.25));box-shadow:0 0 20px rgba(212,165,116,0.2);transform:translateY(-2px)}
+.spark-inline-btn{background:linear-gradient(135deg,rgba(212,165,116,0.2),rgba(196,132,252,0.15));border:1px solid var(--gold);color:var(--gold);padding:6px 16px;border-radius:20px;font-size:13px;cursor:pointer;transition:all 0.3s;white-space:nowrap;margin-left:auto}
+.spark-inline-btn:hover{background:linear-gradient(135deg,rgba(212,165,116,0.35),rgba(196,132,252,0.25));box-shadow:0 0 20px rgba(212,165,116,0.2);transform:translateY(-1px)}
+.spark-result{display:none;background:var(--card);border:1px solid var(--gold);border-radius:var(--radius);padding:14px 18px;margin:0 auto;max-width:600px;text-align:left;color:var(--text);font-size:14px;line-height:1.7;backdrop-filter:blur(12px);animation:fadeInUp 0.3s ease}
+.spark-result.show{display:block}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.daily-badge{display:inline-block;font-size:11px;background:rgba(196,132,252,0.15);color:var(--accent);padding:2px 8px;border-radius:8px}
+.pb-120{padding-bottom:200px}
+.pagination{display:flex;gap:8px;justify-content:center;align-items:center;margin:16px 0 32px}
+.pagination button{background:rgba(45,27,78,0.5);border:1px solid var(--card-border);color:var(--accent);padding:6px 16px;border-radius:8px;font-size:13px;cursor:pointer;transition:all 0.2s}
+.pagination button:hover:not(:disabled){background:rgba(168,85,247,0.2);border-color:var(--accent)}
+.pagination button:disabled{opacity:0.3;cursor:default}
+.pagination .page-info{font-size:12px;color:var(--text-secondary);min-width:80px;text-align:center}
+.update-mechanism{background:rgba(212,165,116,0.08);border:1px solid rgba(212,165,116,0.2);border-radius:10px;padding:10px 14px;margin-top:8px;font-size:11px;color:var(--gold);line-height:1.6}
+.update-mechanism code{background:rgba(212,165,116,0.15);padding:1px 6px;border-radius:4px;font-size:10px}
+.lesson-list{display:flex;flex-direction:column;gap:12px}
+.lesson-mini-card{background:rgba(45,27,78,0.5);border:1px solid var(--card-border);border-radius:12px;padding:14px 16px}
+.lesson-mini-card .lm-header{font-size:12px;color:var(--gold);margin-bottom:4px}
+.lesson-mini-card .lm-title{font-size:14px;font-weight:600;margin-bottom:4px;color:var(--text)}
+.lesson-mini-card .lm-desc{font-size:12px;color:var(--text-secondary);line-height:1.5}
+.day-type-badge{display:inline-block;font-size:11px;background:rgba(168,85,247,0.2);color:var(--accent);padding:2px 8px;border-radius:6px;margin-bottom:8px}
+@media (min-width:768px){.container{padding:0 24px}.header h1{font-size:32px}}
+</style>
+</head>
+<body>
+<div class="container pb-120">
+  <header class="header">
+    <h1>B端思维·进阶工作台</h1>
+    <p class="subtitle">每日5分钟，从"高级"迈向"资深"</p>
+    <p class="update-time" id="updateTime">数据更新：加载中...</p>
+    <span class="stale-warning" id="staleWarning">⚠ 数据超过24小时未更新，最新资讯可能未显示</span>
+    <div class="update-mechanism">
+      📡 数据更新机制：GitHub Actions 每日北京时间 8:00 自动运行 <code>fetch_news.py</code> 抓取牛透社、36氪企服、云头条等源的最新ToB资讯，生成 <code>data.json</code> 并推送到仓库。也可以随时在仓库 Actions 页面手动触发"更新 ToB 行业资讯"工作流。
+    </div>
+  </header>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('news')">📰 每日视野</button>
+    <button class="tab-btn" onclick="switchTab('arsenal')">🔧 ToB武器库</button>
+    <button class="tab-btn" onclick="switchTab('lesson')">📖 每日一课</button>
+    <button class="spark-inline-btn" onclick="showSpark()">🔥 给我一个灵感</button>
+  </div>
+
+  <div class="tab-panel active" id="tab-news">
+    <div id="newsContainer"><div class="loading-state"><div class="spinner"></div><p>正在加载今日资讯...</p></div></div>
+    <div class="pagination" id="newsPagination"></div>
+  </div>
+
+  <div class="tab-panel" id="tab-arsenal">
+    <div id="arsenalContainer"><div class="loading-state"><div class="spinner"></div></div></div>
+    <div class="pagination" id="arsenalPagination"></div>
+    <div class="arsenal-actions">
+      <button class="btn-refresh" onclick="refreshArsenal()">🔄 换一批</button>
+      <button class="btn-add" onclick="showAddModal()">+ 新增一条</button>
+    </div>
+  </div>
+
+  <div class="tab-panel" id="tab-lesson">
+    <div id="lessonContainer"><div class="loading-state"><div class="spinner"></div></div></div>
+  </div>
+
+  <div class="modal-overlay" id="addModal">
+    <div class="modal">
+      <h3>新增一条武器库内容</h3>
+      <label>分类</label>
+      <select id="addCategory">
+        <option value="comm">沟通话术</option>
+        <option value="frame">分析框架</option>
+        <option value="list">检查清单</option>
+        <option value="anti">反常识观点</option>
+      </select>
+      <label>标题</label>
+      <input id="addTitle" placeholder="请输入标题">
+      <label>内容</label>
+      <textarea id="addContent" placeholder="请输入详细内容..."></textarea>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="hideAddModal()">取消</button>
+        <button class="btn-submit" onclick="addArsenalItem()">确认添加</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="spark-bar">
+  <div class="spark-result" id="sparkResult"></div>
+</div>
+<script>
+// ============ 演示资讯数据（首次运行或 data.json 不可用时的后备数据）============
+const FALLBACK_NEWS = [
+  {title:`钉钉发布AI助手3.0：从"聊天式交互"到"主动业务洞察"`, summary:`钉钉在2026年生态大会上发布AI助手3.0，新增主动感知业务模式并推送洞察的能力，覆盖合同审批、销售预测、差旅管理等20+高频ToB场景，深度打通宜搭低代码平台。`, source:`牛透社`, link:`#`},
+  {title:`2026上半年中国SaaS融资报告：企服赛道融资回暖，AI+垂直SaaS成最热方向`, summary:`据牛透社统计，2026年H1中国SaaS领域共完成融资事件47起，总金额约86亿元，同比增长32%。其中AI赋能的垂直行业SaaS占融资总额的58%，成为最受资本追捧的细分赛道。`, source:`牛透社`, link:`#`},
+  {title:`飞书发布"智能业务中枢"：从协作工具向业务操作系统进化`, summary:`飞书在最新版本中推出"智能业务中枢"，将审批流、多维表格、知识库与AI Agent深度打通，支持企业自定义业务流程自动化。CEO谢欣表示这是飞书从"协同办公"转向"业务操作系统"的关键一步。`, source:`36氪企服`, link:`#`},
+  {title:`Salesforce大中华区换帅：加码中国ToB市场，聚焦制造与零售垂直场景`, summary:`Salesforce宣布任命新的中国区总裁，同时公布未来三年在中国市场的战略重心：围绕制造业供应链协同和零售全渠道两个垂直场景深度布局，本地化数据中心预计2026年底投入使用。`, source:`云头条`, link:`#`},
+  {title:`IDC发布中国低代码平台市场报告：格局初定，头部效应加速`, summary:`IDC最新报告显示中国低代码/aPaaS市场规模突破120亿元，TOP5厂商占据62%市场份额。报告指出AI+低代码正成为新战场，约35%低代码平台已集成大模型能力。`, source:`36氪企服`, link:`#`},
+  {title:`华为云发布工业互联网平台3.0：从单点智能到全链协同`, summary:`华为云推出工业互联网平台3.0，打通MES、ERP、WMS等系统数据孤岛，提供200+工业APP。CEO张平安表示目标是让中小制造企业也能用得起世界级工业软件。`, source:`云头条`, link:`#`},
+  {title:`用友网络战略调整：全面拥抱AI原生，裁员15%转型云服务`, summary:`用友网络宣布启动"AI原生"战略，三年内将所有产品线重构为AI原生架构，同时优化15%非核心岗位。财报显示云服务收入占比已提升至72%，ARR突破80亿元。`, source:`ToB行业头条`, link:`#`},
+  {title:`字节跳动飞书多维表格独立运营：瞄准中国版Airtable`, summary:`飞书多维表格宣布独立品牌运营，推出面向中小团队的免费版和面向企业的专业版，支持50万行数据处理和AI自动分析。分析认为这是字节跳动在ToB赛道的一个关键落子。`, source:`36氪企服`, link:`#`},
+  {title:`大模型在B端落地的五个真实场景：从营销文案到合同审查`, summary:`本文梳理了大模型在B端实际落地的五个高频场景：智能客服知识库、销售话术生成、合同条款审查、数据报表自动解读、工单智能分派，并分析了每个场景的ROI和落地难点。`, source:`牛透社`, link:`#`},
+  {title:`企业微信发布5.0：连接微信的私域能力全面升级`, summary:`企业微信5.0打通视频号、小程序、社群运营全链路，新增"客户画像AI分析"和"智能跟进提醒"功能。数据显示企业微信已连接微信用户超6亿，活跃企业数突破1500万。`, source:`36氪企服`, link:`#`},
+  {title:`AIGC+CRM：销售易发布AI销售教练，赋能一线销售`, summary:`销售易CRM整合大模型能力推出"AI销售教练"，可根据客户画像自动生成拜访策略、异议处理话术和谈判方案，试运行期间客户转化率提升23%。这是国内CRM厂商首次深度融合AIGC能力。`, source:`牛透社`, link:`#`},
+  {title:`RPA赛道洗牌：来也科技获C轮5亿元融资，AI Agent成新方向`, summary:`来也科技完成5亿元C轮融资，同时宣布从RPA厂商转型为"企业级AI Agent平台"。CEO汪冠春表示传统RPA的市场空间正在被AI Agent重新定义，单纯做流程自动化已不够。`, source:`云头条`, link:`#`},
+];
+
+// ============ 启发模板库 (50+条) ============
+const INSPIRATION_TEMPLATES = [
+  {keys:['融资','获投','亿元融资','B轮','C轮','A轮','天使轮','Pre-IPO','IPO','上市'],templates:['资本还在往这个方向砸钱，说明赛道逻辑没断，值得持续关注。','这个赛道的资金密度在上升，马太效应可能加速，头部优势会进一步拉大。','融资节奏本身就是一个信号——什么时候拿钱、拿多少，比拿了什么价格更值得解读。','资本进场说明至少未来两年预期没有翻转，但竞争格局会变得更拥挤。','钱往哪里流，哪里就有结构性机会。但融资不等于成功，只等于拿到了入场券。']},
+  {keys:['SaaS','软件即服务','订阅','ARR','NRR','云服务'],templates:['SaaS的本质不是卖软件，是卖"持续解决问题的承诺"，续费率比新增更重要。','订阅模式的核心不是技术，是对客户成功的持续投入——留住一个老客户比找一个新客户划算5-7倍。','ARR不是收入的度量，是信任的度量。每一分钱ARR背后都代表客户愿意再给你一年机会。','SaaS的护城河不是功能多少，而是切换成本——数据、流程、用户习惯才是真正的护城河。']},
+  {keys:['大模型','AI','人工智能','GPT','LLM','机器学习','深度学习','生成式AI','AIGC'],templates:['AI不是替代人，是让"会用AI的人"替代"不会用AI的人"，这个差距正在加速拉大。','大模型的普及会让很多工具层变得可以替代，但问题定义能力和领域知识会越来越值钱。','别被"AI+"的叙事裹挟——先定义问题，再看AI能不能解，而不是反过来。','AI落地的最大障碍不是技术，是组织惯性。90%的AI项目死在"我们一直这么做"。','生成式AI改变的是信息的生产成本，但信息的价值判断仍然需要人。']},
+  {keys:['低代码','无代码','可视化开发','aPaaS','零代码'],templates:['低代码解决的不是"没有程序员"的问题，是"业务和技术的沟通成本"问题——让懂业务的人直接动手。','低代码平台的真正价值不在"拖拉拽"，而在"让人跳过翻译损耗"——业务人员直接构建自己需要的东西。','低代码不等于低门槛，做好还需要系统架构思维——只是把编程换了一种表达方式。']},
+  {keys:['数字化','数字化转型','数智化','信息化'],templates:['数字化不是把纸质流程搬到电脑上，是重构业务逻辑——如果只做"线上化"，ROI肯定不及预期。','数字化转型失败70%不是技术原因，是组织变革管理没跟上。技术永远不是最难的那一环。','数字化的起点不是系统选型，是"你究竟想解决什么业务问题"——答案越具体，成功率越高。']},
+  {keys:['云原生','K8s','Kubernetes','Docker','容器','微服务','Serverless'],templates:['云原生不是一套技术栈，是一种组织能力——能不能快速试错、弹性伸缩、按需付费。','微服务解决的是部署独立性，但不解决领域建模——边界划错了，拆得越散越痛苦。']},
+  {keys:['出海','国际化','全球化','海外市场'],templates:['出海不是把中国模式复制一遍，是重新理解一个市场的痛点——本地化深度决定天花板高度。','出海最容易被忽略的成本不是合规和翻译，而是"信任建立"——在一个陌生市场从零建立信任。']},
+  {keys:['信创','国产替代','自主可控','国产化'],templates:['信创不是简单的"换一套"，是生态迁移——配套、培训、运维、安全都得跟上的系统工程。','国产替代的红利期会过去，最终拼的还是产品力——政策只能把你送进考场，分数还得自己考。']},
+  {keys:['数据安全','合规','隐私计算','GDPR','个人信息保护','数据要素'],templates:['合规不是成本项，是竞争力——能合规处理数据的企业，在监管趋严的环境中是稀缺资源。','数据安全正在从IT问题变为董事会问题——罚的不是IT部门，是整个公司的市值。']},
+  {keys:['ESG','碳中和','双碳','绿色','可持续'],templates:['ESG正在从"加分项"变成"必答题"——客户、投资方、监管都在用这个框架审视你。','双碳不是成本，是重新定义产业链的机会——谁先转型，谁就有定价权。']},
+  {keys:['RPA','自动化','流程机器人','IPA'],templates:['RPA不是终极方案，是过渡方案——用机器人弥合系统孤岛，但真正的解法是打通数据。','自动化的第一步不是上工具，是找到"高重复、低判断"的流程——这些才是ROI最高的切入点。']},
+  {keys:['PLG','产品驱动增长','自下而上'],templates:['PLG的本质是让产品自己说话——用户先感受到价值，再考虑买单，而不是销售先承诺再交付。','产品驱动增长省的是获客成本，但要求产品体验做到极致——容错空间比SLG小得多。']},
+  {keys:['PLG','SLG','GTM','增长','获客'],templates:['GTM策略没有对错，只有匹配——产品复杂度高、客单价高的，SLG可能是更划算的选择。','增长不是堆资源，是找到最小闭环——一个可复制的获客-转化-留存模型比什么都重要。']},
+  {keys:['客户成功','CSM','续约','续费','流失','churn'],templates:['客户成功不是客服，是"确保客户持续获得价值"的主动行为——和客户一起定义成功标准才是关键。','续费率不是数字，是产品价值的投票——每失去一个客户，都在告诉你哪里没做好。']}
+];
+
+const INSPIRATION_FALLBACKS = [
+  'ToB行业的底层逻辑是"帮客户赚钱或省钱"，所有偏离这个逻辑的产品最终都会被淘汰。',
+  '别只看竞品在做什么，要看客户在痛什么——竞品可能也在盲人摸象。',
+  '最好的行业洞察往往不在行业报告里，在一线销售和客户的对话中。'
+];
+
+// ============ 武器库数据 (60+条) ============
+const ARSENAL_DATA = [
+  // 沟通话术 (15)
+  {cat:`comm`,title:`电梯演讲框架`,scene:`你在电梯里偶遇大老板或潜在投资人，只有30秒——"我们帮中小制造企业解决排产混乱的问题，通过AI算法自动排程，因为我们团队有15年工厂调度经验"。练到形成肌肉记忆就是竞争力。`,content:`30秒内说清楚：我们帮谁，解决什么问题，用什么方式，为什么是我们。格式："我们帮[目标客户]解决[核心痛点]，通过[独特方式]，因为我们[核心优势]。"练习：对着镜子计时，控制在25-30秒之间。`},
+  {cat:`comm`,title:`SPIN提问法`,scene:`客户说"我们现在的方案也够用，不急着换"——用SPIN切入：先了解他的业务流程现状(S)，挖掘"手动操作导致的错单率"(P)，放大"错单导致客户投诉和退货"(I)，最终让他自己算出改变的价值(N)。`,content:`Situation（现状）-Problem（困难）-Implication（影响）-Need-payoff（价值）。先用前两个问题建立信任，再用后两个问题制造紧迫感。适用于需求挖掘和商务谈判。`},
+  {cat:`comm`,title:`"是的，而且..."法则`,scene:`跨部门会上技术负责人说"这个需求做不了"——"是的，时间确实很紧，我理解你的压力(认可)，而且如果我们分两期交付，第一期覆盖核心场景就能解决80%的问题，第二期再补边缘case(建设性方案)"。`,content:`替代"但是"的沟通方法。当对方提出不同意见时，先说"是的，我理解你的考虑"，再说"而且我们可以从另一个角度看..."。变对抗为共建，避免激发防御心理。`},
+  {cat:`comm`,title:`FABE价值陈述法`,scene:`给CFO推新系统——"这个系统有自动对账功能(F)，比市面上其他方案快3倍，日处理量达10万笔(A)，你们财务团队每月能省200人天(B)，XX公司用后月结对账时间从5天降到1天(E)"。CEO在旁边听完了直接说"推进"。`,content:`Feature（特征）-Advantage（优势）-Benefit（利益）-Evidence（证据）。先说产品有什么，再说比别人好在哪里，然后说明对客户的具体好处，最后用案例或数据佐证。`},
+  {cat:`comm`,title:`三明治反馈法`,scene:`你的BA同事写的PRD漏了异常流程——"整体的需求梳理很完整，逻辑清晰(正面)，如果能把异常场景比如超时、权限不足这些也覆盖到就更严谨了(改进)，这个功能客户催了两个月了，方向是对的，继续推进(鼓励)"。`,content:`正面-改进-正面。先肯定对方做得好的地方，再温和提出改进建议，最后以鼓励收尾。用于跨部门反馈、给下属提意见、甚至向上管理。`},
+  {cat:`comm`,title:`PREP表达结构`,scene:`周会上被突然CUE到"这个项目该不该继续"——"应该继续(P)，因为第一轮用户验证数据远超预期(R)，试点的3个客户续约率100%、NPS 72分(E)，所以我建议进入下一阶段，追加资源(P)"。30秒展现专业判断力。`,content:`Point（观点）-Reason（理由）-Example（例证）-Point（重申观点）。适合在会议中快速表达立场，有条理有力度。先把结论扔出来，再说为什么。`},
+  {cat:`comm`,title:`向上管理的3句话`,scene:`老板突然问"XX项目怎么样了"——"已分析了两个方案，推荐A，因为交付快风险小"(带方案)。而不是"还在等XX部门反馈"(带问题)。老板要的是安全感，不是你把他当问题升级中心。`,content:`1."这个问题我分析了，有两个方案，推荐方案A，因为..."；2."我需要你帮我确认一下优先级，A和B哪个先做？"；3."我遇到了一个阻碍，需要你帮我协调..."核心：带着方案去，而不是带着问题去。`},
+  {cat:`comm`,title:`需求沟通黄金句式`,scene:`客户讲了10分钟需求，你一句话复述——"你是说最希望在下季度前解决库存数据不准的问题，用准确率超95%来判断效果，对吗？"一秒钟让对方觉得"你懂我"。这个"复述确认法"能避免90%的需求偏差。`,content:`"你是说，你最希望在[时间段]内解决[什么痛点]，用[什么方式]来判断效果，对吗？"这是"复述确认法"，确保你理解的需求和对方的期望一致，避免后面返工。`},
+  {cat:`comm`,title:`拒绝需求的正确姿势`,scene:`客户要求在某功能里加AI能力，但数据基础还不具备——"我理解你希望通过AI提升效率(确认)，目前受限于历史数据还没结构化(约束)，建议先做数据治理，半年后再上AI模块效果会好很多(分期替代方案)"。`,content:`不在第一时间说"不"，而是：1.确认理解对方诉求；2.说明当前资源约束和数据依据；3.提出替代方案或分期实现路径。拒绝不是关系的终点，不尊重才是。`},
+  {cat:`comm`,title:`跨部门协作破冰话术`,scene:`法务部一直拖着不审合同，你把"催"变成"共创"——"我们共同的目标是让这个项目如期上线，我这边把合同模板和风险点梳理好了，你只需要审关键条款，大概需要几个工作日？我们对齐一下排期。"`,content:`"我们共同的目标是[XX]，我的团队能贡献[YY]，你们做[ZZ]是我们的关键依赖，咱们一起对齐一下优先级？"把"我需要你做什么"换成"我们一起做成什么"。`},
+  {cat:`comm`,title:`需求评审开场白`,scene:`评审一个争议很大的需求，会议室气氛紧张——"今天目标是确认范围和优先级，不追求完美方案。大家对哪个部分有疑问随时打断我"——一句话设定安全氛围，让不同角色敢于表达。`,content:`"今天评审XX需求，目标是确认范围和优先级，不追求完美方案。大家有任何疑问随时打断我。"设定预期，降低心理防御门槛，鼓励开放讨论。`},
+  {cat:`comm`,title:`与技术团队沟通技巧`,scene:`跟技术leader讨论排期——"我理解这个改动涉及数据库和后端API两个层面，你帮我评估一下工作量和风险？"而不是"就加个字段，半天能搞定吧"——后者让你瞬间失去技术团队的尊重。`,content:`不要说"这个很简单"，要说"我理解这个改动涉及哪些层面，你帮我评估一下技术可行性和工作量"。尊重专业判断，不说外行话。`},
+  {cat:`comm`,title:`汇报坏消息的结构`,scene:`周五下午发现一个功能要延期两周——"XX模块要延期到月底(直说)，已评估：不影响核心流程，但报表功能推迟(影响)，建议先上线核心流程，报表两周后追加(补救)，我每周一更新进度(承诺)"。`,content:`1.直接说发生了什么；2.说明你已经评估的影响范围；3.给出你建议的补救方案和需要的支持；4.承诺更新节奏。永远不要让老板从别人那里听到你的坏消息。`},
+  {cat:`comm`,title:`一对一会议提问清单`,scene:`作为leader和下属做1:1——不要问"最近怎么样"(太宽泛)，用这四个问题精准了解状态和需求。15分钟高质量对话胜过1小时漫无目的的闲聊。下属会觉得"老大真的在关注我的成长"。`,content:`1.最近有没有什么让你特别有成就感的事？2.有没有什么困扰或阻碍？3.我做什么可以让你的工作更顺畅？4.你下一步想发展什么能力？每两周一次，15分钟即可。`},
+  {cat:`comm`,title:`主持跨部门会议口诀`,scene:`销售、产品、技术三方讨论一个新需求，你作为PM控制节奏——'定目标在前(30秒)，控制每人发言不超3分钟，均衡发言别让销售占全场，最后2分钟确认谁做什么哪天完成'。`,content:`定目标在前，控制时间，均衡发言，及时总结，明确下一步。最重要的是：会议结束前花2分钟确认"谁来做什么，什么时候完成"。`},
+  // 分析框架 (15)
+  {cat:`frame`,title:`SWOT分析`,scene:`老板突然说"评估一下我们该不该进入制造业SaaS这个赛道"——不要凭感觉回答。花20分钟画一个2x2矩阵：我们的技术积累是S(优势)，行业经验空白是W(劣势)，制造业数字化政策是O(机会)，已有巨头卡位是T(威胁)。交叉分析后结论才有说服力。`,content:`Strengths（优势）-Weaknesses（劣势）-Opportunities（机会）-Threats（威胁）。不要只填格子，要交叉分析：优势如何抓住机会？劣势在威胁下会怎样？做成2x2矩阵才有效。`},
+  {cat:`frame`,title:`波特五力模型`,scene:`投资部门问"这个细分赛道值不值得进入"——用五力模型结构化回答：上游是数据供应商(议价能力强吗)，下游是大客户(议价能力多强)，新玩家容易进来吗(壁垒)，AI能替代吗(替代品)，现有玩家打得凶不凶(竞争强度)。`,content:`供应商议价能力、买方议价能力、新进入者威胁、替代品威胁、行业内竞争强度。用于分析行业结构和盈利能力，判断一个赛道是否值得进入。`},
+  {cat:`frame`,title:`北极星指标`,scene:`团队争论"我们到底该看DAU还是看GMV"——北极星指标帮你定锚：我们是ToB协作工具，核心价值是"帮团队更高效地完成项目"，所以"每周活跃项目数"比DAU更能反映价值交付。`,content:`找到最能反映产品核心价值的那个指标，它是"给客户传递价值的代理变量"。Spotify是"听歌时长"，Airbnb是"预订间夜数"。你的产品北极星指标是什么？`},
+  {cat:`frame`,title:`KANO模型`,scene:`客户一口气提了20个需求，你怎么排优先级——用KANO分类：登录安全是基本型(不做用户会骂)，批量导入是期望型(越多越好)，AI智能推荐是兴奋型(惊喜)。先保证基本型不出事，用兴奋型给客户惊喜。`,content:`将需求分为：基本型（必须做）、期望型（越多越好）、兴奋型（惊喜）、无差异型、反向型。优先保证基本型，适度投入期望型，用兴奋型拉开差距。`},
+  {cat:`frame`,title:`海盗指标（AARRR）`,scene:`CEO问"上个月花了50万投放，新客增长30%但收入没涨，钱花哪了"——用AARRR漏斗诊断：获客(A)没问题，但激活(A)只有12%，意味着80%的新用户注册后就没用过。问题不在获客端，在首次体验。`,content:`Acquisition（获客）-Activation（激活）-Retention（留存）-Revenue（变现）-Referral（推荐）。用户旅程漏斗，每一步都可以量化。问自己：当前最该优化的环节是哪一个？`},
+  {cat:`frame`,title:`ICE优先级排序法`,scene:`你有15个需求但只能做5个——团队各有偏好争论不休。拿出ICE打分表：每个需求按影响力(1-10)×信心(1-10)×容易度(1-10)打分，把个人偏好变成结构化数据。讨论从"我觉得"变成"分数显示"。`,content:`Impact（影响力）× Confidence（信心）× Ease（容易度），每项1-10分，乘积越高越优先。比单纯凭感觉排序靠谱得多，而且有讨论的基础。`},
+  {cat:`frame`,title:`RICE优先级框架`,scene:`ICE有一个盲区——高价值但高成本的需求得分可能虚高。RICE加了一个÷Effort分母：一个影响力9分但工作量90人天的需求，得分远低于影响力6分但只需5人天的需求。让"易赢速赢"的需求浮出水面。`,content:`Reach（覆盖人数）× Impact（影响程度）× Confidence（信心度）÷ Effort（工作量）。ICE的升级版，引入分母控制：高价值但高成本的需求可能不如中价值低成本。`},
+  {cat:`frame`,title:`MECE原则`,scene:`写竞品分析时堆了一堆信息杂乱无章——用MECE重新组织：按"产品能力、定价策略、客户口碑、技术壁垒、GTM模式"五个维度分类，每个互不重叠但合起来覆盖全面。老板说"这份报告思路很清晰"。`,content:`Mutually Exclusive（相互独立）+ Collectively Exhaustive（完全穷尽）。分析问题时，分类要覆盖全、不重叠。经典的MECE分类：按时间、按结构、按程度。`},
+  {cat:`frame`,title:`JTBD用户任务框架`,scene:`你问用户"你想要什么功能"，他说"要更快的审批"。用JTBD追问："你在什么场景下审批？什么情况下觉得慢？审批完要做什么？"——原来不是要更快，是要在手机上审批，因为出差时没法用电脑。`,content:`Jobs to be Done——用户"雇佣"你的产品来完成什么任务？不是问"你要什么功能"，是问"你在什么场景下，想完成什么任务"。饮料不是解渴，是提神、社交、放松。`},
+  {cat:`frame`,title:`价值主张画布`,scene:`写BP或做产品定位时——不要写"我们的产品功能强大"。用价值主张画布：左侧画客户最痛的三个点(比如报表生成慢)，右侧画你的产品怎么解决(一键自动生成+实时推送)。聚焦一个痛点胜于泛泛解决十个。`,content:`左侧：客户画像（痛点、收益、任务）；右侧：价值地图（产品、止痛剂、增益）。核心是找到产品如何解决客户最痛的那个点——聚焦一个痛点胜于泛泛解决十个。`},
+  {cat:`frame`,title:`技术采纳生命周期`,scene:`你的创新产品早期用户反馈很好，但大客户就是不买单——可能卡在"鸿沟"了。早期用户是愿意冒险的创新者，主流客户需要社会证明。跨越鸿沟需要不一样的话术：从"最新技术"变成"已被XX家同行验证"。`,content:`创新者→早期采用者→早期大众→晚期大众→落后者。关键是从早期市场跨越到主流市场的"鸿沟"——需要不一样的GTM策略、定位和定价。`},
+  {cat:`frame`,title:`STAR法则`,scene:`绩效面谈时被问"你今年最大贡献是什么"——用STAR："去年Q3客户投诉率飙升(S)，我领了一个跨部门项目(T)，两周内梳理了5个部门的流程断点并推动修复(A)，投诉率从18%降到3%(R)"。比"我做了很多事"有力十倍。`,content:`Situation（情境）-Task（任务）-Action（行动）-Result（结果）。不是写简历专用，日常复盘也可以用。"在什么背景下，我面对什么任务，做了什么事，产生了什么结果"。`},
+  {cat:`frame`,title:`5Why分析法`,scene:`一个老客户突然不续费了——问五次为什么：为什么→"服务响应太慢"→为什么→"处理问题的工程师经常不在"→为什么→"他只负责这一个客户"→为什么→"因为客户量少没设专职团队"→为什么→"定价太低利润养不起专职CSM"——根因是定价。`,content:`连续问5个"为什么"找到根本原因。示例：客户流失了→因为服务响应慢→因为人手不够→因为预算没批→因为老板看不到服务的价值→因为没量化客户成功ROI。`},
+  {cat:`frame`,title:`PARA信息管理法`,scene:`你的桌面、笔记软件、收藏夹乱七八糟——用PARA整理：把正在进行的需求文档放Projects，把持续关注的能力提升放Areas，把行业报告放Resources，把已完成项目的资料放Archives。从此查找信息不超过30秒。`,content:`Projects（项目）-Areas（领域）-Resources（资源）-Archives（归档）。用这个框架管理你的文档、笔记、任务，让信息随需而取而不是堆积如山。`},
+  {cat:`frame`,title:`MoSCoW优先级法`,scene:`需求评审会上所有人都说自己的需求"紧急"——拿出MoSCoW框架："我们先分类，哪些是Must have(不做系统跑不了)，哪些是Should have(重要但可延期)，哪些是Could have(锦上添花)，哪些是Won't have这期不做"。所有人被迫直面取舍。`,content:`Must have（必须有）-Should have（应该有）-Could have（可以有）-Wont have（不要有）。需求评审时强制各方做出取舍，避免所有需求都标"紧急"。`},
+  // 检查清单 (15)
+  {cat:`list`,title:`需求文档自检清单`,scene:`写完PRD准备评审前，逐条核对——是否定义了用户故事三要素、是否写了验收标准、异常情况是否覆盖(网络断开、权限不足、数据为空)、是否明确了权限规则。每次评审前花5分钟自检，能减少50%的评审返工。`,content:`□ 用户故事是否包含角色、行为、价值？□ 验收标准是否可测试？□ 异常情况是否考虑？□ 权限和数据权限是否明确？□ 与现有功能有无冲突？□ 非功能需求（性能、安全）是否覆盖？`},
+  {cat:`list`,title:`新功能上线前检查清单`,scene:`明早10点上线的功能，今晚按清单最后确认——灰度只是开了1%还是能快速回滚？客服知道新功能怎么给客户解释吗？数据埋点上线了没有(不然上线了连好不好用都不知道)？关键干系人收到通知了吗？`,content:`□ 灰度方案是否就绪？□ 回滚方案是否可行？□ 监控告警是否配置？□ 客服FAQ是否更新？□ 数据埋点是否上线？□ 干系人是否知悉？□ 培训材料是否准备？`},
+  {cat:`list`,title:`供应商选型评估清单`,scene:`公司要采购一套CRM系统，三家供应商来POC——不要凭印象评分。用这个清单给每家打分，尤其注意"续约和流失数据"这一项——能拿出来的说明客户成功做得好，拿不出来的大概率有水分。`,content:`□ 产品能力匹配度 □ 技术架构兼容性 □ 公司财务健康度 □ 客户案例真实性 □ SLA承诺和实际表现 □ 续约和流失数据 □ 实施周期和服务团队 □ 数据安全和合规资质`},
+  {cat:`list`,title:`项目启动自检清单`,scene:`新项目kick-off前必查——目标是不是所有人都能复述出同一句话(而不是各有各的理解)？核心干系人是不是都在场(还是销售不知道、法务没通知)？风险有没有被讨论过(还是大家都觉得"没问题")？`,content:`□ 项目目标和成功标准是否达成共识？□ 核心干系人是否已识别并对齐？□ 资源和排期是否有承诺？□ 风险是否已识别并有预案？□ 沟通机制是否已建立？□ 决策流程是否明确？`},
+  {cat:`list`,title:`每日复盘5分钟清单`,scene:`工作一天下来"感觉做了很多但不知道做了什么"——下班前花5分钟回答这五个问题。坚持两周后你会发现自己对"时间花在哪"和"该优化的重复工作"有全新认知。`,content:`□ 今天最重要的产出是什么？□ 有什么事偏离了计划？原因是什么？□ 明天最关键的一件事是什么？□ 有学到什么新东西吗？□ 有需要帮助或协调的事情吗？`},
+  {cat:`list`,title:`客户演示前检查清单`,scene:`明天要给一个关键客户做产品演示——今晚检查：演示环境网络稳吗(上次连WiFi断线太尴尬)？演示路径是按客户痛点编排的还是按功能列表？参会的有技术总监(关心架构)和市场总监(关心效果)，你的内容覆盖了吗？`,content:`□ 演示环境是否稳定（网络、版本、数据）？□ 演示路径是否贴合客户场景？□ 可能被问到的问题是否准备了答案？□ 有没有提前了解参会人的角色和关注点？□ 备份方案是否就位？`},
+  {cat:`list`,title:`需求优先级评审清单`,scene:`迭代计划会上各角色争优先级——用这个清单结构化讨论：这个需求和产品战略对齐吗？不做会怎样(能不能量化影响)？有没有更低成本的方式达成同样效果？依赖项可控吗？`,content:`□ 是否符合当前产品战略？□ 核心用户是否真的有这个需求（数据支撑）？□ 不做会有什么后果？□ 有没有更低成本的实现方案？□ 依赖项是否明确且可控？`},
+  {cat:`list`,title:`竞品分析清单`,scene:`老板让你"调研一下竞品"——不要只罗列功能对比表。照这个清单：用户群重叠吗(还是服务不同细分市场)？GTM策略有什么差别(他们靠渠道我们靠直销)？客户口碑怎么样(去真实用户社区看，不要只看官网案例)。`,content:`□ 目标用户群是否一致？□ 核心能力对比（功能、体验、价格）？□ GTM策略差异？□ 客户口碑和NPS？□ 技术壁垒或专利？□ 团队和融资背景？□ 最近动态和战略信号？`},
+  {cat:`list`,title:`数据看板设计清单`,scene:`业务方说"帮我做个数据看板"——先问五个问题：给谁看(VP还是运营)？看什么(北极星指标还是日常监控)？决策场景是什么(周会还是日报)？更新频率？异常怎么告警？问完这五个问题，看板就成功了一半。`,content:`□ 给谁看？（角色和决策场景）□ 看什么？（北极星指标+关键驱动因素）□ 怎么呈现？（趋势、对比、分布、构成）□ 更新频率？□ 异常如何告警和归因？`},
+  {cat:`list`,title:`合同/报价审核清单`,scene:`销售发来一份合同让你审核——重点关注：范围明确吗(做什么和不做什么都说清楚了)？交付和验收标准可验证吗("用户满意"不是验收标准)？付款节点和交付挂钩了吗(签了就付全款是大忌)？变更和退出机制约定清楚了吗？`,content:`□ 范围是否明确（包含和不包含的）？□ 交付物和验收标准是否可验证？□ 付款节点是否与交付挂钩？□ 变更管理流程是否约定？□ 违约责任和退出机制是否对等？`},
+  {cat:`list`,title:`BA工作流检查清单`,scene:`接手一个新需求模块，按这个流程走：先花时间实地观察用户工作场景(别只看需求文档)，然后区分"用户说的"vs"用户需要的"，再考虑多角色视角，量化方案预期价值，最后设计验证机制。跳过前三步直接写方案=大概率返工。`,content:`□ 是否深入业务场景观察和访谈？□ 是否区分了"用户说的"和"用户真正需要的"？□ 是否考虑了多角色的视角？□ 方案是否量化了预期价值？□ 是否有假设验证机制？`},
+  {cat:`list`,title:`产品路线图规划清单`,scene:`做下半年的产品路线图——对齐公司战略了吗(别搞成功能列表堆砌)，有Theme吗(比如"Q3：提升首次体验"而非"Q3：做A、B、C功能")，有明确不做的吗(资源有限必须有边界)，速赢+基建+探索三类项目都有吗？`,content:`□ 是否对齐公司战略目标？□ 主题（Theme）是否清晰（而非功能列表）？□ 是否有"不做"的边界？□ 短中长期是否平衡（速赢+基建+探索）？□ 是否考虑了技术和组织约束？`},
+  {cat:`list`,title:`技术方案评审清单`,scene:`研发提交了技术方案请你评审——你不是要审代码，是审"这个方案能不能兜住业务需求"：满足功能和非功能需求了吗？数据模型合理吗？安全边界有没有？外部依赖是什么(第三方服务挂了怎么办)？技术债评估了吗？`,content:`□ 是否满足功能和非功能需求？□ 架构是否可扩展？□ 数据模型是否合理？□ 是否考虑了安全边界？□ 外部依赖是否可靠？□ 技术债务评估？□ 测试策略？`},
+  {cat:`list`,title:`用户访谈准备清单`,scene:`明天要去客户现场做用户访谈——先明确这次是探索性(找问题)还是验证性(证假设)，提前了解用户画像和背景，问题提纲偏向开放式("发生什么了"比"是不是这样"好)，准备沉默和追问技巧，最后要有记录和提炼计划。`,content:`□ 访谈目标是否明确？（探索 vs 验证 vs 评估）□ 用户画像和背景是否了解？□ 问题提纲是否偏向开放性问题？□ 是否准备了引导技巧（沉默、追问、反事实）？□ 是否有记录和提炼计划？`},
+  {cat:`list`,title:`OKR制定检查清单`,scene:`季度OKR制定——O有没有方向性(不是"做好日常工作")？KR可量化且有挑战吗(不是"完成80%就算好")？上下和对齐了吗(别和隔壁团队目标冲突)？有你团队自己的输入(不完全自上而下)？有月度复盘机制吗？`,content:`□ O是否有方向性（不是日常任务）？□ KR是否可量化且有挑战？□ 是否对齐上下级和横向团队？□ 是否有自下而上的输入？□ 是否有复盘和调整机制（不是年初定了就完了）？`},
+  // 反常识观点 (15)
+  {cat:`anti`,title:`最好的功能是你没做的那些`,scene:`你的产品经理提了50个功能需求，觉得"做得越多越牛逼"——但每加一个功能：复杂度↑维护成本↑测试负担↑用户学习成本↑。一个竞品功能只有你的1/3但续费率比你高20%，可能不是他做得少而是他砍得多。`,content:`每加一个功能，增加了复杂度、维护成本、测试负担和用户学习成本。大部分产品的失败不是因为功能太少，而是因为功能太多导致核心体验被稀释。砍需求比加需求更需要勇气。`},
+  {cat:`anti`,title:`定价不是在定价格，是在定客户`,scene:`你的SaaS产品每月99元，大量小客户疯狂提定制需求却月活很低——尝试提到499元，小客户跑了但留下的中大客户给你更多收入且更少抱怨。价格本身就是客户筛选器。`,content:`价格本身是一种筛选机制。价格太低吸引来的客户往往不是你的目标客户，他们会消耗不成比例的客服资源和定制需求。敢收钱，才能证明你的价值。`},
+  {cat:`anti`,title:`客户说"太贵了"通常不是真的觉得贵`,scene:`客户看完报价说"太贵了"——你先别急着打折："张总，除了价格，你觉得产品本身能解决你的问题吗？"如果他说能，你帮他量化"不换的成本"(浪费的人天、流失的客户)，往往他自己就算明白账了。`,content:`潜在含义是"我没看到这个价格对应的价值"。别急着降价，先帮他看清楚价值。一次降价会建立错误的价格锚点，以后涨价会难十倍。`},
+  {cat:`anti`,title:`别把"用户反馈"等同于"用户需求"`,scene:`用户说"我要一键导出所有报表"(反馈)但真正问题是"每次做周报要花2小时导出10个表再手工合并"(需求)——这两个命题的技术实现完全不同。BA的核心价值在"反馈→需求"的翻译过程。`,content:`福特时代，用户会说他想要一匹更快的马——但真正的需求是"更快到达目的地"。用户说得出症状，但不一定诊断得了病因。BA的核心价值是在反馈和需求之间做翻译。`},
+  {cat:`anti`,title:`文档完备≠沟通到位`,scene:`写了200页PRD放到共享文件夹觉得"所有人都应该知道"——两周后发现研发做的和设计画的不一样、测试也不知道要测哪个场景。根本问题是文档发出了但没确认"理解一致"——文档是沟通的起点而非终点。`,content:`写了200页PRD不代表所有参与者都理解了。文档是沟通的副产品，不是沟通本身。最好的文档是能引发高质量对话的文档，而不是塞满细节等着没人看的文档。`},
+  {cat:`anti`,title:`敏捷不是"不用写文档"`,scene:`你的Scrum团队说"我们敏捷，不需要PRD"——大家口头讨论就开干。三个月后新成员加入完全不知道背景，关键决策散落在十几个聊天记录里。敏捷是"在合适的时机写合适粒度的文档"，不是"不写文档"。`,content:`敏捷的本质是快速验证假设、持续交付价值，不是"写了需求口头沟通就行"。该有的分析和记录一样不能少，只是节奏更短更快。用敏捷当借口偷懒的团队，最终都交了技术债。`},
+  {cat:`anti`,title:`数据驱动不等于数据替代判断`,scene:`数据显示新功能使用率很低，团队准备砍掉——直到你访谈了三个沉默用户才发现：不是不需要，是入口藏太深大部分用户不知道这个功能存在。数据告诉你了"发生了低使用率"，没告诉你"为什么"。`,content:`数据告诉你"发生了什么"，但很少直接告诉你"为什么"和"应该怎么办"。过度依赖数据会让你错过那些"数据还来不及反映"的趋势。数据和直觉是互补工具，不是替代关系。`},
+  {cat:`anti`,title:`护城河不是你做了什么，是你的客户离不开什么`,scene:`你的竞品上线了一个和你界面几乎一样的功能——慌吗？问问你的客户"如果没有我们，你会怎么办"——如果答案是"会疯掉"，说明你有护城河(数据、关系、切换成本)。如果答案是"换一家也不麻烦"，你该慌了。`,content:`功能可以被复制，界面可以被模仿，但数据、关系、信任、使用习惯、切换成本——这些才是真正的护城河。别盯着竞品防抄袭，盯着客户防流失。`},
+  {cat:`anti`,title:`MVP不是"先做个半成品"`,scene:`团队说"我们先做一个简化版MVP上线吧"——但你问"我们要验证什么假设"时没人能回答。MVP的核心是"用最小代价验证最大假设"——如果上线了不代表验证了一个具体假设，那只是个没做完的产品。`,content:`MVP是"用最小的代价验证最大的假设"。如果MVP不能验证一个核心假设，那它不是MVP，只是一个还没做完的产品。做MVP前，先回答：我们要验证什么假设？`},
+  {cat:`anti`,title:`ToB产品的用户不是"用户"，是"角色"`,scene:`你的CRM系统让HR总监很满意(组织架构管理功能强大)但HR专员在骂(录入一个员工信息要点8个按钮)。你满足了决策者但折磨了使用者——ToB产品的残酷真相：你永远无法同时让所有人满意，但你得先搞清楚谁是"首要角色"。`,content:`ToB产品至少面对决策者、管理者、执行者三类角色，他们的需求不同甚至冲突。你不能只做一个角色满意的产品——但可以找到"首要角色"优先服务。`},
+  {cat:`anti`,title:`加班多不是努力，是规划出了问题`,scene:`你的团队连续加了三个月班——复盘发现不是工作量真的大，是有30%的时间在做"需求没对齐导致的返工"。冲刺前花2小时对齐优先级和验收标准，能省下20小时的无用加班。`,content:`长期加班通常意味着：需求没对齐、优先级不清晰、或者团队在拿战术勤奋掩盖战略懒惰。加出来的班，不是竞争力，是管理债务。`},
+  {cat:`anti`,title:`和竞品对标参考价值有限`,scene:`你花了3天画了25个功能对比矩阵给老板——但竞争对手上周宣布的新方向直接让矩阵过时了。对标竞品是追着别人跑，对标客户是定义自己的路。去客户现场坐一天比看十份竞品报告有用。`,content:`竞品做的不一定对，竞品对的也不一定适合你。真正该对标的是客户的问题——解决得好不好，和竞品没有多大关系。过度关注竞品会让你成为追随者，而非定义者。`},
+  {cat:`anti`,title:`销售说"这个客户很难搞"时，往往不是客户的问题`,scene:`销售抱怨某客户反复改需求、迟迟不签——你去翻了客户拜访记录发现：真正的问题不是客户挑剔，是第一次见面时销售为了拿单承诺了三个还没开发的功能。根源在售前过度承诺，不在客户善变。`,content:`通常是三种情况之一：1.产品没解决核心痛点；2.决策链条没搞清；3.价值主张传达不到位。把责任归到"客户难搞"上，是最轻松的逃避方式。`},
+  {cat:`anti`,title:`流程是用来优化的，不是用来遵守的`,scene:`你的团队还在用两年前的审批流程，现在团队从20人扩张到200人，一个报销单要7个人签字。每个季度review一次核心流程：这个规则当初是为什么定的？那个约束条件还存在吗？不review的流程会自我繁殖。`,content:`流程存在的意义是降低协作成本，不是降低思考成本。如果一个流程让人觉得"按流程走就行了不用多想"，这个流程该被优化了。最好的流程是让人在框架内自由发挥。`},
+  {cat:`anti`,title:`最好的BA不是需求翻译者，是价值定义者`,scene:`客户说"我要一个批量导出功能"——普通BA：记下来排进迭代。优秀BA追问了三层："导出是为了什么？→做周报。周报给谁看？→区域经理。看了做什么决策？→分配下周客户跟进优先级。"最终方案不是"导出按钮"而是"每周自动生成客户优先级报表推送"。`,content:`翻译需求的BA会把"用户要什么"转成"技术能做什么"。价值定义者的BA会追问"为什么要这个？怎么判断值不值？有没有更好的方式？"。前者是个岗位，后者是个价值。`}
+];
+
+// ============ 思维模型 (50条) ============
+const THINKING_MODELS = [
+  {name:`第一性原理`,def:`回到事物最本质的要素去重新思考，而不是类比或模仿现有方案。`,action:`今天找一个你习以为常的流程，问自己："如果从头来，我会怎么做？"试着去掉中间一个步骤看是否可行。`},
+  {name:`二阶思维`,def:`不只考虑行动的直接影响，还要想"然后呢？再然后呢？"——推演第二步、第三步的连锁反应。`,action:`今天做一个决策前，多问一句："如果我做了这个决定，三个月后会怎样？谁会受影响？"`},
+  {name:`80/20法则（帕累托原则）`,def:`80%的结果来自20%的原因。找出那20%，把精力集中在上面。`,action:`列出今天待办事项中最有影响的20%——只做那三件事，其他的可以等。`},
+  {name:`逆向思维`,def:`不思考"如何成功"，而是思考"如果一定会失败，会是什么原因"，然后避免那些原因。`,action:`选一个你在推进的项目，问自己："如果三个月后这个项目彻底失败了，最可能的三个原因是什么？"然后今天针对第一个原因做点什么。`},
+  {name:`复利思维`,def:`微小的优势长期累积会产生巨大的差异。每天进步1%，一年后变成37.8倍。`,action:`今天花10分钟做一件"看似不重要但长期有益"的事，比如读一篇行业文章、整理一个方法论笔记。`},
+  {name:`奥卡姆剃刀`,def:`如无必要，勿增实体。最简单的解释往往是最好的解释。`,action:`今天找一个被你搞复杂了的事情（方案、邮件、文档），试着用一句话说清楚。砍掉所有"锦上添花"的内容。`},
+  {name:`系统思维`,def:`不孤立看事件，而是看事件之间的关联、反馈回路和延迟效应。`,action:`画一下你今天最重要的任务涉及哪些角色、输入和输出。标注哪一个环节最慢或最容易断。`},
+  {name:`能力圈`,def:`知道自己懂什么、不懂什么，在能力圈范围内做决策。`,action:`盘点一下你最擅长的三件事和最不擅长的三件事。对于不擅长的事情，今天能不能找到擅长的人帮你？`},
+  {name:`机会成本`,def:`选择A意味着放弃B。决策时不仅要看A的收益，还要看放弃的B是什么。`,action:`今天做一个时间决策前（开会、处理邮件、研究新工具），问自己："用同样的时间，我能做的最有价值的事是什么？"`},
+  {name:`沉没成本谬误`,def:`已经投入的无法收回的成本不应影响未来的决策。`,action:`回顾一下手头有没有"做了很久但没什么进展"的事，诚实问自己："如果今天是第一天接手，我还会选择做这件事吗？"`},
+  {name:`确认偏误`,def:`人倾向于寻找支持自己观点的信息，而忽略反面证据。`,action:`找一个你深信不疑的观点，主动搜索一条反对它的信息或观点，认真读一遍。`},
+  {name:`幸存者偏差`,def:`只看到成功者的故事，而忽略了大批失败者的沉默数据。`,action:`看一则行业成功案例时，反问自己："有多少类似的尝试失败了？他们为什么失败？"`},
+  {name:`基本归因错误`,def:`别人犯错时归咎于人，自己犯错时归咎于环境。`,action:`今天当有同事让你失望时，先想："他可能遇到了什么我不知道的困难？"然后再做判断。`},
+  {name:`均值回归`,def:`极端表现之后大概率会回归平均水平。别对一次成功过度乐观，也别对一次失败过度悲观。`,action:`今天如果有一个特别好的结果或特别差的消息，提醒自己：这可能只是波动，不变的是长期趋势。`},
+  {name:`汉隆剃刀`,def:`能用愚蠢解释的，不要归咎于恶意。`,action:`今天遇到一件让你觉得"被针对了"的事，试着换一个角度："也许对方只是信息不足或沟通不到位。"`},
+  {name:`互惠原则`,def:`人们倾向于回报他人给予的恩惠。先给予价值，再期待回报。`,action:`今天主动给一个同事或合作伙伴提供一条有用的信息、一个洞察或一个真诚的赞美。`},
+  {name:`锚定效应`,def:`人们过度依赖最先获得的信息来做出判断。`,action:`下次讨论方案时，如果你希望引导某个方向，有意识地在讨论开始时设定一个"参考点"。同时留心别人给你的"锚"。`},
+  {name:`框架效应`,def:`同一个信息以不同方式表达会产生不同的反应。"90%存活率"比"10%死亡率"听起来更好。`,action:`今天在汇报或沟通一个重要信息时，思考一下你用的框架——换个角度表达，会产生什么不同效果？`},
+  {name:`林迪效应`,def:`已经存在很久的事物，倾向于存续更久。经典比潮流更可靠。`,action:`今天在做一个技术或方法选择时，优先考虑那些"已经验证了5年以上"的方案，而不是刚火起来的新东西。`},
+  {name:`博弈论（囚徒困境）`,def:`个体理性不一定导致集体最优。合作需要信任机制或重复博弈。`,action:`回顾一段跨团队协作经历：当时的激励机制是鼓励合作还是竞争？如果要重来，机制怎么设计？`},
+  {name:`熵增定律`,def:`封闭系统会自发从有序走向无序。维持秩序需要持续输入能量。`,action:`看一下你最重要的项目文档、任务清单或知识库——是不是在"变乱"？今天花15分钟整理一下。`},
+  {name:`杠杆效应`,def:`找到能以小博大的支点。判断力、工具、资本和人力都可以是杠杆。`,action:`今天找出一个你花了大量时间但产出不高的重复性工作——想想能不能用工具、模板或流程来"加杠杆"。`},
+  {name:`飞轮效应`,def:`初始推动很费力，但一旦转起来，持续推动会越来越省力。`,action:`找一个你正在积累但暂时看不到成果的事情——客户关系、个人品牌、技能积累——确认这个飞轮方向对不对。如果对，坚持下去。`},
+  {name:`黑天鹅事件`,def:`极低概率但影响巨大的事件。不可预测但事后看起来可以解释。`,action:`想一个"看起来不可能但一旦发生会对你的业务影响巨大"的场景。你可以做什么准备——哪怕只是"能有反应时间"。`},
+  {name:`反脆弱`,def:`不仅抗打击，还能从冲击中获益的系统。`,action:`你的技能、人脉、收入来源——如果其中一个突然失效了，你还有没有其他选择？今天做一件增加"选项"的事。`},
+  {name:`激励敏感性`,def:`人们会对激励做出反应。设计好激励，比管住人更重要。`,action:`观察一下你所在的团队或你服务的客户——现在的激励体系让人们在做什么？和想要的目标一致吗？`},
+  {name:`路径依赖`,def:`历史选择会影响后续的选择空间，即使最初的选择是偶然的。`,action:`复盘一个你做了很久的决策或流程："我们这么做是因为它是对的，还是因为一开始就这么做了？"`},
+  {name:`马太效应`,def:`强者越强，弱者越弱。资源、注意力、机会都会向已经拥有更多的一方倾斜。`,action:`观察你所在的行业里，"头部效应"在哪些地方表现最明显？中小企业或个人从业者怎么在细分领域找到自己的"马太效应"？`},
+  {name:`网络效应`,def:`一个产品或服务的价值随着使用人数增加而增加。`,action:`想一想你常用的ToB工具里，哪个有网络效应？没有网络效应的产品靠什么让用户留下来？`},
+  {name:`边际效用递减`,def:`每增加一单位投入，新增的效用会越来越少。`,action:`复盘你最近一个项目的投入：继续投入100小时，和已经投入的100小时相比，产出会一样吗？要不要换个方向？`},
+  {name:`遗憾最小化框架`,def:`贝索斯的决策方法：假设自己80岁了往回看，会不会后悔没做这个决定？`,action:`面对一个纠结的决策（转岗、接受挑战、表达观点），问自己这个问题。如果答案是不会后悔，就去做。`},
+  {name:`逆向工作法`,def:`从客户想要的最终结果出发，倒推需要做什么。`,action:`下一个需求讨论时，不要从"我们能做什么"开始，从"客户拿到最终产品的那一刻，会有什么感受和结果"开始想。`},
+  {name:`番茄工作法`,def:`25分钟专注工作+5分钟休息，每4个番茄钟一次长休息。`,action:`今天至少完成4个番茄钟的深度工作。关掉所有通知，专注做一件需要思考的事。`},
+  {name:`艾森豪威尔矩阵`,def:`按"重要+紧急"两个维度把任务分四类：重要紧急（马上做）、重要不紧急（计划做）、不重要紧急（委托）、不重要不紧急（删除）。`,action:`花5分钟把你今天的待办清单放进这四象限。把至少一个"重要不紧急"的事今天就推进一步。`},
+  {name:`5小时规则`,def:`每周至少花5小时刻意学习。`,action:`今天预留30-60分钟的"学习时间"，不被会议和消息打断，专心读、思考或整理。`},
+  {name:`康奈尔笔记法`,def:`笔记分三区：关键词/问题区、笔记区、总结区。`,action:`今天的任何一场会议或学习中，试用康奈尔笔记法。结束时花1分钟写好"总结区"。`},
+  {name:`费曼学习法`,def:`用教别人的方式来检验自己是否真正理解。如果不能用简单的话讲清楚，说明还没学透。`,action:`今天学到的新东西，试着用"讲给一个外行听"的方式写下来。不超过200字。`},
+  {name:`延迟满足`,def:`能抵抗短期诱惑、追求长期回报的能力。`,action:`今天面对一个"做起来舒服但产出不高"的任务和一个"难但重要"的任务，先做难的。`},
+  {name:`心流理论`,def:`当挑战和技能匹配在一个较高水平时，人会进入高度专注、忘我的状态。`,action:`今天找一个"难度刚好比你的能力高一点点"的事来做，感受一下"沉浸"的状态。`},
+  {name:`Dunning-Kruger效应`,def:`能力越低的人越容易高估自己；专家反而倾向于低估自己。`,action:`想一个你"自认为很懂"的领域——有没有可能你正处于"不知道自己不知道"的阶段？去搜索一个你不熟悉的子领域看看。`},
+  {name:`峰终定律`,def:`人们对一段体验的记忆主要取决于高峰时刻和结束时刻。`,action:`今天你做汇报、演示或写邮件的结尾，刻意设计一个强有力的收尾——一个金句、一个清晰号召、一个共鸣。`},
+  {name:`宜家效应`,def:`人们对自己参与创造的东西赋予更高的价值。`,action:`下次推动一个决策时，不要直接给方案——邀请干系人一起参与方案设计，他们会更认同结果。`},
+  {name:`曝光效应`,def:`人们对自己熟悉的事物有更强的偏好。`,action:`如果你想推动一个想法，不要只在一次会议上说——在合适的场合多次、自然地提及。让你的想法变得"熟悉"。`},
+  {name:`蔡格尼克效应`,def:`未完成的任务会持续占据大脑资源。`,action:`如果今天有一件你一直拖延的小事，花10分钟要么完成它，要么写下来放好——把它从大脑中释放出来。`},
+  {name:`决策疲劳`,def:`做决策会消耗意志力，决策越多质量越差。`,action:`把今天最重要的一个决策放在早上做。同时审视一下：有哪些你每天做的"小决策"是可以标准化或消除的？`},
+  {name:`SMART目标原则`,def:`Specific（具体）、Measurable（可衡量）、Achievable（可达到）、Relevant（相关）、Time-bound（有时限）。`,action:`检查你当前最重要的一个目标——它满足SMART吗？如果不满足，重写一下。`},
+  {name:`PDCA循环`,def:`Plan（计划）-Do（执行）-Check（检查）-Act（改进）。持续改进的核心方法。`,action:`选一个你上周完成的任务，用PDCA做一次迷你复盘。重点放在"如果有下次，我会怎么改进"。`},
+  {name:`六顶思考帽`,def:`用六种不同视角（事实、情感、负面、正面、创意、流程）分别思考同一问题。`,action:`对一个棘手问题，分别从"乐观的""悲观的""客观数据的""创意的"四个角度各想1分钟。看看有什么新发现。`},
+  {name:`先发优势陷阱`,def:`不是先做的就一定赢。后发者有学习成本低、市场已被教育、可针对性出击等优势。`,action:`观察你的行业，谁是"先发者"？谁是"后来居上者"？后者做对了什么？你的产品是属于"先发"还是"后发"？`},
+  {name:`引爆点`,def:`小变化累积到某个临界点时，系统会突然发生巨大转变。`,action:`什么微小的改变可能在你的领域引发质变？AI在客服领域的渗透率？某个客户群体的数字化转型意愿？关注那些"趋势加速"的信号。`}
+];
+
+// ============ B端专业常识 (80条) ============
+const B_SIDE_FACTS = [
+  {name:`PRD vs BRD vs MRD`,explain:`PRD（产品需求文档）写给研发看，讲"怎么做"。BRD（商业需求文档）写给决策层看，讲"为什么要做"。MRD（市场需求文档）写给市场/销售看，讲"市场要什么"。三个文档面向不同读者、回答不同问题。`,case:`当老板问"为什么做这个产品"时你需要BRD；当研发问"这个按钮怎么交互"时你需要PRD；当销售问"竞争对手有没有这个功能"时你用MRD。别在一个文档里回答所有人的问题。`,remember:`PRD是对内的实现指南，BRD是对上的立项依据，MRD是对外的市场洞察。各司其职，别混在一起。`},
+  {name:`用户故事三要素`,explain:`标准格式："作为[角色]，我希望[功能]，以便[价值/目的]。"三个要素缺一个都会让故事不完整。缺少角色=不知道谁用，缺少功能=不知道做什么，缺少目的=不知道为什么要做。`,case:`"作为销售经理，我希望看到客户的活跃度评分，以便优先跟进高流失风险的客户。"这句话同时回答了谁、干什么、为什么三个问题——研发一看就懂。`,remember:`写用户故事的核心不是"写清楚功能"，是"写清楚价值"。谁要为谁解决什么问题。`},
+  {name:`SLA、SLO、SLI`,explain:`SLI（服务等级指标）：具体测量的指标，如99.9%可用性。SLO（服务等级目标）：内部设定的目标值。SLA（服务等级协议）：对外承诺的合同条款。SLI是仪表盘读数，SLO是你的目标，SLA是你对客户的承诺——通常SLA比SLO更宽松，给自己留缓冲。`,case:`你的内部SLO是可用性99.95%，但你对外SLA承诺99.9%。这样偶尔一次没达到SLO但还满足SLA时，不会触发合同处罚。但如果频繁达不到SLO，问题就来了。`,remember:`不要把内部目标当成外部承诺。SLA是法律约束，SLO是内部管理工具。`},
+  {name:`ToB vs ToC 核心区别`,explain:`ToB的决策者是理性集体（多人、长周期、重ROI），用户是用工具完成工作（效率优先）。ToC的决策者和使用者是同一个人（感性、快、重体验）。ToB产品可以不好看但不能不稳定，ToC产品可以有小bug但不能不好玩。`,case:`一个HR SaaS系统，选型的是CTO和HRD（关心安全、集成、合规），用的是HR专员（关心操作效率），付款的是CFO（关心ROI）。三个角色的诉求完全不同，这是ToB复杂的本质。`,remember:`ToB=多角色多诉求+长决策链+高切换成本。ToB产品设计的第一原则：让每个角色都觉得"这东西是给我做的"。`},
+  {name:`NDA（保密协议）`,explain:`在商务沟通早期签署的法律文件，约定双方对讨论信息的保密义务。常见误区：NDA不是"不信任你"的信号，而是双方都有的保护罩。`,case:`客户说"签了NDA再聊细节"，这不是不信任，是合规要求。同样，你需要保护自己的方案和定价策略时，也可以主动提出签NDA。`,remember:`NDA是ToB商务的基本礼仪，不是不信任的信号。互相保护才能畅快交流。`},
+  {name:`POC（概念验证）`,explain:`Proof of Concept——客户选型时要求供应商在真实或准真实环境下验证产品能力。POC的目的是降低采购风险，不是白嫖你的产品。`,case:`客户要求POC时说"能不能把完整版部署到我们内网试一个月"，这可能超出了POC的范围。合理的POC应该限定场景、时间和验收标准——一个月全量部署那不是POC，是试用。`,remember:`做POC前先确认三件事：场景范围、验收标准、时间边界。不给清晰的POC很容易变成免费的定制开发。`},
+  {name:`TCO（总体拥有成本）`,explain:`Total Cost of Ownership——不只是软件的采购价，还包括实施、培训、运维、集成、升级、用户时间等所有成本。很多ToB产品看似便宜但TCO很高。`,case:`一个项目管理工具每用户每月只要50元，但实施要3个月，培训要覆盖1000人，集成要对接5个系统——这些隐形成本可能比软件价格高出5-10倍。给客户算TCO时才体现专业度。`,remember:`客户不关心你卖多少钱，关心他花了全部成本后能得到什么。帮客户算TCO=帮他做正确决策。`},
+  {name:`NPS（净推荐值）`,explain:`通过一个问题"你有多大可能把我们推荐给朋友或同事"（0-10分）来衡量客户忠诚度。9-10分是推荐者，7-8分是中立者，0-6分是贬损者。NPS=推荐者%-贬损者%。`,case:`NPS看着简单，但容易滥用。NPS反映的是"整体品牌感受"，而不是"某个功能的满意度"。别拿NPS来评估一个新上线的功能好坏——用CSAT（客户满意度）才合适。`,remember:`NPS衡量品牌级忠诚度，CSAT衡量单次互动的满意度。场景不同，用的工具也不同。`},
+  {name:`RFQ/RFP/RFI的区别`,explain:`RFI（信息请求）：我只想了解市场上有哪些选择。RFP（方案请求）：我想要正式方案和报价。RFQ（报价请求）：我已经知道要什么了，直接报价格。三种文档代表客户的不同采购阶段。`,case:`客户发RFI时不要急着报价，先去了解他的痛点和决策流程。客户发RFQ时不要再去讲产品和理念——他已经决定了，你再说教可能适得其反。`,remember:`RFI=还在探索阶段→建立关系和信任；RFP=在对比方案→展示差异化；RFQ=在比价格→突出价值而非打折。`},
+  {name:`用户画像 vs 用户角色`,explain:`用户画像是统计学描述：25-35岁、一线城市、本科以上。用户角色是行为学描述：技术总监小王，每天花3小时看代码、1小时开会，最痛的是代码review效率低。BA要的是用户角色，不是用户画像。`,case:`"我们的目标用户是30岁左右的中层管理者"——这是画像，没有用。"用户王经理每天要审批20-30个流程，最痛的是不同系统的审批入口分散"——这是角色，可以用。`,remember:`画像回答"他是谁"，角色回答"他想做什么"。BA的工作语言应该是角色，不是画像。`},
+  {name:`需求粒度：史诗→特性→用户故事→任务`,explain:`Epic（史诗级需求）：跨多个迭代的大主题。Feature（特性）：一个可交付的价值单元。User Story（用户故事）：一个完整的用户价值闭环。Task（任务）：一个开发可执行的工作项。`,case:`"构建报表系统"是Epic，"支持按部门筛选数据"是Feature，"作为部门经理，我想看本月部门费用报表"是User Story，"加一个部门下拉选择器"是Task。`,remember:`拆分需求时要保持用户价值闭环——每个Story独立有价值，不要拆成"前端做一半后等下个迭代才能用"。`},
+  {name:`需求优先级常见误区`,explain:`四个坑：1.按谁声音大排优先级；2.所有需求都标"P0"；3.先做容易的需求建立信心；4.把技术债和功能需求混排。每个坑都让产品走向失控。`,case:`一个销售VP说"客户要A功能，下周不交付就流失"，实际上那个客户说的是"如果你们有A功能会更方便"——销售夸大了紧迫性。用数据和客户对话记录来验证，而不是凭嗓门。`,remember:`优先级排的不是"重要"，是"相对更重要"。没有取舍就没有优先级，不做减法的产品经理是不合格的。`},
+  {name:`技术债的概念`,explain:`为了快速上线而采取的捷径，后续需要花时间"还债"。技术债不是什么"技术做不到完美"——是刻意的取舍，但必须有偿还计划。`,case:`为了赶一个大客户的上线日期，团队决定先写死一个配置项，后续重构为可配置。这是刻意的技术债。但如果不记下来、不排进迭代，六个月后没人记得这个"临时方案"——这时候技术债就变成技术烂账了。`,remember:`技术债可以借，但必须记账、必须定还款日期。不记账的技术债=慢性自杀。`},
+  {name:`需求变更管理`,explain:`需求变更不是问题，无管理的需求变更是问题。变更管理的核心：1.评估影响（范围、时间、质量、成本）；2.通知干系人；3.记录决策和替代方案。`,case:`客户在开发中期提出增加一个审批流程节点。不要马上说"可以"或"不行"——先说"我评估一下影响，今天下午给你反馈"。评估后发现要延期一周——把延期原因、替代方案（如分两期交付）一起反馈。`,remember:`对待需求变更的态度不应该是"拒绝"，而是"帮助理解成本"。让变更的提出者也参与权衡，而非对立。`},
+  {name:`MVP vs MMP vs MLP`,explain:`MVP（最小可行产品）：验证核心假设的最小版本。MMP（最小可售产品）：可以开始收费的最小版本。MLP（最小可爱产品）：用户体验已经不错的最小版本。这三个是不同的概念！`,case:`做一个B端项目协作工具，MVP可能只有"创建任务+分配+标记完成"来验证"团队需要协作看板"这个假设。MMP可能要加上通知、权限、报表才敢收费。MLP则是UI/UX打磨到位了。`,remember:`MVP验证假设，MMP开始变现，MLP提升体验——不是递进关系，是不同维度。不要混用。`},
+  {name:`领域驱动设计(DDD)核心概念`,explain:`不是技术架构方法论，是"用业务语言建模"的方法。核心是：和领域专家建立"统一语言"，用"限界上下文"划分系统边界。`,case:`做一个电商系统，"订单"在交易上下文中是"支付和履约的载体"，在物流上下文中是"发货和追踪的单元"。同一个词在不同上下文中的含义不同——BA要帮团队建立这种认知。`,remember:`DDD的核心不是代码结构，是让技术人员和业务人员使用同一套语言描述同一个世界。BA是这套语言的"翻译官"。`},
+  {name:`B端产品的"实施"不等于"安装"`,explain:`实施包括：需求调研、方案设计、数据迁移、系统集成、用户培训、流程再造、试运行、正式上线。它是服务过程，不是一次技术部署。`,case:`客户买了一套ERP系统，"安装"只需要一天、部署完数据库和应用。"实施"可能需要6个月：梳理几十个部门流程、迁移历史数据、培训几百个员工、处理各种特殊情况——80%的成本在后半段。`,remember:`实施是服务，不是部署。ToB产品的竞争往往不是产品功能的比拼，而是实施能力的比拼。`},
+  {name:`CSAT vs CES vs NPS`,explain:`CSAT（客户满意度）：单次互动的满意度得分。CES（客户费力度）：客户完成某件事付出了多大努力。NPS（净推荐值）：长期忠诚度和品牌拥护度。`,case:`客服解决了一个问题后发满意度调研——用CSAT。"提交报销流程花了多少时间、遇到几个阻碍"——用CES。"你有多大概率推荐我们的产品给同行"——用NPS。三个指标回答不同层面问题。`,remember:`CSAT看"这次好不好"，CES看"累不累"，NPS看"爱不爱"。别拿NPS来评估客服质量，也别拿CSAT来判断产品整体健康度。`},
+  {name:`OKR vs KPI的本质区别`,explain:`KPI衡量"做得好不好"（考核指标）。OKR定义"该做什么以及做到什么程度"（目标管理工具）。KPI是评估过去，OKR是指引未来。`,case:`"月活用户数100万"是KPI——告诉你现状。"重新定义用户的首次体验，让激活率从20%提升到35%"是OKR——指明方向和挑战。KPI让你知道你在哪，OKR让你知道往哪走。`,remember:`KPI是仪表盘（测现状），OKR是导航（定方向）。两者不冲突，KPI可以是OKR的衡量基础。`},
+  {name:`项目三角约束：范围-时间-成本-质量`,explain:`这四个维度是互相制约的。改变其中一个，至少会影响另一个。不说"四个都要"，而是说"哪个最不能妥协"——这是项目管理的起点。`,case:`客户说"上线日期不能变、功能不能少、预算也不能超"——这是不现实的。帮他做取舍："如果要保证日期，我们可以分两期上线，第一期覆盖核心场景"。专业PM的价值就是帮助做这项平衡。`,remember:`四个都想要=一个都得不到。PM的核心竞争力是做约束条件下最优的取舍，而不是满足所有要求。`},
+  {name:`利益相关者分析`,explain:`找到所有会被项目或产品影响的人/角色，评估他们的影响力、利益和态度（支持/中立/反对）。最关键的一步：针对关键干系人制定沟通和影响策略。`,case:`做一个报销系统的升级项目，干系人包括：CFO（决策者、高影响力）、财务经理（核心用户、高影响力）、普通员工（海量用户、低个人影响力但不可忽视）、IT运维（技术依赖）。对不同人用不同沟通策略。`,remember:`忽略一个关键干系人=给自己埋雷。BA的工作中，30%是分析需求，70%是分析人。`},
+  {name:`用户访谈的"5个为什么"禁忌`,explain:`不要真的机械地问5次"为什么"——很冒犯人。应该是用"能不能帮我展开说说""当时发生了什么""这个情况之前有没有类似的"等引导语，循序渐进。`,case:`用户说"这个功能不好用"。❌ 直接问"为什么"5次 ✅ 先问"能具体说说哪个场景下不好用吗"再问"遇到什么阻碍了"再问"那你是怎么绕过去的"——自然的对话流。`,remember:`"5个为什么"是一种思维方式，不是一套话术脚本。把"为什么"翻译成自然的追问，才是合格BA的功力。`},
+  {name:`干系人RACI矩阵`,explain:`对每个决策或任务，明确谁Responsible（执行）、谁Accountable（负责/拍板）、谁Consulted（咨询）、谁Informed（告知）。核心原则：每个任务有且只有一个A。`,case:`一个需求方案，BA是R（写方案）、产品总监是A（拍板）、技术负责人是C（评估可行性）、销售总监是I（知道最终方案即可）。如果有两个A，出了问题谁负责？没有人。`,remember:`RACI的精髓不是把四个字母填满，是确保"谁拍板"这件事没有模糊地带。A只能有一个。`},
+  {name:`商业模式画布`,explain:`九要素：客户细分、价值主张、渠道、客户关系、收入来源、核心资源、关键业务、重要伙伴、成本结构。用一个画面讲清楚整个商业逻辑。`,case:`做一个B端SaaS产品，不要只画"产品功能图"。先用商业模式画布画出：谁买单（客户细分）、为什么买（价值主张）、怎么触达（渠道）、怎么持续收钱（收入来源）。产品和商业模式是两张图，都得画。`,remember:`产品做得好但商业模式不对=方向错了再怎么努力也没用。BA不能只懂产品，要懂商业逻辑。`},
+  {name:`需求池管理原则`,explain:`需求池不是需求垃圾桶（把所有需求往里扔），是"需求优先级队列"——有进有出，持续排序。超过3个月没被采纳的需求应该归档或关闭。`,case:`累计三年收集了2000条需求躺在Excel里，每次开会翻一遍——这不是需求管理，是需求坟场。好的管理：每月review未处理需求、每季度清理、重大版本前重新排序。`,remember:`需求池不管理=虚假的安全感。定期清理需求池和定期整理衣柜一样——不整理的人不知道里面80%的东西其实永远不会用到。`},
+  {name:`原型设计保真度梯子`,explain:`从纸面草图→线框图→低保真可点击原型→高保真视觉原型→可交互高保真。每一步验证不同假设，不要过早追求高保真。`,case:`验证"用户需不需要这个功能"用纸面草图就够了，花3天做高保真是在浪费。"验证交互细节是否合理"才需要可点击原型。原型保真度匹配验证阶段，而非匹配审美。`,remember:`原型的目的不是好看，是验证假设。保真度要和验证目的匹配——过早高保真是最高级的浪费。`},
+  {name:`ToB行业的"3个90天"规律`,explain:`从签约到上线通常是第一个90天（实施），从上线到稳定使用是第二个90天（磨合），从稳定到深度使用（交叉销售、续费）是第三个90天。不同阶段最重要的事完全不同。`,case:`第一个90天：交付质量和培训是关键。第二个90天：客户成功和问题响应是关键。第三个90天：价值量化和新场景扩展是关键。用一个节奏对待所有阶段=低续费率的根源。`,remember:`ToB客户不是买完就结束了，客户生命周期管理从签约那一刻才刚刚开始。`},
+  {name:`B端产品的"剪刀差"现象`,explain:`产品功能在增长，但客户真正使用的功能比例在下降。功能越多，用户越难找到对自己有用的，反而体验变差。`,case:`一个CRM系统有300多个功能点，但调研发现80%的用户只用其中15-20个。那280个功能对大多数用户来说是噪音——增加了操作复杂度但不增加价值。`,remember:`加功能容易减功能难。每加一个功能前问："这个功能会让多少用户受益？会让多少用户体验变差？"`},
+  {name:`"需求"和"期望"的区别`,explain:`需求是"没有这个我就无法完成我的工作"，期望是"有的话会更舒服"。满足需求是及格线，满足期望是加分项。但太多BA把期望当需求来处理。`,case:`用户说"我希望报表能自动生成并邮件发送"——这是期望（手动也能发）。用户说"我们需要看到库存实时数据才能决定是否接单"——这是需求（没有就做不了决策）。分清这个的区别，能帮你省很多开发量。`,remember:`需求是痛点（不做不行），期望是痒点（做了更好）。帮客户分清=帮自己省时间。`},
+  {name:`ToB定价的常见模式`,explain:`按用户数（per seat）、按用量（usage-based）、按功能版本（tiered）、按模块（a la carte）、混合模式。没有哪个模式最好，只有和产品价值感知最匹配的模式。`,case:`通讯工具适合按用户数收费（价值和使用人数正相关），API服务适合按用量收费（价值和使用量正相关），项目管理工具适合按功能版本收费（不同规模团队需要不同复杂度）。`,remember:`定价模式会影响使用行为——按用户数收费可能导致用户"共享账号"，按用量收费可能导致用户"不用就不舍得用"。定价设计是产品设计的一部分。`},
+  {name:`UAT（用户验收测试）`,explain:`User Acceptance Testing——最终用户在实际业务场景下验证系统是否满足需求。这不是测试找bug，是确认"交付的东西是我要的"。`,case:`UAT不是让用户"按操作手册点一遍"，是让用户用真实数据跑真实场景。如果UAT只是走过场，上线后的问题会加倍——因为用户的真实反馈被压抑到了上线之后。`,remember:`UAT的成败不取决于找了多少bug，取决于"用户确认这个产品能用来完成他的工作"。`},
+  {name:`"范围蔓延"（Scope Creep）`,explain:`项目过程中，范围不受控制地逐渐增加。常见诱因：客户"顺带提一下"的小需求、内部"既然做了不如多做一个"、没有正式变更流程。`,case:`做一个报表系统，中途客户说"能不能顺便支持移动端查看"。❌"好，顺便做一下" ✅"好，我评估一下移动端需求的影响，这会影响排期，确认后给你反馈"。一个"顺便"可能是两周的工作量。`,remember:`范围蔓延不是一次发生的，是一次又一次"顺便做一下"累加起来的。防范围蔓延的最好方法：任何新需求都走变更流程——哪怕是5分钟的改动。`},
+  {name:`API先行的产品设计`,explain:`在开发UI之前先定义好API接口。好处：前端和后端可以独立开发并行、API可以被其他系统集成、接口设计更纯粹不会被UI带偏。`,case:`做一个审批系统，先定义："创建审批"的API需要什么参数（审批类型、内容、审批人列表）、返回什么状态。这个过程会迫使你想清楚数据模型，而不是被页面上的表单格式牵着走。`,remember:`API设计本质上是"梳理业务逻辑"——字段、校验、状态流转、异常处理。这些都是BA该关心的事，不只属于技术。`},
+  {name:`产品需求的非功能性要求`,explain:`除了"做什么"，还要定义"做到什么程度"：性能（响应时间）、安全（权限、加密）、可用性（SLA）、可扩展性（未来容量）、可维护性（日志、监控）、合规性。`,case:`一个报表导出功能，不仅要定义"支持导出Excel"，还要定义"10万条数据导出必须在30秒内完成""导出的文件必须加密""仅限有导出权限的角色使用"——这些非功能性需求如果不写，出问题的时候就是"没说过"。`,remember:`非功能性需求是最容易被漏掉、也最容易被拿出来追责的内容。写PRD时单独列一章"非功能性需求"。`},
+  {name:`ToB销售周期阶段`,explain:`线索→商机→需求确认→方案展示→POC/试用→商务谈判→签约→交付。每个阶段的转化率都不同，瓶颈在哪就优化哪。`,case:`如果100个商机只有10个进入需求确认，问题可能在"客户需求匹配度"或者"销售挖掘需求的能力"。如果10个POC只有2个签约，问题可能在"产品竞争力"或"商务策略"。数据会告诉你在哪里发力。`,remember:`别用"签了多少单"这一项数据评价销售周期——要拆开看每一步转化率。不拆开看不出来问题在哪。`},
+  {name:`GTM（Go-to-Market）策略核心要素`,explain:`GTM策略=目标客户是谁×传递什么价值×通过什么渠道触达×怎么转化。不是"我们有产品了开始卖"——是先回答四大问题。`,case:`同样的B端协作工具：面向创业公司的GTM是用PLG（免费试用、社群传播），面向大型国企的GTM是用SLG（销售上门、POC验证、高层对接）。产品可以一样，GTM天差地别。`,remember:`GTM和产品是一体的——你的定价、功能优先级、服务模式都由GTM决定。先定GTM再做产品，而不是先做产品再想怎么卖。`}
+];
+
+// ============ 跨界灵感 (30+条) ============
+const SPARK_DATA = [
+  '军事："没有一场战争是按照计划打的"——普鲁士军事家毛奇。再完美的需求文档也顶不住真实场景的冲击，预留弹性和反馈机制比追求完美方案更重要。',
+  '艺术："少即是多"——建筑大师密斯·凡德罗。砍掉不必要的信息比堆砌更考验能力。你的PRD里有多少内容是"为了完整而写"而不是"为了传达而写"？',
+  '生物学："适者生存，不是强者生存"——达尔文。ToB市场上活下来的不一定是技术最强的、融资最多的，而是对客户变化最敏感的。',
+  '哲学："我唯一知道的是我一无所知"——苏格拉底。最危险的BA是那些"自以为全懂了"的阶段。保持"行业新人"的好奇心，是长期的护身符。',
+  '物理学："熵增是宇宙的必然趋势"——热力学第二定律。项目、文档、流程不清自来地变混乱——持续投入"减熵"（整理、对齐、重构）才是对抗自然规律。',
+  '军事："知己知彼，百战不殆"——孙子。商业战场上"知彼"不只是竞品的功能和定价，更是客户的决策心理、组织的政治格局、行业的潜规则。',
+  '经济学："市场的非理性可以持续得比你保持偿付能力更久"——凯恩斯。你看到的需求不一定合理，但大量客户都在提的时候，不合理的也可能变成合理的标准。',
+  '建筑学："形式服从功能"——路易斯·沙利文。界面好看但操作反直觉的产品，就像漂亮但没法住人的房子。先让产品好用，再让它好看。',
+  '历史："历史不会重复，但会押韵"——马克·吐温。每次技术浪潮的到来方式不同，但"泡沫、幻灭、务实、普及"的节奏几乎从不改变。',
+  '博弈论："个体最优不等于集体最优"——纳什均衡。销售为了拿单什么都承诺、产品团队为承诺买单——局部最优往往是全局灾难。',
+  '医学："首先，不要伤害"——希波克拉底誓言。在线上系统加一个"小功能"之前，先确保它不会破坏现有用户的体验。不做什么比做什么更需要判断力。',
+  '文学："重要的不是看什么，是从什么角度看"——普鲁斯特。同一个需求从用户、技术、商业三个角度解读，得出三个完全不同的优先级。训练多角度思考是BA的核心竞争力。',
+  '禅宗："初学者心态，可能性无限；专家心态，可能性寥寥"——铃木俊隆。入行越久越容易被经验束缚，"这个需求以前提过做不了"可能只是因为当时的技术和资源不允许。',
+  '数学：哥德尔不完备定理——任何足够复杂的系统都存在无法证明的命题。同理，任何足够复杂的B端产品都存在无法完全满足的需求。接受这个事实，学会优先级和取舍。',
+  '音乐：爵士乐的"即兴"不是乱弹——是在和声框架内自由发挥。项目管理也一样：框架（目标、时间、质量）是约束，方法（具体实现方式）可以灵活。',
+  '天文学："我们都是由星尘组成的"——卡尔·萨根。宏观视角：你正在焦虑的那个bug、那份PPT、那次评审——在更大的尺度上都是细节。保持战略定力，别被战术细节淹没。',
+  '心理学：邓宁-克鲁格效应——能力越低的人越容易高估自己。刚入行时觉得自己什么都会了，三年后才发现自己什么都不会——这个阶段叫"成长"。',
+  '管理：彼得原理——在层级组织中，每个人都会晋升到他不胜任的职位。从执行到管理、从单模块到多模块——晋升意味着你的核心能力需要更新。',
+  '人类学："文化是把一群人粘在一起的胶水"——列维-斯特劳斯。公司文化决定了"做事的默认方式"。在一个极度规避风险的文化中推创新=给自己增加不必要的阻力。先理解文化，再推动变革。',
+  '计算机科学：康威定律——系统设计会反映组织的沟通结构。如果一个团队被拆成前端组和后端组，系统就会出现前端和后端之间的集成问题。组织架构决定了产品架构。',
+  '围棋："妙手"不如"本手"——围棋谚语。天天想搞颠覆式创新不如把基本功做扎实。B端产品客户要的不是惊喜，是稳定可靠——持续的"本手"远胜偶尔的"妙手"。',
+  '摄影："你拍的不是你看到的，是你理解的"——安塞尔·亚当斯。你写的需求文档不是"用户说了什么"，是"你理解了什么"。理解的质量决定了需求的质量。',
+  '军事："后勤决定战略"——拿破仑。再好的产品战略如果组织能力跟不上（没有足够的销售、客服、实施团队），也只是纸上谈兵。战略的边界是资源。',
+  '进化论："不是最强壮的物种存活，也不是最聪明的，而是最能适应变化的"——达尔文。2026年的ToB市场变化比以往都快——AI重塑工具链、客户预算收紧、合规要求升级。适应力=生存力。',
+  '宗教史："改变信仰最好的方式不是辩论，是让人自己发现"——使徒保罗。推动一个新流程或方法论时，强行说服通常无效。最好的方式是让干系人"觉得是自己想出来的"。',
+  '化学："催化剂加速反应但不消耗自身"——好的BA是团队的催化剂：推动跨部门协作、促进信息流通、加速决策——但你不需要在这个过程里消耗自己的精力。',
+  '地理学："地图不是疆域"——语义学家科日布斯基。PRD描述的产品不等于用户实际使用的产品。别把文档当成现实——定期走到用户面前验证你画的地图是否准确。',
+  '武术："以柔克刚"——太极拳。和强势的客户或干系人沟通时，不是硬碰硬——理解他的压力来源、用数据和逻辑而非情绪来引导。',
+  '园艺："修剪是为了更好地生长"——园艺智慧。产品迭代不只是"加东西"，定期修剪废弃功能、合并冗余流程、清理技术债——这些"减法"比"加法"更需要勇气和判断力。'
+];
+
+// ============ LOCALSTORAGE KEY ============
+const LS_KEYS = {
+  feedback: 'btoa_feedback',
+  lessonDone: 'btoa_lesson_done',
+  arsenalUser: 'btoa_arsenal_user',
+  sparkHistory: 'btoa_spark_history'
+};
+
+// ============ HELPERS ============
+function getToday() { return new Date().toISOString().split('T')[0]; }
+function getDayOfMonth() { return new Date().getDate(); }
+function lsGet(key) { try { return JSON.parse(localStorage.getItem(key)) || {}; } catch(e) { return {}; } }
+function lsSet(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+function shuffle(arr) { const a = [...arr]; for (let i = a.length-1; i>0; i--) { const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]] = [a[j],a[i]]; } return a; }
+function pickRandom(arr, n) { return shuffle(arr).slice(0, n); }
+
+// ============ PAGINATION STATE ============
+let newsPage = 0, newsAll = [];
+let arsenalPage = 0, arsenalAll = [];
+const PAGE_SIZE = 5;
+
+function renderPagination(container, page, total, setPageFn) {
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+  if (totalPages <= 1) { container.innerHTML = ''; return; }
+  container.innerHTML = `
+    <button ${page===0?'disabled':''} onclick="${setPageFn}(${page-1})">← 上一页</button>
+    <span class="page-info">${page+1} / ${totalPages}</span>
+    <button ${page>=totalPages-1?'disabled':''} onclick="${setPageFn}(${page+1})">下一页 →</button>`;
+}
+
+// ============ 启发规则引擎 ============
+function generateInsight(title) {
+  if (!title) return INSPIRATION_FALLBACKS[Math.floor(Math.random() * INSPIRATION_FALLBACKS.length)];
+  const lower = title.toLowerCase();
+  const candidates = [];
+  INSPIRATION_TEMPLATES.forEach(item => {
+    item.keys.forEach(k => {
+      if (lower.includes(k.toLowerCase())) candidates.push(...item.templates);
+    });
+  });
+  if (candidates.length > 0) return candidates[Math.floor(Math.random() * candidates.length)];
+  return INSPIRATION_FALLBACKS[Math.floor(Math.random() * INSPIRATION_FALLBACKS.length)];
+}
+
+// ============ MODULE 1: 每日视野 ============
+function setNewsPage(p) { newsPage = p; renderNewsPage(); }
+function renderNewsPage() {
+  try {
+  const container = document.getElementById('newsContainer');
+  const feedbackStore = lsGet(LS_KEYS.feedback);
+  const today = getToday();
+  const pageItems = newsAll.slice(newsPage * PAGE_SIZE, (newsPage + 1) * PAGE_SIZE);
+  container.innerHTML = pageItems.map((item, i) => {
+    const idx = newsPage * PAGE_SIZE + i;
+    const insight = generateInsight(item.title);
+    const fbKey = today + '_' + idx;
+    const fb = feedbackStore[fbKey];
+    return `<div class="card news-card"><div class="news-source">${item.source||'行业资讯'}</div><div class="news-title">${item.link?'<a href="'+item.link+'" target="_blank" style="color:inherit;text-decoration:none">'+item.title+'</a>':item.title}</div><div class="news-summary">${item.summary||''}</div><div class="news-insight">💡 ${insight}</div><div class="news-feedback"><button class="${fb==='like'?'active':''}" onclick="submitFeedback('${today}_${idx}','like',this)">👍 有启发</button><button class="${fb==='dislike'?'active':''}" onclick="submitFeedback('${today}_${idx}','dislike',this)">👎 一般</button></div></div>`;
+  }).join('');
+  renderPagination(document.getElementById('newsPagination'), newsPage, newsAll.length, 'setNewsPage');
+  } catch(e) { console.error('renderNewsPage error:', e); }
+}
+
+function renderNews() {
+  const container = document.getElementById('newsContainer');
+  const updateTimeEl = document.getElementById('updateTime');
+  const staleWarning = document.getElementById('staleWarning');
+  const countEl = document.getElementById('newsCount');
+
+  // 本地 file:// 协议会被浏览器 CORS 策略阻止，直接显示演示数据
+  if (window.location.protocol === 'file:') {
+    updateTimeEl.textContent = '数据更新：本地预览模式（演示数据）';
+    staleWarning.classList.add('show');
+    countEl && (countEl.textContent = FALLBACK_NEWS.length + '条（演示）');
+    newsAll = FALLBACK_NEWS;
+    newsPage = 0;
+    renderNewsPage();
+    return;
+  }
+
+  fetch('./data.json')
+    .then(res => {
+      if (!res.ok) throw new Error('data.json not available');
+      return res.json();
+    })
+    .then(data => {
+      newsAll = data.news || [];
+      const updateTime = data.updateTime || '';
+      countEl && (countEl.textContent = newsAll.length + '条');
+      if (updateTime) {
+        updateTimeEl.textContent = '数据更新：' + updateTime;
+        const updateDate = new Date(updateTime.replace(' ', 'T'));
+        const now = new Date();
+        if ((now - updateDate) / 3600000 > 24) staleWarning.classList.add('show');
+      }
+      if (newsAll.length === 0) {
+        container.innerHTML = '<div class="card" style="text-align:center;color:var(--text-secondary)">今日暂无资讯，请稍后刷新或手动触发 Actions 更新。</div>';
+        return;
+      }
+      newsPage = 0;
+      renderNewsPage();
+    })
+    .catch(() => {
+      updateTimeEl.textContent = '数据更新：暂无数据（显示演示数据）';
+      staleWarning.classList.add('show');
+      countEl && (countEl.textContent = FALLBACK_NEWS.length + '条（演示）');
+      newsAll = FALLBACK_NEWS;
+      newsPage = 0;
+      renderNewsPage();
+    });
+}
+
+function submitFeedback(key, type, btn) {
+  const fb = lsGet(LS_KEYS.feedback);
+  fb[key] = type;
+  lsSet(LS_KEYS.feedback, fb);
+  const btns = btn.parentElement.querySelectorAll('button');
+  btns.forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ============ MODULE 2: ToB武器库 ============
+function getArsenalData() {
+  const userItems = lsGet(LS_KEYS.arsenalUser);
+  const userArr = Object.values(userItems || {});
+  return [...ARSENAL_DATA, ...userArr];
+}
+function setArsenalPage(p) { arsenalPage = p; renderArsenalPage(); }
+function renderArsenalPage() {
+  const container = document.getElementById('arsenalContainer');
+  const catMap = { comm: '沟通话术', frame: '分析框架', list: '检查清单', anti: '反常识观点' };
+  const pageItems = arsenalAll.slice(arsenalPage * PAGE_SIZE, (arsenalPage + 1) * PAGE_SIZE);
+  container.innerHTML = pageItems.map(item => `<div class="card arsenal-card"><div class="arsenal-category ${item.cat}">${catMap[item.cat]||item.cat}</div><div class="arsenal-title">${item.title}</div>${item.scene?'<div class="scene-tag">🎬 应用场景</div><div class="scene-text">'+item.scene+'</div>':''}<div class="arsenal-content">${item.content}</div></div>`).join('');
+  renderPagination(document.getElementById('arsenalPagination'), arsenalPage, arsenalAll.length, 'setArsenalPage');
+}
+
+function renderArsenal() {
+  arsenalAll = shuffle(getArsenalData());
+  arsenalPage = 0;
+  renderArsenalPage();
+}
+
+function refreshArsenal() { renderArsenal(); }
+
+function showAddModal() { document.getElementById('addModal').classList.add('show'); }
+function hideAddModal() {
+  document.getElementById('addModal').classList.remove('show');
+  document.getElementById('addTitle').value = '';
+  document.getElementById('addContent').value = '';
+}
+
+function addArsenalItem() {
+  const cat = document.getElementById('addCategory').value;
+  const title = document.getElementById('addTitle').value.trim();
+  const content = document.getElementById('addContent').value.trim();
+  if (!title || !content) { alert('请填写标题和内容'); return; }
+  const store = lsGet(LS_KEYS.arsenalUser);
+  const id = 'user_' + Date.now();
+  store[id] = { cat, title, content };
+  lsSet(LS_KEYS.arsenalUser, store);
+  hideAddModal();
+  renderArsenal();
+}
+
+// ============ MODULE 3: 每日一课 ============
+function renderLesson() {
+  const container = document.getElementById('lessonContainer');
+  const day = getDayOfMonth();
+  const isOddDay = day % 2 === 1;
+  const doneStore = lsGet(LS_KEYS.lessonDone);
+  const today = getToday();
+  const isDone = doneStore[today];
+
+  let html = '<div class="day-type-badge">' + (isOddDay ? '思维模型日' : '专业常识日') + ' · 今日推荐3条</div><div class="lesson-list">';
+
+  if (isOddDay) {
+    // 思维模型 — 3条
+    const indices = [(day)%THINKING_MODELS.length, (day+7)%THINKING_MODELS.length, (day+17)%THINKING_MODELS.length];
+    indices.forEach(idx => {
+      const m = THINKING_MODELS[idx];
+      html += '<div class="lesson-mini-card"><div class="lm-header">💭 思维模型</div><div class="lm-title">'+m.name+'</div><div class="lm-desc">'+m.def+'</div><div class="lm-desc" style="color:var(--accent);margin-top:4px">🎯 今日小行动：'+m.action+'</div></div>';
+    });
+  } else {
+    // 专业常识 — 3条
+    const indices = [(day)%B_SIDE_FACTS.length, (day+13)%B_SIDE_FACTS.length, (day+29)%B_SIDE_FACTS.length];
+    indices.forEach(idx => {
+      const f = B_SIDE_FACTS[idx];
+      html += '<div class="lesson-mini-card"><div class="lm-header">📚 专业常识</div><div class="lm-title">'+f.name+'</div><div class="lm-desc">'+f.explain+'</div><div class="lm-desc" style="color:var(--accent);margin-top:4px">📌 案例：'+f.case+'</div><div class="lm-desc" style="color:var(--gold);margin-top:2px">💎 记住它：'+f.remember+'</div></div>';
+    });
+  }
+
+  html += '</div><div class="lesson-done" style="margin-top:12px">';
+  html += isDone
+    ? '<button class="done">✅ 已完成</button><span class="done-text">今日打卡成功</span>'
+    : '<button onclick="markLessonDone()">✅ 已读 / 已完成打卡</button>';
+  html += '</div>';
+
+  container.innerHTML = html;
+}
+
+function markLessonDone() {
+  const today = getToday();
+  const store = lsGet(LS_KEYS.lessonDone);
+  store[today] = true;
+  lsSet(LS_KEYS.lessonDone, store);
+  renderLesson();
+}
+
+// ============ MODULE 4: 灵感火花 ============
+function showSpark() {
+  const resultEl = document.getElementById('sparkResult');
+  const spark = SPARK_DATA[Math.floor(Math.random() * SPARK_DATA.length)];
+  resultEl.textContent = spark;
+  resultEl.classList.add('show');
+
+  // Auto hide after 8 seconds
+  clearTimeout(window._sparkTimer);
+  window._sparkTimer = setTimeout(() => { resultEl.classList.remove('show'); }, 8000);
+}
+
+// ============ TAB 切换 ============
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  const btn = document.querySelector('.tab-btn[onclick*="'+tab+'"]');
+  if (btn) btn.classList.add('active');
+  const panel = document.getElementById('tab-'+tab);
+  if (panel) panel.classList.add('active');
+}
+
+// ============ INIT ============
+function init() {
+  renderNews();
+  renderArsenal();
+  renderLesson();
+
+  // If data.json is not available, show a default empty state immediately
+  // The fetch will update it once loaded
+}
+
+document.addEventListener('DOMContentLoaded', init);
+
+// Close modal on overlay click
+document.getElementById('addModal').addEventListener('click', function(e) {
+  if (e.target === this) hideAddModal();
+});
+
+// Keyboard escape to close modal
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') hideAddModal();
+});
+</script>
+</body>
+</html>
