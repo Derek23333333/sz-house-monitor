@@ -1,13 +1,13 @@
 var foodData = {
-  "generated_at": "2026-07-14 17:53:28",
+  "generated_at": "2026-07-15 18:04:43",
   "city": "深圳",
-  "total": 449,
+  "total": 451,
   "stats": {
-    "new": 12,
-    "updated": 15,
-    "kept": 275,
-    "total_old": 437,
-    "total_new": 449
+    "new": 2,
+    "updated": 8,
+    "kept": 248,
+    "total_old": 449,
+    "total_new": 451
   },
   "items": [
     {
@@ -3042,10 +3042,10 @@ var foodData = {
       "updated_at": "2026-07-13"
     },
     {
-      "id": "xc_0034",
+      "id": "xc_0089",
       "name": "酸辣土豆丝｜脆爽开胃！百吃不厌的家常快手菜！",
       "description": "白糖、生抽、蚝油、油、盐等食材制作的家常菜",
-      "cuisine": "家常菜",
+      "cuisine": "快手菜",
       "health_tag": "🟡适中",
       "price_level": "💰",
       "type": "自己做",
@@ -3061,12 +3061,12 @@ var foodData = {
         "醋",
         "白醋"
       ],
-      "cook_time": "30分钟",
+      "cook_time": "15分钟",
       "difficulty": "中等",
       "rating": 8.3,
       "recipe_url": "https://www.xiachufang.com/recipe/107722352/",
       "first_seen": "2026-07-05",
-      "updated_at": "2026-07-12"
+      "updated_at": "2026-07-15"
     },
     {
       "id": "xc_0057",
@@ -3192,10 +3192,10 @@ var foodData = {
       "updated_at": "2026-07-06"
     },
     {
-      "id": "xc_0062",
+      "id": "xc_0083",
       "name": "荔枝虾球＆全家人的最爱",
       "description": "蓝尾虾、荔枝、嫩芹菜、蒜片、花雕酒等食材制作的家常菜",
-      "cuisine": "家常菜",
+      "cuisine": "快手菜",
       "health_tag": "🟡适中",
       "price_level": "💰",
       "type": "自己做",
@@ -3211,12 +3211,12 @@ var foodData = {
         "水淀粉",
         "食用油"
       ],
-      "cook_time": "30分钟",
+      "cook_time": "15分钟",
       "difficulty": "中等",
       "rating": 2.0,
       "recipe_url": "https://www.xiachufang.com/recipe/107751902/",
       "first_seen": "2026-07-05",
-      "updated_at": "2026-07-05"
+      "updated_at": "2026-07-15"
     },
     {
       "id": "xc_0063",
@@ -3984,11 +3984,11 @@ var foodData = {
       "updated_at": "2026-07-06"
     },
     {
-      "id": "xc_0093",
+      "id": "xc_0052",
       "name": "夏日饮品【杨枝甘露】好喝到原地开店",
       "description": "芒果肉、牛奶、椰浆、炼乳、西柚果肉等食材制作的家常菜",
-      "cuisine": "糖水",
-      "health_tag": "🟢轻食",
+      "cuisine": "甜品",
+      "health_tag": "🟡适中",
       "price_level": "💰",
       "type": "自己做",
       "source": "下厨房",
@@ -4000,12 +4000,12 @@ var foodData = {
         "西柚果肉",
         "西米"
       ],
-      "cook_time": "60分钟",
+      "cook_time": "40分钟",
       "difficulty": "中等",
       "rating": 8.6,
       "recipe_url": "https://www.xiachufang.com/recipe/107140349/",
       "first_seen": "2026-07-05",
-      "updated_at": "2026-07-13"
+      "updated_at": "2026-07-15"
     },
     {
       "id": "xc_0104",
@@ -4030,9 +4030,9 @@ var foodData = {
       "updated_at": "2026-07-09"
     },
     {
-      "id": "xc_0097",
+      "id": "xc_0049",
       "name": "巧克力冰山熔岩（牛奶版本🥛）",
-      "description": "鸡蛋黄、糖、黑巧克力、牛奶🥛、♡ 饼干底：等食材制作的家常菜",
+      "description": "鸡蛋黄、糖、黑巧克力、牛奶🥛、芒果等食材制作的家常菜",
       "cuisine": "甜品",
       "health_tag": "🟡适中",
       "price_level": "💰",
@@ -4043,19 +4043,19 @@ var foodData = {
         "糖",
         "黑巧克力",
         "牛奶🥛",
-        "♡ 饼干底：",
-        "饼干碎",
-        "融化的黄油",
-        "♡ 慕斯：",
-        "奶油奶酪",
-        "细砂糖"
+        "芒果",
+        "西米",
+        "牛奶",
+        "糯米粉",
+        "白凉粉",
+        "芒果肉"
       ],
       "cook_time": "40分钟",
       "difficulty": "中等",
-      "rating": 8.4,
+      "rating": 8.3,
       "recipe_url": "https://www.xiachufang.com/recipe/106720210/",
       "first_seen": "2026-07-05",
-      "updated_at": "2026-07-14"
+      "updated_at": "2026-07-15"
     },
     {
       "id": "xc_0101",
@@ -4083,7 +4083,7 @@ var foodData = {
       "updated_at": "2026-07-05"
     },
     {
-      "id": "xc_0096",
+      "id": "xc_0050",
       "name": "夏日小甜品，多芒丸子西米露冰镇更好吃",
       "description": "芒果、西米、牛奶、糯米粉等食材制作的家常菜",
       "cuisine": "甜品",
@@ -4099,10 +4099,10 @@ var foodData = {
       ],
       "cook_time": "40分钟",
       "difficulty": "简单",
-      "rating": 8.3,
+      "rating": 8.1,
       "recipe_url": "https://www.xiachufang.com/recipe/107130354/",
       "first_seen": "2026-07-05",
-      "updated_at": "2026-07-13"
+      "updated_at": "2026-07-15"
     },
     {
       "id": "xc_0108",
@@ -4550,7 +4550,7 @@ var foodData = {
       "updated_at": "2026-07-05"
     },
     {
-      "id": "xc_0088",
+      "id": "xc_0079",
       "name": "鲜香味美！巨好喝的山药排骨汤！！",
       "description": "排骨、山药、胡萝卜、玉米、盐等食材制作的家常菜",
       "cuisine": "汤",
@@ -4567,10 +4567,10 @@ var foodData = {
       ],
       "cook_time": "90分钟",
       "difficulty": "简单",
-      "rating": 7.9,
+      "rating": 8.0,
       "recipe_url": "https://www.xiachufang.com/recipe/107407712/",
       "first_seen": "2026-07-05",
-      "updated_at": "2026-07-12"
+      "updated_at": "2026-07-15"
     },
     {
       "id": "xc_0122",
@@ -6587,10 +6587,10 @@ var foodData = {
       "updated_at": "2026-07-05"
     },
     {
-      "id": "xc_0052",
+      "id": "xc_0090",
       "name": "蒜蓉西兰花",
       "description": "西兰花、蒜、盐、蚝油、生抽等食材制作的家常菜",
-      "cuisine": "家常菜",
+      "cuisine": "快手菜",
       "health_tag": "🟡适中",
       "price_level": "💰",
       "type": "自己做",
@@ -6603,12 +6603,12 @@ var foodData = {
         "生抽",
         "淀粉水"
       ],
-      "cook_time": "30分钟",
+      "cook_time": "15分钟",
       "difficulty": "中等",
       "rating": 8.4,
       "recipe_url": "https://www.xiachufang.com/recipe/107651597/",
       "first_seen": "2026-07-05",
-      "updated_at": "2026-07-11"
+      "updated_at": "2026-07-15"
     },
     {
       "id": "xc_0132",
@@ -7442,7 +7442,7 @@ var foodData = {
       "updated_at": "2026-07-07"
     },
     {
-      "id": "xc_0108",
+      "id": "xc_0057",
       "name": "自己做的杨枝甘露秒杀外面的一切甜品店啊，巨好喝！！",
       "description": "芒果、椰浆、西柚、西米等食材制作的家常菜",
       "cuisine": "甜品",
@@ -7458,10 +7458,10 @@ var foodData = {
       ],
       "cook_time": "40分钟",
       "difficulty": "简单",
-      "rating": 8.4,
+      "rating": 8.2,
       "recipe_url": "https://www.xiachufang.com/recipe/107143776/",
       "first_seen": "2026-07-07",
-      "updated_at": "2026-07-07"
+      "updated_at": "2026-07-15"
     },
     {
       "id": "xc_0123",
@@ -9059,6 +9059,35 @@ var foodData = {
       "recipe_url": "https://www.xiachufang.com/recipe/104229671/",
       "first_seen": "2026-07-14",
       "updated_at": "2026-07-14"
+    },
+    {
+      "id": "dp_0001",
+      "name": "福田柏悅酒店晚間自助餐",
+      "description": "450 人仔一位。 人唔多環境唔錯，但食物 選擇唔算多。 大家覺得點😄😄😄 我想問吓大家有冇推介深",
+      "cuisine": "火锅",
+      "health_tag": "🟠热量炸弹",
+      "price_level": "💰💰",
+      "type": "堂食",
+      "source": "大众点评",
+      "first_seen": "2026-07-15",
+      "updated_at": "2026-07-15"
+    },
+    {
+      "id": "xc_0060",
+      "name": "火爆甜品店🔥巨型蘑菇奶冻🍄简易做法‼️",
+      "description": "等食材制作的家常菜",
+      "cuisine": "甜品",
+      "health_tag": "🟡适中",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [],
+      "cook_time": "40分钟",
+      "difficulty": "简单",
+      "rating": 7.1,
+      "recipe_url": "https://www.xiachufang.com/recipe/107253090/?recipe_type=1&page_scene=6",
+      "first_seen": "2026-07-15",
+      "updated_at": "2026-07-15"
     }
   ]
 };
