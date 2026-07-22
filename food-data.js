@@ -1,12 +1,12 @@
 var foodData = {
-  "generated_at": "2026-07-21 18:56:58",
+  "generated_at": "2026-07-22 18:02:32",
   "city": "深圳",
   "total": 485,
   "stats": {
-    "new": 4,
-    "updated": 13,
-    "kept": 269,
-    "total_old": 481,
+    "new": 0,
+    "updated": 7,
+    "kept": 264,
+    "total_old": 485,
     "total_new": 485
   },
   "items": [
@@ -2777,10 +2777,10 @@ var foodData = {
       "updated_at": "2026-07-05"
     },
     {
-      "id": "xc_0043",
+      "id": "xc_0109",
       "name": "去湘菜馆一定要点的辣椒擂皮蛋‼️炒鸡快手下饭💖",
       "description": "螺丝椒、皮蛋、大蒜、小米辣等食材制作的家常菜",
-      "cuisine": "湘菜",
+      "cuisine": "快手菜",
       "health_tag": "🟡适中",
       "price_level": "💰",
       "type": "自己做",
@@ -2791,12 +2791,12 @@ var foodData = {
         "大蒜",
         "小米辣"
       ],
-      "cook_time": "30分钟",
+      "cook_time": "15分钟",
       "difficulty": "简单",
       "rating": 8.3,
       "recipe_url": "https://www.xiachufang.com/recipe/107689476/",
       "first_seen": "2026-07-05",
-      "updated_at": "2026-07-21"
+      "updated_at": "2026-07-22"
     },
     {
       "id": "xc_0046",
@@ -2868,9 +2868,9 @@ var foodData = {
       "updated_at": "2026-07-05"
     },
     {
-      "id": "xc_0048",
+      "id": "xc_0033",
       "name": "9款家常菜",
-      "description": "如图、肉、鸡蛋、肉、鸡蛋、油等食材制作的家常菜",
+      "description": "如图、油、豆腐、五花肉、大葱等食材制作的家常菜",
       "cuisine": "家常菜",
       "health_tag": "🟡适中",
       "price_level": "💰",
@@ -2878,21 +2878,21 @@ var foodData = {
       "source": "下厨房",
       "ingredients": [
         "如图",
-        "肉、鸡蛋",
-        "肉",
-        "鸡蛋",
         "油",
         "豆腐",
         "五花肉",
         "大葱",
         "生抽",
-        "老抽"
+        "老抽",
+        "白糖",
+        "盐",
+        "清水"
       ],
       "cook_time": "30分钟",
       "difficulty": "中等",
       "recipe_url": "https://www.xiachufang.com/recipe/107751361/",
       "first_seen": "2026-07-05",
-      "updated_at": "2026-07-20"
+      "updated_at": "2026-07-22"
     },
     {
       "id": "xc_0051",
@@ -4051,9 +4051,9 @@ var foodData = {
       "updated_at": "2026-07-09"
     },
     {
-      "id": "xc_0095",
+      "id": "xc_0067",
       "name": "巧克力冰山熔岩（牛奶版本🥛）",
-      "description": "鸡蛋黄、糖、黑巧克力、牛奶🥛、芒果等食材制作的家常菜",
+      "description": "鸡蛋黄、糖、黑巧克力、牛奶🥛等食材制作的家常菜",
       "cuisine": "甜品",
       "health_tag": "🟡适中",
       "price_level": "💰",
@@ -4063,20 +4063,14 @@ var foodData = {
         "鸡蛋黄",
         "糖",
         "黑巧克力",
-        "牛奶🥛",
-        "芒果",
-        "西米",
-        "牛奶",
-        "糯米粉",
-        "芒果肉",
-        "椰浆"
+        "牛奶🥛"
       ],
       "cook_time": "40分钟",
-      "difficulty": "中等",
+      "difficulty": "简单",
       "rating": 8.3,
       "recipe_url": "https://www.xiachufang.com/recipe/106720210/",
       "first_seen": "2026-07-05",
-      "updated_at": "2026-07-21"
+      "updated_at": "2026-07-22"
     },
     {
       "id": "xc_0101",
@@ -4104,9 +4098,9 @@ var foodData = {
       "updated_at": "2026-07-05"
     },
     {
-      "id": "xc_0101",
+      "id": "xc_0065",
       "name": "夏日小甜品，多芒丸子西米露冰镇更好吃",
-      "description": "芒果、西米、牛奶、糯米粉等食材制作的家常菜",
+      "description": "芒果、西米、牛奶、糯米粉、芒果肉等食材制作的家常菜",
       "cuisine": "甜品",
       "health_tag": "🟡适中",
       "price_level": "💰",
@@ -4116,14 +4110,20 @@ var foodData = {
         "芒果",
         "西米",
         "牛奶",
-        "糯米粉"
+        "糯米粉",
+        "芒果肉",
+        "椰浆",
+        "炼乳",
+        "西柚果肉",
+        "鸡蛋黄",
+        "糖"
       ],
       "cook_time": "40分钟",
-      "difficulty": "简单",
+      "difficulty": "中等",
       "rating": 8.0,
       "recipe_url": "https://www.xiachufang.com/recipe/107130354/",
       "first_seen": "2026-07-05",
-      "updated_at": "2026-07-20"
+      "updated_at": "2026-07-22"
     },
     {
       "id": "xc_0108",
@@ -4794,7 +4794,7 @@ var foodData = {
       "updated_at": "2026-07-20"
     },
     {
-      "id": "xc_0128",
+      "id": "xc_0098",
       "name": "鸡米花版菠萝咕咾肉",
       "description": "鸡米花、菠萝、彩椒、青椒、番茄酱等食材制作的家常菜",
       "cuisine": "快手菜",
@@ -4816,10 +4816,10 @@ var foodData = {
       ],
       "cook_time": "15分钟",
       "difficulty": "中等",
-      "rating": 4.0,
+      "rating": 5.0,
       "recipe_url": "https://www.xiachufang.com/recipe/107731483/",
       "first_seen": "2026-07-05",
-      "updated_at": "2026-07-13"
+      "updated_at": "2026-07-22"
     },
     {
       "id": "xc_0132",
@@ -4868,10 +4868,10 @@ var foodData = {
       "updated_at": "2026-07-05"
     },
     {
-      "id": "xc_0061",
+      "id": "xc_0106",
       "name": "脆嫩爆炒绿豆芽｜不出水不软烂 快手家常菜",
       "description": "绿豆芽、葱蒜、干辣椒、花椒、香菜等食材制作的家常菜",
-      "cuisine": "家常菜",
+      "cuisine": "快手菜",
       "health_tag": "🟡适中",
       "price_level": "💰",
       "type": "自己做",
@@ -4885,12 +4885,12 @@ var foodData = {
         "生抽",
         "香醋"
       ],
-      "cook_time": "30分钟",
+      "cook_time": "15分钟",
       "difficulty": "中等",
       "rating": 3.0,
       "recipe_url": "https://www.xiachufang.com/recipe/107746839/",
       "first_seen": "2026-07-05",
-      "updated_at": "2026-07-18"
+      "updated_at": "2026-07-22"
     },
     {
       "id": "xc_0135",
@@ -5020,7 +5020,7 @@ var foodData = {
       "updated_at": "2026-07-12"
     },
     {
-      "id": "xc_0140",
+      "id": "xc_0105",
       "name": "鸡丁炒洋葱，超级简单下饭的家常菜，2个大鸡腿不够吃，大人孩子都爱吃每次都光盘！",
       "description": "主料：手枪腿、洋葱、腌肉：生抽、土豆淀粉、奥尔良腌料等食材制作的家常菜",
       "cuisine": "快手菜",
@@ -5042,10 +5042,10 @@ var foodData = {
       ],
       "cook_time": "15分钟",
       "difficulty": "中等",
-      "rating": 8.0,
+      "rating": 8.1,
       "recipe_url": "https://www.xiachufang.com/recipe/107631920/",
       "first_seen": "2026-07-05",
-      "updated_at": "2026-07-05"
+      "updated_at": "2026-07-22"
     },
     {
       "id": "xc_0141",
