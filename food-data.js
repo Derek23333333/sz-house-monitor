@@ -1,13 +1,13 @@
 var foodData = {
-  "generated_at": "2026-08-28 23:28:45",
+  "generated_at": "2026-08-29 17:35:25",
   "city": "深圳",
-  "total": 593,
+  "total": 594,
   "stats": {
-    "new": 8,
-    "updated": 20,
-    "kept": 274,
-    "total_old": 585,
-    "total_new": 593
+    "new": 1,
+    "updated": 17,
+    "kept": 284,
+    "total_old": 593,
+    "total_new": 594
   },
   "items": [
     {
@@ -1752,7 +1752,7 @@ var foodData = {
       "updated_at": "2026-08-21"
     },
     {
-      "id": "xc_0001",
+      "id": "xc_0005",
       "name": "经典粤菜-白灼菜心（超详）",
       "description": "广东菜心、大蒜、蚝油、生抽、盐等食材制作的家常菜",
       "cuisine": "粤菜",
@@ -1766,18 +1766,14 @@ var foodData = {
         "蚝油",
         "生抽",
         "盐",
-        "食用油",
-        "各种各样的时蔬",
-        "各种肉蛋",
-        "排骨",
-        "芋头"
+        "食用油"
       ],
       "cook_time": "45分钟",
       "difficulty": "中等",
       "rating": 8.1,
       "recipe_url": "https://www.xiachufang.com/recipe/103821457/",
       "first_seen": "2026-07-05",
-      "updated_at": "2026-08-28"
+      "updated_at": "2026-08-29"
     },
     {
       "id": "xc_0007",
@@ -2103,7 +2099,7 @@ var foodData = {
       "updated_at": "2026-07-20"
     },
     {
-      "id": "xc_0019",
+      "id": "xc_0017",
       "name": "四川回锅肉",
       "description": "郫县红油豆瓣酱、猪肉、青蒜、青椒、红椒等食材制作的家常菜",
       "cuisine": "川菜",
@@ -2119,14 +2115,16 @@ var foodData = {
         "红椒",
         "姜片",
         "料酒",
-        "生抽"
+        "生抽",
+        "里脊肉",
+        "盐 鸡精"
       ],
       "cook_time": "30分钟",
       "difficulty": "中等",
       "rating": 8.1,
       "recipe_url": "https://www.xiachufang.com/recipe/39989/",
       "first_seen": "2026-07-05",
-      "updated_at": "2026-08-28"
+      "updated_at": "2026-08-29"
     },
     {
       "id": "xc_0021",
@@ -2858,22 +2856,31 @@ var foodData = {
       "updated_at": "2026-07-05"
     },
     {
-      "id": "xc_0060",
+      "id": "xc_0049",
       "name": "9款家常菜",
-      "description": "如图等食材制作的家常菜",
+      "description": "如图、盐、鸡蛋、淀粉、蚝油等食材制作的家常菜",
       "cuisine": "家常菜",
       "health_tag": "🟡适中",
       "price_level": "💰",
       "type": "自己做",
       "source": "下厨房",
       "ingredients": [
-        "如图"
+        "如图",
+        "盐",
+        "鸡蛋",
+        "淀粉",
+        "蚝油",
+        "葱花",
+        "白糖",
+        "生抽",
+        "番茄酱",
+        "醋"
       ],
       "cook_time": "30分钟",
-      "difficulty": "简单",
+      "difficulty": "中等",
       "recipe_url": "https://www.xiachufang.com/recipe/107751361/",
       "first_seen": "2026-07-05",
-      "updated_at": "2026-08-28"
+      "updated_at": "2026-08-29"
     },
     {
       "id": "xc_0051",
@@ -3135,31 +3142,22 @@ var foodData = {
       "updated_at": "2026-08-18"
     },
     {
-      "id": "xc_0049",
+      "id": "xc_0060",
       "name": "6款家常菜",
-      "description": "如图、盐、鸡蛋、淀粉、蚝油等食材制作的家常菜",
+      "description": "如图等食材制作的家常菜",
       "cuisine": "家常菜",
       "health_tag": "🟡适中",
       "price_level": "💰",
       "type": "自己做",
       "source": "下厨房",
       "ingredients": [
-        "如图",
-        "盐",
-        "鸡蛋",
-        "淀粉",
-        "蚝油",
-        "葱花",
-        "白糖",
-        "生抽",
-        "番茄酱",
-        "醋"
+        "如图"
       ],
       "cook_time": "30分钟",
-      "difficulty": "中等",
+      "difficulty": "简单",
       "recipe_url": "https://www.xiachufang.com/recipe/107751364/",
       "first_seen": "2026-07-05",
-      "updated_at": "2026-08-28"
+      "updated_at": "2026-08-29"
     },
     {
       "id": "xc_0056",
@@ -3250,32 +3248,23 @@ var foodData = {
       "updated_at": "2026-08-09"
     },
     {
-      "id": "xc_0065",
+      "id": "xc_0066",
       "name": "低卡蒸菜",
-      "description": "食材如下、鸡翅中、香菇、土豆、生抽等食材制作的家常菜",
+      "description": "食材如下等食材制作的家常菜",
       "cuisine": "蒸菜",
       "health_tag": "🟢轻食",
       "price_level": "💰",
       "type": "自己做",
       "source": "下厨房",
       "ingredients": [
-        "食材如下",
-        "鸡翅中",
-        "香菇",
-        "土豆",
-        "生抽",
-        "蚝油",
-        "料酒",
-        "葱蒜末",
-        "小米椒",
-        "盐"
+        "食材如下"
       ],
       "cook_time": "40分钟",
-      "difficulty": "中等",
+      "difficulty": "简单",
       "rating": 4.0,
       "recipe_url": "https://www.xiachufang.com/recipe/107344668/",
       "first_seen": "2026-07-05",
-      "updated_at": "2026-08-28"
+      "updated_at": "2026-08-29"
     },
     {
       "id": "xc_0065",
@@ -3611,30 +3600,26 @@ var foodData = {
       "updated_at": "2026-07-05"
     },
     {
-      "id": "xc_0076",
+      "id": "xc_0080",
       "name": "蒸菜",
-      "description": "豆腐、肉末、西兰花等食材制作的家常菜",
+      "description": "等食材制作的家常菜",
       "cuisine": "蒸菜",
       "health_tag": "🟡适中",
       "price_level": "💰",
       "type": "自己做",
       "source": "下厨房",
-      "ingredients": [
-        "豆腐",
-        "肉末",
-        "西兰花"
-      ],
+      "ingredients": [],
       "cook_time": "40分钟",
       "difficulty": "简单",
-      "rating": 7.9,
-      "recipe_url": "https://www.xiachufang.com/recipe/100413873/",
+      "recipe_url": "https://www.xiachufang.com/recipe_list/177134355850731520/",
       "first_seen": "2026-07-05",
-      "updated_at": "2026-08-25"
+      "updated_at": "2026-08-29",
+      "rating": 7.9
     },
     {
-      "id": "xc_0080",
+      "id": "xc_0081",
       "name": "夏日地摊卖得超火爆的解暑糖水，今天一次性教你四种口味！",
-      "description": "白凉粉、水、紫薯、木薯粉、红薯等食材制作的家常菜",
+      "description": "白凉粉、水、红枣、红豆、红糖等食材制作的家常菜",
       "cuisine": "糖水",
       "health_tag": "🟢轻食",
       "price_level": "💰",
@@ -3643,28 +3628,28 @@ var foodData = {
       "ingredients": [
         "白凉粉",
         "水",
-        "紫薯",
-        "木薯粉",
-        "红薯",
-        "芋头",
-        "白糖",
-        "如图",
         "红枣",
-        "红豆"
+        "红豆",
+        "红糖",
+        "西米",
+        "花生",
+        "银耳",
+        "牛奶",
+        "冰糖"
       ],
       "cook_time": "60分钟",
       "difficulty": "中等",
       "rating": 7.8,
       "recipe_url": "https://www.xiachufang.com/recipe/104714384/",
       "first_seen": "2026-07-05",
-      "updated_at": "2026-08-28"
+      "updated_at": "2026-08-29"
     },
     {
-      "id": "xc_0106",
+      "id": "xc_0084",
       "name": "有手就会！夏天来碗红糖冰粉凉爽一夏吧！",
       "description": "开水、红糖、冰粉粉、各种坚果，水果、椰果，马蹄爆爆珠等食材制作的家常菜",
-      "cuisine": "甜品",
-      "health_tag": "🟡适中",
+      "cuisine": "糖水",
+      "health_tag": "🟢轻食",
       "price_level": "💰",
       "type": "自己做",
       "source": "下厨房",
@@ -3675,12 +3660,12 @@ var foodData = {
         "各种坚果，水果",
         "椰果，马蹄爆爆珠"
       ],
-      "cook_time": "40分钟",
+      "cook_time": "60分钟",
       "difficulty": "简单",
       "rating": 7.7,
       "recipe_url": "https://www.xiachufang.com/recipe/107556518/",
       "first_seen": "2026-07-05",
-      "updated_at": "2026-08-28"
+      "updated_at": "2026-08-29"
     },
     {
       "id": "xc_0083",
@@ -4041,9 +4026,9 @@ var foodData = {
       "updated_at": "2026-08-24"
     },
     {
-      "id": "xc_0096",
+      "id": "xc_0097",
       "name": "巧克力冰山熔岩（牛奶版本🥛）",
-      "description": "鸡蛋黄、糖、黑巧克力、牛奶🥛、☑️饼干底：等食材制作的家常菜",
+      "description": "鸡蛋黄、糖、黑巧克力、牛奶🥛、芒果等食材制作的家常菜",
       "cuisine": "甜品",
       "health_tag": "🟡适中",
       "price_level": "💰",
@@ -4054,19 +4039,19 @@ var foodData = {
         "糖",
         "黑巧克力",
         "牛奶🥛",
-        "☑️饼干底：",
-        "奥利奥碎",
-        "融化的黄油",
-        "☑️慕斯糊：",
-        "奶油奶酪",
-        "牛奶"
+        "芒果",
+        "西米",
+        "牛奶",
+        "糯米粉",
+        "鸡蛋",
+        "芝士"
       ],
       "cook_time": "40分钟",
       "difficulty": "中等",
       "rating": 8.3,
       "recipe_url": "https://www.xiachufang.com/recipe/106720210/",
       "first_seen": "2026-07-05",
-      "updated_at": "2026-08-28"
+      "updated_at": "2026-08-29"
     },
     {
       "id": "xc_0086",
@@ -4169,7 +4154,7 @@ var foodData = {
       "updated_at": "2026-07-05"
     },
     {
-      "id": "xc_0107",
+      "id": "xc_0099",
       "name": "简单易做空气炸锅烤牛奶甜品",
       "description": "牛奶、鸡蛋、糖、芝士、玉米淀粉等食材制作的家常菜",
       "cuisine": "甜品",
@@ -4186,10 +4171,10 @@ var foodData = {
       ],
       "cook_time": "40分钟",
       "difficulty": "简单",
-      "rating": 7.7,
+      "rating": 7.6,
       "recipe_url": "https://www.xiachufang.com/recipe/107095859/",
       "first_seen": "2026-07-05",
-      "updated_at": "2026-08-21"
+      "updated_at": "2026-08-29"
     },
     {
       "id": "xc_0104",
@@ -4363,7 +4348,7 @@ var foodData = {
       "updated_at": "2026-07-05"
     },
     {
-      "id": "xc_0114",
+      "id": "xc_0113",
       "name": "明明是素汤 却鲜得像鸡汤一样的「口蘑汤」",
       "description": "口蘑、葱、香菜、盐、生抽等食材制作的家常菜",
       "cuisine": "汤",
@@ -4376,14 +4361,19 @@ var foodData = {
         "葱",
         "香菜",
         "盐",
-        "生抽"
+        "生抽",
+        "鲜虾",
+        "鸡蛋",
+        "嫩豆腐",
+        "海鲜菇",
+        "香菇"
       ],
       "cook_time": "90分钟",
-      "difficulty": "简单",
+      "difficulty": "中等",
       "rating": 7.9,
       "recipe_url": "https://www.xiachufang.com/recipe/106432832/",
       "first_seen": "2026-07-05",
-      "updated_at": "2026-08-28"
+      "updated_at": "2026-08-29"
     },
     {
       "id": "xc_0114",
@@ -4755,7 +4745,7 @@ var foodData = {
       "updated_at": "2026-08-15"
     },
     {
-      "id": "xc_0128",
+      "id": "xc_0129",
       "name": "蟹柳豆腐煲｜会开火就会做系列",
       "description": "蟹柳、咸蛋、内脂豆腐、开水、水淀粉等食材制作的家常菜",
       "cuisine": "快手菜",
@@ -4769,14 +4759,18 @@ var foodData = {
         "内脂豆腐",
         "开水",
         "水淀粉",
-        "葱花"
+        "葱花",
+        "鸡米花",
+        "菠萝",
+        "彩椒",
+        "青椒"
       ],
       "cook_time": "15分钟",
       "difficulty": "中等",
       "rating": 8.8,
       "recipe_url": "https://www.xiachufang.com/recipe/107613730/",
       "first_seen": "2026-07-05",
-      "updated_at": "2026-08-13"
+      "updated_at": "2026-08-29"
     },
     {
       "id": "xc_0130",
@@ -4801,10 +4795,10 @@ var foodData = {
       ],
       "cook_time": "15分钟",
       "difficulty": "中等",
-      "rating": 6.0,
+      "rating": 7.0,
       "recipe_url": "https://www.xiachufang.com/recipe/107731483/",
       "first_seen": "2026-07-05",
-      "updated_at": "2026-08-27"
+      "updated_at": "2026-08-29"
     },
     {
       "id": "xc_0132",
@@ -5051,7 +5045,7 @@ var foodData = {
     {
       "id": "xc_0142",
       "name": "30天成功减重8斤，自己搭配的减脂餐（一）",
-      "description": "橄榄油、材料：、魔芋丝、鸡蛋、胡萝卜等食材制作的家常菜",
+      "description": "橄榄油、西兰花、虾仁、胡萝卜、水煮鸡蛋等食材制作的家常菜",
       "cuisine": "减脂餐",
       "health_tag": "🟢轻食",
       "price_level": "💰",
@@ -5059,22 +5053,22 @@ var foodData = {
       "source": "下厨房",
       "ingredients": [
         "橄榄油",
-        "材料：",
-        "魔芋丝",
-        "鸡蛋",
+        "西兰花",
+        "虾仁",
         "胡萝卜",
-        "韭菜",
-        "饺子皮",
-        "调味料：",
-        "耗油",
-        "生抽"
+        "水煮鸡蛋",
+        "玉米粒",
+        "豌豆粒",
+        "生抽",
+        "醋",
+        "耗油"
       ],
       "cook_time": "20分钟",
       "difficulty": "中等",
       "rating": 7.8,
       "recipe_url": "https://www.xiachufang.com/recipe/106463192/",
       "first_seen": "2026-07-05",
-      "updated_at": "2026-08-28"
+      "updated_at": "2026-08-29"
     },
     {
       "id": "xc_0132",
@@ -5585,9 +5579,9 @@ var foodData = {
       "updated_at": "2026-07-05"
     },
     {
-      "id": "xc_0007",
+      "id": "xc_0001",
       "name": "生蚝鸡煲(经典粤菜)",
-      "description": "走地鸡、生蚝、葱姜蒜、红葱头等食材制作的家常菜",
+      "description": "走地鸡、生蚝、葱姜蒜、红葱头、排骨等食材制作的家常菜",
       "cuisine": "粤菜",
       "health_tag": "🟡适中",
       "price_level": "💰",
@@ -5597,14 +5591,20 @@ var foodData = {
         "走地鸡",
         "生蚝",
         "葱姜蒜",
-        "红葱头"
+        "红葱头",
+        "排骨",
+        "洋葱",
+        "腌肉部分",
+        "前腿肉",
+        "盐",
+        "鸡精"
       ],
       "cook_time": "45分钟",
-      "difficulty": "简单",
+      "difficulty": "中等",
       "rating": 8.5,
       "recipe_url": "https://www.xiachufang.com/recipe/107050445/",
       "first_seen": "2026-07-05",
-      "updated_at": "2026-08-19"
+      "updated_at": "2026-08-29"
     },
     {
       "id": "xc_0005",
@@ -8865,7 +8865,7 @@ var foodData = {
       "updated_at": "2026-07-14"
     },
     {
-      "id": "xc_0029",
+      "id": "xc_0028",
       "name": "酸甜微辣！川味鱼香肉丝‼️拌饭拌面真绝！",
       "description": "瘦肉等食材制作的家常菜",
       "cuisine": "川菜",
@@ -8878,10 +8878,10 @@ var foodData = {
       ],
       "cook_time": "30分钟",
       "difficulty": "简单",
-      "rating": 8.3,
+      "rating": 8.2,
       "recipe_url": "https://www.xiachufang.com/recipe/106441200/",
       "first_seen": "2026-07-14",
-      "updated_at": "2026-07-14"
+      "updated_at": "2026-08-29"
     },
     {
       "id": "xc_0031",
@@ -11792,7 +11792,7 @@ var foodData = {
       "updated_at": "2026-08-27"
     },
     {
-      "id": "xc_0127",
+      "id": "xc_0136",
       "name": "芥末虾球！简单又好吃！",
       "description": "虾、沙拉酱、芥末、白胡椒、盐等食材制作的家常菜",
       "cuisine": "快手菜",
@@ -11807,17 +11807,14 @@ var foodData = {
         "白胡椒",
         "盐",
         "淀粉",
-        "鸡蛋",
-        "蟹柳",
-        "咸蛋",
-        "内脂豆腐"
+        "鸡蛋"
       ],
       "cook_time": "15分钟",
       "difficulty": "中等",
       "rating": 3.0,
       "recipe_url": "https://www.xiachufang.com/recipe/107769831/",
       "first_seen": "2026-08-14",
-      "updated_at": "2026-08-28"
+      "updated_at": "2026-08-29"
     },
     {
       "id": "xc_0085",
@@ -12583,6 +12580,30 @@ var foodData = {
       "recipe_url": "https://www.xiachufang.com/recipe/106903165/",
       "first_seen": "2026-08-28",
       "updated_at": "2026-08-28"
+    },
+    {
+      "id": "xc_0091",
+      "name": "木薯糖水全家福（芋头红豆西米芋圆）| 新手也能做",
+      "description": "木薯、芋头、红豆、西米、芋圆等食材制作的家常菜",
+      "cuisine": "糖水",
+      "health_tag": "🟢轻食",
+      "price_level": "💰",
+      "type": "自己做",
+      "source": "下厨房",
+      "ingredients": [
+        "木薯",
+        "芋头",
+        "红豆",
+        "西米",
+        "芋圆",
+        "小圆子"
+      ],
+      "cook_time": "60分钟",
+      "difficulty": "中等",
+      "rating": 2.0,
+      "recipe_url": "https://www.xiachufang.com/recipe/107654771/",
+      "first_seen": "2026-08-29",
+      "updated_at": "2026-08-29"
     }
   ]
 };
