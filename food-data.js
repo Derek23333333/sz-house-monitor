@@ -1,12 +1,12 @@
 var foodData = {
-  "generated_at": "2026-10-28 19:21:15",
+  "generated_at": "2026-10-29 19:29:47",
   "city": "深圳",
   "total": 699,
   "stats": {
-    "new": 2,
-    "updated": 15,
-    "kept": 284,
-    "total_old": 697,
+    "new": 0,
+    "updated": 5,
+    "kept": 295,
+    "total_old": 699,
     "total_new": 699
   },
   "items": [
@@ -1031,16 +1031,16 @@ var foodData = {
       "updated_at": "2026-07-05"
     },
     {
-      "id": "dp_0097",
+      "id": "dp_0001",
       "name": "香格里拉",
-      "description": "深圳自助知名品牌",
+      "description": "大酒店 地址:中国深圳市建设路1002号火车站东侧 酒店名称:威尼斯英迪格酒店 地址:广东省深圳市南",
       "cuisine": "自助",
       "health_tag": "🟠热量炸弹",
       "price_level": "💰💰💰",
       "type": "堂食",
       "source": "大众点评",
       "first_seen": "2026-07-05",
-      "updated_at": "2026-10-24"
+      "updated_at": "2026-10-29"
     },
     {
       "id": "dp_0087",
@@ -2863,7 +2863,7 @@ var foodData = {
     {
       "id": "xc_0049",
       "name": "9款家常菜",
-      "description": "如图、肉、鸡蛋、肉、鸡蛋、蔬菜等食材制作的家常菜",
+      "description": "如图、盐、鸡蛋、淀粉、蚝油等食材制作的家常菜",
       "cuisine": "家常菜",
       "health_tag": "🟡适中",
       "price_level": "💰",
@@ -2871,22 +2871,22 @@ var foodData = {
       "source": "下厨房",
       "ingredients": [
         "如图",
-        "肉、鸡蛋",
-        "肉",
+        "盐",
         "鸡蛋",
-        "蔬菜",
-        "肉类",
-        "鱼类",
-        "海鲜类",
-        "大料",
-        "生抽"
+        "淀粉",
+        "蚝油",
+        "葱花",
+        "白糖",
+        "生抽",
+        "番茄酱",
+        "醋"
       ],
       "cook_time": "30分钟",
       "difficulty": "中等",
       "rating": 1.0,
       "recipe_url": "https://www.xiachufang.com/recipe/107751361/",
       "first_seen": "2026-07-05",
-      "updated_at": "2026-10-28"
+      "updated_at": "2026-10-29"
     },
     {
       "id": "xc_0051",
@@ -6613,7 +6613,7 @@ var foodData = {
       "updated_at": "2026-10-25"
     },
     {
-      "id": "xc_0129",
+      "id": "xc_0133",
       "name": "零失败快手菜：蒜香蒸排骨",
       "description": "排骨、蒜、姜末、生抽、黄豆酱等食材制作的家常菜",
       "cuisine": "快手菜",
@@ -6634,10 +6634,10 @@ var foodData = {
       ],
       "cook_time": "15分钟",
       "difficulty": "中等",
-      "rating": 8.0,
+      "rating": 8.1,
       "recipe_url": "https://www.xiachufang.com/recipe/107706887/",
       "first_seen": "2026-07-05",
-      "updated_at": "2026-10-26"
+      "updated_at": "2026-10-29"
     },
     {
       "id": "xc_0138",
@@ -9514,7 +9514,7 @@ var foodData = {
       "updated_at": "2026-07-18"
     },
     {
-      "id": "xc_0049",
+      "id": "xc_0052",
       "name": "肉沫豆腐——家常菜，超下饭",
       "description": "嫩豆腐、肉沫、葱、生抽、淀粉等食材制作的家常菜",
       "cuisine": "家常菜",
@@ -9536,10 +9536,10 @@ var foodData = {
       ],
       "cook_time": "30分钟",
       "difficulty": "中等",
-      "rating": 9.0,
+      "rating": 8.8,
       "recipe_url": "https://www.xiachufang.com/recipe/107747068/",
       "first_seen": "2026-07-18",
-      "updated_at": "2026-10-21"
+      "updated_at": "2026-10-29"
     },
     {
       "id": "xc_0095",
@@ -14886,7 +14886,7 @@ var foodData = {
       "updated_at": "2026-10-15"
     },
     {
-      "id": "xc_0051",
+      "id": "xc_0053",
       "name": "【肉末茄子】",
       "description": "肉末、茄子、小米辣、青椒、生抽等食材制作的家常菜",
       "cuisine": "家常菜",
@@ -14908,10 +14908,10 @@ var foodData = {
       ],
       "cook_time": "30分钟",
       "difficulty": "中等",
-      "rating": 8.4,
+      "rating": 7.7,
       "recipe_url": "https://www.xiachufang.com/recipe/107765739/",
       "first_seen": "2026-10-16",
-      "updated_at": "2026-10-26"
+      "updated_at": "2026-10-29"
     },
     {
       "id": "xc_0092",
