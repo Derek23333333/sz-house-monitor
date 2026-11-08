@@ -1,5 +1,5 @@
 var foodData = {
-  "generated_at": "2026-11-07 18:32:17",
+  "generated_at": "2026-11-08 18:42:38",
   "city": "深圳",
   "total": 708,
   "stats": {
@@ -1031,16 +1031,16 @@ var foodData = {
       "updated_at": "2026-07-05"
     },
     {
-      "id": "dp_0001",
+      "id": "dp_0097",
       "name": "香格里拉",
-      "description": "大酒店 地址:中国深圳市建设路1002号火车站东侧 酒店名称:威尼斯英迪格酒店 地址:广东省深圳市南",
+      "description": "深圳自助知名品牌",
       "cuisine": "自助",
       "health_tag": "🟠热量炸弹",
       "price_level": "💰💰💰",
       "type": "堂食",
       "source": "大众点评",
       "first_seen": "2026-07-05",
-      "updated_at": "2026-11-07"
+      "updated_at": "2026-11-08"
     },
     {
       "id": "dp_0087",
