@@ -1,11 +1,11 @@
 var foodData = {
-  "generated_at": "2026-11-15 19:38:11",
+  "generated_at": "2026-11-16 23:16:50",
   "city": "深圳",
   "total": 708,
   "stats": {
     "new": 0,
-    "updated": 1,
-    "kept": 145,
+    "updated": 0,
+    "kept": 146,
     "total_old": 708,
     "total_new": 708
   },
