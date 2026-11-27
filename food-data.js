@@ -1,5 +1,5 @@
 var foodData = {
-  "generated_at": "2026-11-26 22:51:45",
+  "generated_at": "2026-11-27 22:34:23",
   "city": "深圳",
   "total": 708,
   "stats": {
